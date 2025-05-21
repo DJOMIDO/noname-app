@@ -22,8 +22,8 @@ Built with **Vue 3**, **TypeScript**, **Shadcn-Vue**, **Supabase**, and **Leafle
 ### 1. Clone the project
 
 ```bash
-git clone https://github.com/your-username/your-repo-name.git
-cd your-repo-name
+git clone https://github.com/DJOMIDO/noname-app
+cd noname-app
 ```
 
 ### 2. Install dependencies
@@ -51,35 +51,44 @@ VITE_SUPABASE_ANON_KEY=your-anon-key
 
 ---
 
-## 📸 Screenshots (add paths to screenshots later)
+## 📸 Screenshots
 
 ### Authentication
-
-- ✅ Register
-- ✅ Login
+- **Signup**
+  ![Signup](./screenshots/signup.png)
+- **Login**
+  ![Login](./screenshots/login.png)
 
 ### Home
+- **Light Mode**
+  ![Home](./screenshots/home.png)
+- **Dark Mode**
+  ![Home Dark](./screenshots/home_dark.png)
 
-- 🏠 Main interface with 4 action cards:
-  - Add Flight
-  - Add Train
-  - View Journeys
-  - Statistics(Dashboard)
+### Add Flight / Train
+- **Add Flight (Light)**
+  ![Add Flight](./screenshots/add-flight.png)
+- **Add Flight (Dark)**
+  ![Add Flight Dark](./screenshots/add-flight_dark.png)
+- **Add Train (Dark)**
+  ![Add Train Dark](./screenshots/add-train_dark.png)
 
 ### View Journeys
-
-- 📑 Tabs: Flights / Trains
-- 📋 Click on any card to view/edit details
+- **Flights Tab**
+  ![Journeys Flight](./screenshots/journeys_flight.png)
+- **Trains Tab (Dark)**
+  ![Journeys Train Dark](./screenshots/journeys_train_dark.png)
 
 ### Dashboard
+- **Overview**
+  ![Stats Overview](./screenshots/stats_overview.png)
+- **Flight Stats (Dark)**
+  ![Stats Flight Dark](./screenshots/stats_flight_dark.png)
+- **Train Stats**
+  ![Stats Train](./screenshots/stats_train.png)
 
-- 📊 Overview
-- ✈️ Flight stats
-- 🚆 Train stats
-
-### Misc
-
-- ❌ 404 Page
+### 404 Page
+- ![Not Found](./screenshots/not_found.png)
 
 ---
 
