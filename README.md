@@ -19,6 +19,11 @@ Built with **Vue 3**, **TypeScript**, **Shadcn-Vue**, **Supabase**, and **Leafle
 
 ## 🛠️ Getting Started
 
+### 🌐 Live Demo
+
+You can try the app online here:  
+👉 [https://nonameapp.netlify.app](https://nonameapp.netlify.app)
+
 ### 1. Clone the project
 
 ```bash
