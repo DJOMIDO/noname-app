@@ -89,8 +89,8 @@ VITE_SUPABASE_ANON_KEY=your-anon-key
   ![Stats Overview](./screenshots/stats_overview.png)
 - **Flight Stats (Dark)**
   ![Stats Flight Dark](./screenshots/stats_flight_dark.png)
-- **Train Stats**
-  ![Stats Train](./screenshots/stats_train.png)
+- **Train Stats (Dark)**
+  ![Stats Train Dark](./screenshots/stats_train.png)
 
 ### 404 Page
 - ![Not Found](./screenshots/not_found.png)
