@@ -12,35 +12,39 @@ const password = ref('')
 const router = useRouter()
 
 const handleLogin = async () => {
-    if (!email.value || !password.value) {
-        toast.error('Please enter both email and password.')
-        return
-    }
+  if (!email.value || !password.value) {
+    toast.error('Please enter both email and password.')
+    return
+  }
 
-    const { data, error } = await supabase.auth.signInWithPassword({
-        email: email.value,
-        password: password.value
-    })
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email: email.value,
+    password: password.value
+  })
 
-    if (error) {
-        toast.error(error.message)
-    } else {
-        toast.success('Logged in successfully!')
-        console.log('User session:', data)
-        router.push('/home')
-    }
+  if (error) {
+    toast.error(error.message)
+  } else {
+    toast.success('Logged in successfully!')
+    console.log('User session:', data)
+    router.push('/home')
+  }
 }
 </script>
 
 <template>
   <div class="flex flex-col md:flex-row min-h-screen dark:bg-gray-900 transition-colors">
 
-    <div class="w-full md:w-1/2 flex items-center justify-center bg-white/80 dark:bg-gray-900">
+    <div class="hidden md:flex w-1/2 items-center justify-center bg-white/80 dark:bg-gray-900">
       <img src="@/assets/images/Login.svg" class="max-w-full max-h-full object-contain" alt="Login background" />
     </div>
 
-    <div class="hidden md:flex w-1/2 items-center justify-center bg-white/80 dark:bg-gray-900">
-      <Card class="w-[90%] max-w-[360px] h-[520px] backdrop-blur-sm bg-white/80 dark:bg-white/10 shadow-md transition-colors">
+    <img src="@/assets/images/Login.svg"
+      class="block md:hidden absolute top-5 left-1/2 -translate-x-1/2 w-64 opacity-100 pointer-events-none select-none" />
+
+    <div class="flex-1 flex items-center justify-center bg-white/80 dark:bg-gray-900">
+      <Card
+        class="w-[90%] max-w-[360px] h-[520px] backdrop-blur-sm bg-white/80 dark:bg-white/10 shadow-md transition-colors">
         <CardContent class="p-6 flex flex-col justify-between h-full">
 
           <div class="text-center">

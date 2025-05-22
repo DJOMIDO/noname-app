@@ -66,8 +66,12 @@ const handleSignup = async () => {
       <img src="@/assets/images/Login.svg" class="max-w-full max-h-full object-contain" alt="Signup background" />
     </div>
 
-    <div class="w-full md:w-1/2 flex items-center justify-center bg-white/80 dark:bg-gray-900">
-      <Card class="w-[90%] max-w-[360px] h-[520px] backdrop-blur-sm bg-white/80 dark:bg-white/10 shadow-md transition-colors">
+    <img src="@/assets/images/Login.svg"
+      class="block md:hidden absolute top-5 left-1/2 -translate-x-1/2 w-64 opacity-100 pointer-events-none select-none" />
+
+    <div class="flex-1 flex items-center justify-center bg-white/80 dark:bg-gray-900">
+      <Card
+        class="w-[90%] max-w-[360px] h-[520px] backdrop-blur-sm bg-white/80 dark:bg-white/10 shadow-md transition-colors">
         <CardContent class="p-6 flex flex-col justify-between h-full">
 
           <div class="text-center">
