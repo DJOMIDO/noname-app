@@ -38,7 +38,6 @@ const handleSignup = async () => {
     email: email.value,
     password: password.value,
     options: {
-      emailRedirectTo: `${import.meta.env.VITE_SITE_URL}/login`,
       data: {
         username: username.value
       }
