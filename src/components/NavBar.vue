@@ -53,7 +53,7 @@ const toggleDark = () => {
             </button>
 
             <template v-if="user">
-                <span class="text-gray-700 dark:text-gray-200">
+                <span class="hidden md:block text-gray-700 dark:text-gray-200">
                     Welcome, {{ user.user_metadata?.username || 'User' }}
                 </span>
                 <button @click="handleLogout"
