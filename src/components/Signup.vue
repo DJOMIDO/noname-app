@@ -38,7 +38,7 @@ const handleSignup = async () => {
     email: email.value,
     password: password.value,
     options: {
-      emailRedirectTo: 'http://localhost:5173/login',
+      emailRedirectTo: `${import.meta.env.VITE_SITE_URL}/login`,
       data: {
         username: username.value
       }
