@@ -1,21 +1,21 @@
 [
   {
-    "iata": "CAN",
-    "name": "Guangzhou Baiyun International Airport",
-    "city": "Guangzhou",
+    "iata": "PEK",
+    "name": "Beijing Capital International Airport",
+    "city": "Beijing",
     "country": "China",
-    "lat": 23.3924,
-    "lng": 113.299
+    "lat": 40.0799,
+    "lng": 116.6031
   },
   {
-    "iata": "COO",
-    "name": "Cadjehoun Airport",
-    "city": "Cotonou",
-    "country": "Benin",
-    "lat": 6.357,
-    "lng": 2.384
+    "iata": "SHA",
+    "name": "Shanghai Hongqiao International Airport",
+    "city": "Shanghai",
+    "country": "China",
+    "lat": 31.1979,
+    "lng": 121.3363
   },
-  {
+    {
     "iata": "PVG",
     "name": "Shanghai Pudong International Airport",
     "city": "Shanghai",
@@ -24,12 +24,20 @@
     "lng": 121.8083
   },
   {
-    "iata": "ADD",
-    "name": "Addis Ababa Bole International Airport",
-    "city": "Addis Ababa",
-    "country": "Ethiopia",
-    "lat": 8.9779,
-    "lng": 38.7993
+    "iata": "CAN",
+    "name": "Guangzhou Baiyun International Airport",
+    "city": "Guangzhou",
+    "country": "China",
+    "lat": 23.3924,
+    "lng": 113.299
+  },
+  {
+    "iata": "SZX",
+    "name": "Shenzhen Bao'an International Airport",
+    "city": "Shenzhen",
+    "country": "China",
+    "lat": 22.6393,
+    "lng": 113.8107
   },
   {
     "iata": "CTU",
@@ -46,6 +54,166 @@
     "country": "China",
     "lat": 30.3139,
     "lng": 104.4427
+  },
+  {
+    "iata": "WUH",
+    "name": "Wuhan Tianhe International Airport",
+    "city": "Wuhan",
+    "country": "China",
+    "lat": 30.7838,
+    "lng": 114.2081
+  },
+  {
+    "iata": "HGH",
+    "name": "Hangzhou Xiaoshan International Airport",
+    "city": "Hangzhou",
+    "country": "China",
+    "lat": 30.2295,
+    "lng": 120.4345
+  },
+  {
+    "iata": "NKG",
+    "name": "Nanjing Lukou International Airport",
+    "city": "Nanjing",
+    "country": "China",
+    "lat": 31.742,
+    "lng": 118.8614
+  },
+  {
+    "iata": "XIY",
+    "name": "Xi'an Xianyang International Airport",
+    "city": "Xi'an",
+    "country": "China",
+    "lat": 34.4471,
+    "lng": 108.7516
+  },
+  {
+    "iata": "CSX",
+    "name": "Changsha Huanghua International Airport",
+    "city": "Changsha",
+    "country": "China",
+    "lat": 28.1892,
+    "lng": 113.2205
+  },
+  {
+    "iata": "CKG",
+    "name": "Chongqing Jiangbei International Airport",
+    "city": "Chongqing",
+    "country": "China",
+    "lat": 29.7192,
+    "lng": 106.6416
+  },
+  {
+    "iata": "XMN",
+    "name": "Xiamen Gaoqi International Airport",
+    "city": "Xiamen",
+    "country": "China",
+    "lat": 24.544,
+    "lng": 118.127
+  },
+  {
+    "iata": "TAO",
+    "name": "Qingdao Jiaodong International Airport",
+    "city": "Qingdao",
+    "country": "China",
+    "lat": 36.267,
+    "lng": 120.374
+  },
+  {
+    "iata": "NGB",
+    "name": "Ningbo Lishe International Airport",
+    "city": "Ningbo",
+    "country": "China",
+    "lat": 29.8267,
+    "lng": 121.4648
+  },
+  {
+    "iata": "FOC",
+    "name": "Fuzhou Changle International Airport",
+    "city": "Fuzhou",
+    "country": "China",
+    "lat": 25.934,
+    "lng": 119.663
+  },
+  {
+    "iata": "SHE",
+    "name": "Shenyang Taoxian International Airport",
+    "city": "Shenyang",
+    "country": "China",
+    "lat": 41.6398,
+    "lng": 123.4831
+  },
+  {
+    "iata": "HRB",
+    "name": "Harbin Taiping International Airport",
+    "city": "Harbin",
+    "country": "China",
+    "lat": 45.6234,
+    "lng": 126.2503
+  },
+  {
+    "iata": "TSN",
+    "name": "Tianjin Binhai International Airport",
+    "city": "Tianjin",
+    "country": "China",
+    "lat": 39.1244,
+    "lng": 117.3467
+  },
+  {
+    "iata": "KMG",
+    "name": "Kunming Changshui International Airport",
+    "city": "Kunming",
+    "country": "China",
+    "lat": 25.1019,
+    "lng": 102.9292
+  },
+  {
+    "iata": "KWE",
+    "name": "Guiyang Longdongbao International Airport",
+    "city": "Guiyang",
+    "country": "China",
+    "lat": 26.5414,
+    "lng": 106.6416
+  },
+  {
+    "iata": "URC",
+    "name": "Ürümqi Diwopu International Airport",
+    "city": "Ürümqi",
+    "country": "China",
+    "lat": 43.9028,
+    "lng": 87.4806
+  },
+  {
+    "iata": "CGO",
+    "name": "Zhengzhou Xinzheng International Airport",
+    "city": "Zhengzhou",
+    "country": "China",
+    "lat": 34.5197,
+    "lng": 113.8411
+  },
+  {
+    "iata": "LJG",
+    "name": "Lijiang Sanyi Airport",
+    "city": "Lijiang",
+    "country": "China",
+    "lat": 26.8725,
+    "lng": 100.2331
+  },
+  {
+    "iata": "COO",
+    "name": "Cadjehoun Airport",
+    "city": "Cotonou",
+    "country": "Benin",
+    "lat": 6.357,
+    "lng": 2.384
+  },
+  {
+    "iata": "ADD",
+    "name": "Addis Ababa Bole International Airport",
+    "city": "Addis Ababa",
+    "country": "Ethiopia",
+    "lat": 8.9779,
+    "lng": 38.7993
   },
   {
     "iata": "CDG",
@@ -79,6 +247,14 @@
     "lat": 35.772,
     "lng": 140.3929
   },
+    {
+    "iata": "HND",
+    "name": "Tokyo Haneda Airport",
+    "city": "Tokyo",
+    "country": "Japan",
+    "lat": 35.5494,
+    "lng": 139.7798
+  },
   {
     "iata": "SFO",
     "name": "San Francisco International Airport",
@@ -94,14 +270,6 @@
     "country": "Singapore",
     "lat": 1.3644,
     "lng": 103.9915
-  },
-  {
-    "iata": "HND",
-    "name": "Tokyo Haneda Airport",
-    "city": "Tokyo",
-    "country": "Japan",
-    "lat": 35.5494,
-    "lng": 139.7798
   },
   {
     "iata": "FRA",
@@ -136,14 +304,6 @@
     "lng": 55.3657
   },
   {
-    "iata": "PEK",
-    "name": "Beijing Capital International Airport",
-    "city": "Beijing",
-    "country": "China",
-    "lat": 40.0799,
-    "lng": 116.6031
-  },
-  {
     "iata": "SYD",
     "name": "Sydney Kingsford Smith Airport",
     "city": "Sydney",
@@ -158,5 +318,125 @@
     "country": "Canada",
     "lat": 49.1951,
     "lng": -123.1779
+  },
+  {
+    "iata": "CMN",
+    "name": "Mohammed V International Airport",
+    "city": "Casablanca",
+    "country": "Morocco",
+    "lat": 33.367,
+    "lng": -7.5898 
+  },
+  {
+    "iata": "NKC",
+    "name": "Nouakchott–Oumtounsy International Airport",
+    "city": "Nouakchott",
+    "country": "Mauritania",
+    "lat": 18.085,
+    "lng": -15.965 
+  },
+   {
+    "iata": "NDB",
+    "name": "Nouadhibou International Airport",
+    "city": "Nouadhibou",
+    "country": "Mauritania",
+    "lat": 20.931,
+    "lng": -17.034
+  },
+   {
+    "iata": "DSS",
+    "name": "Blaise Diagne International Airport",
+    "city": "Dakar",
+    "country": "Senegal",
+    "lat": 14.733,
+    "lng": -17.021
+  },
+   {
+    "iata": "IST",
+    "name": "Istanbul International Airport",
+    "city": "Istanbul",
+    "country": "Turkey",
+    "lat": 41.2753,
+    "lng": 28.7519
+  },
+  {
+    "iata": "SAW",
+    "name": "Istanbul Sabiha Gökçen International Airport",
+    "city": "Istanbul",
+    "country": "Turkey",
+    "lat": 40.8989,
+    "lng": 29.3092
+  },
+  {
+    "iata": "DOH",
+    "name": "Hamad International Airport",
+    "city": "Doha",
+    "country": "Qatar",
+    "lat": 25.2765,
+    "lng": 51.6081
+  },
+   {
+    "iata": "DXB",
+    "name": "Dubai International Airport",
+    "city": "Dubai",
+    "country": "United Arab Emirates",
+    "lat": 25.2532,
+    "lng": 55.3657
+  },
+   {
+    "iata": "AUH",
+    "name": "Abu Dhabi International Airport",
+    "city": "Abu Dhabi",
+    "country": "United Arab Emirates",
+    "lat": 24.4334,
+    "lng": 54.6519
+  },
+  {
+    "iata": "TLN",
+    "name": "Toulon-Hyères Airport",
+    "city": "Toulon",
+    "country": "France",
+    "lat": 43.1181,
+    "lng": 6.1294
+  },
+  {
+    "iata": "TLS",
+    "name": "Toulouse-Blagnac Airport",
+    "city": "Toulouse",
+    "country": "France",
+    "lat": 43.6292,
+    "lng": 1.3633
+  },
+  {
+    "iata": "MRS",
+    "name": "Marseille Provence Airport",
+    "city": "Marseille",
+    "country": "France",
+    "lat": 43.4392,
+    "lng": 5.2214
+  },
+  {
+    "iata": "NCE",
+    "name": "Nice Côte d'Azur Airport",
+    "city": "Nice",
+    "country": "France",
+    "lat": 43.6651,
+    "lng": 7.2159
+  },
+  {
+    "iata": "LYS",
+    "name": "Lyon-Saint Exupéry Airport",
+    "city": "Lyon",
+    "country": "France",
+    "lat": 45.7262,
+    "lng": 5.0811
+  },
+  {
+    "iata": "BOD",
+    "name": "Bordeaux-Mérignac Airport",
+    "city": "Bordeaux",
+    "country": "France",
+    "lat": 44.8281,
+    "lng": -0.7156
   }
 ]
