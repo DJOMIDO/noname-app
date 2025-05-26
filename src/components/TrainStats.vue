@@ -9,7 +9,7 @@ defineProps<{ trains: any[] }>()
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-4xl mx-auto">
             <Card class="p-6 text-center bg-gray-100 dark:bg-gray-800">
-                <h3 class="text-sm text-gray-500 dark:text-gray-300 mb-1">Total Flights</h3>
+                <h3 class="text-sm text-gray-500 dark:text-gray-300 mb-1">Total Train Journeys</h3>
                 <p class="text-3xl font-bold text-indigo-600 dark:text-indigo-300">{{ trains.length }}</p>
             </Card>
 
