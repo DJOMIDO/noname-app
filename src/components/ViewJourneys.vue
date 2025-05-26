@@ -3,8 +3,8 @@ import { ref, onMounted, watch, computed } from 'vue'
 import { supabase } from '@/lib/supabase'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { Card, CardContent } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
 import BackButton from '@/components/BackButton.vue'
+import Pagination from '@/components/Pagination.vue'
 import { toast } from 'vue-sonner'
 import iconFlight from '@/assets/images/flight.png'
 import iconTrain from '@/assets/images/train.png'
@@ -83,7 +83,6 @@ const fetchTrains = async () => {
     loadingTrains.value = false
 }
 
-
 onMounted(() => {
     fetchFlights()
     fetchTrains()
@@ -91,7 +90,6 @@ onMounted(() => {
 
 watch(currentFlightPage, fetchFlights)
 watch(currentTrainPage, fetchTrains)
-
 </script>
 
 <template>
@@ -101,7 +99,6 @@ watch(currentTrainPage, fetchTrains)
         <h1 class="text-2xl font-bold mb-6 text-gray-900 dark:text-white text-center">My Journeys</h1>
 
         <Tabs v-model="activeTab" default-value="flights" class="w-full max-w-4xl mx-auto">
-
             <div class="flex items-center justify-between mb-6">
                 <TabsList class="flex gap-2">
                     <TabsTrigger value="flights" class="flex items-center gap-2">
@@ -113,77 +110,75 @@ watch(currentTrainPage, fetchTrains)
                         <span>Trains</span>
                     </TabsTrigger>
                 </TabsList>
-
                 <BackButton />
             </div>
 
             <TabsContent value="flights">
                 <div v-if="loadingFlights" class="text-center text-gray-500 dark:text-gray-400">Loading...</div>
-                <div v-else-if="flights.length === 0" class="text-center text-gray-600 dark:text-gray-400">
-                    No flights found.
-                </div>
+                <div v-else-if="flights.length === 0" class="text-center text-gray-600 dark:text-gray-400">No flights
+                    found.</div>
                 <div v-else class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <Card v-for="flight in flights" :key="flight.id"
                         @click="$router.push(`/journeys/flight/${flight.id}`)"
-                        class="relative z-10 bg-gray-50 dark:bg-gray-800 transition-colors">
-                        <CardContent class="p-4 space-y-1">
-                            <div class="text-lg font-semibold text-gray-900 dark:text-white">
-                                {{ flight.airline_code }}{{ flight.flight_number }}
+                        class="z-10 cursor-pointer transition-all shadow-sm hover:shadow-md bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-2xl">
+                        <CardContent class="p-4 space-y-2">
+                            <div class="flex justify-between items-center text-sm text-gray-600 dark:text-gray-300">
+                                <div class="font-bold text-gray-900 dark:text-white text-base">
+                                    {{ flight.airline_code }}{{ flight.flight_number }}
+                                </div>
+                                <div>{{ flight.departure_date }}</div>
                             </div>
-                            <div class="text-sm text-gray-700 dark:text-gray-200">
+                            <div class="text-center text-gray-800 dark:text-white font-medium text-lg">
+                                {{ flight.departure_city || flight.departure_airport }} → {{ flight.arrival_city ||
+                                    flight.arrival_airport }}
+                            </div>
+                            <div class="text-center text-sm text-gray-500 dark:text-gray-400 tracking-wide">
                                 {{ flight.departure_airport }} → {{ flight.arrival_airport }}
                             </div>
-                            <div class="text-sm text-gray-500 dark:text-gray-300">
-                                {{ flight.departure_date }} • Seat {{ flight.seat_number || '—' }}
+                            <div
+                                class="flex justify-between items-center text-sm text-gray-500 dark:text-gray-400 mt-2">
+                                <div>Seat {{ flight.seat_number || '—' }}</div>
+                                <div>{{ flight.aircraft_type || '—' }}</div>
                             </div>
                         </CardContent>
                     </Card>
                 </div>
-                <div class="flex justify-center items-center gap-4 mt-6">
-                    <Button :disabled="currentFlightPage === 1" @click="currentFlightPage--">
-                        < Previous</Button>
-                            <span class="text-gray-600 dark:text-gray-300">Page {{ currentFlightPage }} of {{
-                                totalFlightPages
-                            }}</span>
-                            <Button :disabled="currentFlightPage === totalFlightPages" @click="currentFlightPage++">Next
-                                ></Button>
-                </div>
+                <Pagination :current-page="currentFlightPage" :total-pages="totalFlightPages"
+                    @prev="currentFlightPage--" @next="currentFlightPage++" />
             </TabsContent>
 
             <TabsContent value="trains">
-                <div v-if="loadingTrains" class="text-center text-gray-500 dark:text-gray-400">
-                    Loading...
-                </div>
-                <div v-else-if="trains.length === 0" class="text-center text-gray-600 dark:text-gray-400">
-                    No train journeys found.
-                </div>
+                <div v-if="loadingTrains" class="text-center text-gray-500 dark:text-gray-400">Loading...</div>
+                <div v-else-if="trains.length === 0" class="text-center text-gray-600 dark:text-gray-400">No train
+                    journeys found.</div>
                 <div v-else class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <Card v-for="train in trains" :key="train.id" @click="$router.push(`/journeys/train/${train.id}`)"
-                        class="relative z-10 bg-gray-50 dark:bg-gray-800 transition-colors">
-                        <CardContent class="p-4 space-y-1">
-                            <div class="text-lg font-semibold text-gray-900 dark:text-white">
-                                {{ train.train_company }} {{ train.train_number }}
+                        class="z-10 cursor-pointer transition-all shadow-sm hover:shadow-md bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-2xl">
+                        <CardContent class="p-4 space-y-2">
+                            <div class="flex justify-between items-center text-sm text-gray-600 dark:text-gray-300">
+                                <div class="font-bold text-gray-900 dark:text-white text-base">
+                                    {{ train.train_company }} {{ train.train_number }}
+                                </div>
+                                <div>{{ train.train_type || '—' }}</div>
+                                <div>{{ train.departure_date }}</div>
                             </div>
-                            <div class="text-sm text-gray-700 dark:text-gray-200">
+                            <div class="text-center text-gray-800 dark:text-white font-medium text-lg">
                                 {{ train.departure_station }} → {{ train.arrival_station }}
                             </div>
-                            <div class="text-sm text-gray-500 dark:text-gray-300">
-                                {{ train.departure_date }} • Seat {{ train.seat_number || '—' }}
+                            <div class="text-center text-sm text-gray-500 dark:text-gray-400 tracking-wide">
+                                {{ train.departure_time?.slice(0, 5) }} → {{ train.arrival_time?.slice(0, 5) }}
+                            </div>
+                            <div
+                                class="flex justify-between items-center text-sm text-gray-500 dark:text-gray-400 mt-2">
+                                <div>{{ train.coach || '—' }}</div>
+                                <div>Seat {{ train.seat_number || '—' }}</div>
                             </div>
                         </CardContent>
                     </Card>
                 </div>
-                <div class="flex justify-center items-center gap-4 mt-6">
-                    <Button :disabled="currentTrainPage === 1" @click="currentTrainPage--">
-                        < Previous</Button>
-                            <span class="text-gray-600 dark:text-gray-300">Page {{ currentTrainPage }} of {{
-                                totalTrainPages
-                            }}</span>
-                            <Button :disabled="currentTrainPage === totalTrainPages" @click="currentTrainPage++">Next
-                                ></Button>
-                </div>
+                <Pagination :current-page="currentTrainPage" :total-pages="totalTrainPages" @prev="currentTrainPage--"
+                    @next="currentTrainPage++" />
             </TabsContent>
-
         </Tabs>
     </section>
 </template>
