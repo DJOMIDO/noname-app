@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { Card, CardContent } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
+import { toast } from 'vue-sonner'
+import { supabase } from '@/lib/supabase'
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import BackButton from '@/components/BackButton.vue'
-import { supabase } from '@/lib/supabase'
-import { toast } from 'vue-sonner'
+import AddFlightBasic from '@/components/AddFlightBasic.vue'
+import AddFlightDetailed from '@/components/AddFlightDetailed.vue'
 import hiking from '@/assets/images/hiking.svg'
 import travelers from '@/assets/images/travelers.svg'
 
@@ -27,6 +27,8 @@ const price = ref('')
 const currency = ref('')
 const bookingRef = ref('')
 const notes = ref('')
+
+const currentTab = ref('basic')
 
 const handleSubmit = async () => {
     if (!airlineCode.value || !flightNumber.value || !departureAirport.value || !arrivalAirport.value || !departureDate.value) {
@@ -61,14 +63,13 @@ const handleSubmit = async () => {
         price: Number(price.value) || null,
         currency: currency.value || null,
         booking_ref: bookingRef.value || null,
-        notes: notes.value || null
+        notes: notes.value || null,
     })
 
     if (error) {
         toast.error(error.message)
     } else {
         toast.success('Flight added successfully!')
-        
         airlineCode.value = ''
         flightNumber.value = ''
         departureAirport.value = ''
@@ -94,56 +95,39 @@ const handleSubmit = async () => {
     <section class="relative min-h-screen bg-white/80 dark:bg-gray-900 px-4 py-10 transition-colors">
         <img :src="hiking" class="hidden md:block absolute bottom-10 left-4 w-80 pointer-events-none select-none" />
         <img :src="travelers" class="hidden md:block absolute bottom-10 right-4 w-80 pointer-events-none select-none" />
-        <Card class="relative z-10 max-w-2xl mx-auto bg-gray-50 dark:bg-gray-800 shadow-md">
-            <CardContent class="p-6 space-y-4">
-                
+
+        <Tabs v-model="currentTab" class="relative z-10 max-w-2xl mx-auto">
+            <div class="flex items-center justify-between mb-6">
+                <TabsList class="flex gap-2">
+                    <TabsTrigger value="basic" class="flex items-center gap-2">
+                        <span>Basic</span>
+                    </TabsTrigger>
+                    <TabsTrigger value="detailed" class="flex items-center gap-2">
+                        <span>Detailed</span>
+                    </TabsTrigger>
+                </TabsList>
                 <BackButton />
+            </div>
 
-                <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">Add a Flight</h2>
+            <TabsContent value="basic">
+                <AddFlightBasic v-model:airlineCode="airlineCode" v-model:flightNumber="flightNumber"
+                    v-model:departureAirport="departureAirport" v-model:arrivalAirport="arrivalAirport"
+                    v-model:departureDate="departureDate" />
+            </TabsContent>
 
-                <div class="grid grid-cols-2 gap-4">
-                    <Input v-model="airlineCode" placeholder="Airline Code (e.g. AF)" />
-                    <Input v-model="flightNumber" placeholder="Flight Number (e.g. 1234)" />
-                </div>
+            <TabsContent value="detailed">
+                <AddFlightDetailed v-model:airlineCode="airlineCode" v-model:flightNumber="flightNumber"
+                    v-model:departureAirport="departureAirport" v-model:stopoverAirport="stopoverAirport"
+                    v-model:arrivalAirport="arrivalAirport" v-model:departureDate="departureDate"
+                    v-model:departureTime="departureTime" v-model:arrivalDate="arrivalDate"
+                    v-model:arrivalTime="arrivalTime" v-model:gate="gate" v-model:seatNumber="seatNumber"
+                    v-model:aircraftType="aircraftType" v-model:aircraftReg="aircraftReg" v-model:price="price"
+                    v-model:currency="currency" v-model:bookingRef="bookingRef" v-model:notes="notes" />
+            </TabsContent>
 
-                <div class="grid grid-cols-2 gap-4">
-                    <Input v-model="departureAirport" placeholder="Departure Airport (IATA)" />
-                    <Input v-model="arrivalAirport" placeholder="Arrival Airport (IATA)" />
-                </div>
-
-                <Input v-model="stopoverAirport" placeholder="Stopover Airport (optional)" />
-
-                <div class="grid grid-cols-2 gap-4">
-                    <Input v-model="departureDate" type="date" />
-                    <Input v-model="departureTime" type="time" />
-                </div>
-
-                <div class="grid grid-cols-2 gap-4">
-                    <Input v-model="arrivalDate" type="date" />
-                    <Input v-model="arrivalTime" type="time" />
-                </div>
-
-                <div class="grid grid-cols-2 gap-4">
-                    <Input v-model="gate" placeholder="Gate (e.g. A23)" />
-                    <Input v-model="seatNumber" placeholder="Seat Number (e.g. 12A)" />
-                </div>
-
-                <div class="grid grid-cols-2 gap-4">
-                    <Input v-model="aircraftType" placeholder="Aircraft Type (e.g. A320)" />
-                    <Input v-model="aircraftReg" placeholder="Registration (e.g. F-GKXA)" />
-                </div>
-
-                <div class="grid grid-cols-2 gap-4">
-                    <Input v-model="price" type="number" placeholder="Price (e.g. 89.50)" />
-                    <Input v-model="currency" placeholder="Currency (e.g. EUR)" />
-                </div>
-
-                <Input v-model="bookingRef" placeholder="Booking Reference (e.g. XYZ123)" />
-
-                <Textarea v-model="notes" placeholder="Additional notes..." rows="3" />
-
-                <Button class="w-full mt-4" @click="handleSubmit">Save Flight</Button>
-            </CardContent>
-        </Card>
+            <div class="mt-6">
+                <Button class="w-full" @click="handleSubmit">Save Flight</Button>
+            </div>
+        </Tabs>
     </section>
 </template>
