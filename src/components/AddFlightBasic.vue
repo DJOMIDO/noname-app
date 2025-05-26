@@ -2,7 +2,7 @@
 import { Input } from '@/components/ui/input'
 import { Card, CardContent } from '@/components/ui/card'
 
-const props = defineProps<{
+defineProps<{
     airlineCode: string
     flightNumber: string
     departureAirport: string
@@ -25,20 +25,20 @@ const emit = defineEmits<{
             <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">Add a Flight – Basic</h2>
 
             <div class="grid grid-cols-2 gap-4">
-                <Input :modelValue="airlineCode" @update:modelValue="emit('update:airlineCode', $event)"
+                <Input :modelValue="airlineCode" @update:modelValue="emit('update:airlineCode', String($event))"
                     placeholder="Airline Code (e.g. AF)" />
-                <Input :modelValue="flightNumber" @update:modelValue="emit('update:flightNumber', $event)"
+                <Input :modelValue="flightNumber" @update:modelValue="emit('update:flightNumber', String($event))"
                     placeholder="Flight Number (e.g. 1234)" />
             </div>
 
             <div class="grid grid-cols-2 gap-4">
-                <Input :modelValue="departureAirport" @update:modelValue="emit('update:departureAirport', $event)"
+                <Input :modelValue="departureAirport" @update:modelValue="emit('update:departureAirport', String($event))"
                     placeholder="Departure Airport (IATA)" />
-                <Input :modelValue="arrivalAirport" @update:modelValue="emit('update:arrivalAirport', $event)"
+                <Input :modelValue="arrivalAirport" @update:modelValue="emit('update:arrivalAirport', String($event))"
                     placeholder="Arrival Airport (IATA)" />
             </div>
 
-            <Input :modelValue="departureDate" @update:modelValue="emit('update:departureDate', $event)" type="date" />
+            <Input :modelValue="departureDate" @update:modelValue="emit('update:departureDate', String($event))" type="date" />
         </CardContent>
     </Card>
 </template>
