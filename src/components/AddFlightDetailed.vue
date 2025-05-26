@@ -24,7 +24,23 @@ defineProps<{
 }>()
 
 const emit = defineEmits<{
-    (e: `update:${keyof typeof props}`, value: string): void
+    (e: 'update:airlineCode', value: string): void
+    (e: 'update:flightNumber', value: string): void
+    (e: 'update:departureAirport', value: string): void
+    (e: 'update:stopoverAirport', value: string): void
+    (e: 'update:arrivalAirport', value: string): void
+    (e: 'update:departureDate', value: string): void
+    (e: 'update:departureTime', value: string): void
+    (e: 'update:arrivalDate', value: string): void
+    (e: 'update:arrivalTime', value: string): void
+    (e: 'update:gate', value: string): void
+    (e: 'update:seatNumber', value: string): void
+    (e: 'update:aircraftType', value: string): void
+    (e: 'update:aircraftReg', value: string): void
+    (e: 'update:price', value: string): void
+    (e: 'update:currency', value: string): void
+    (e: 'update:bookingRef', value: string): void
+    (e: 'update:notes', value: string): void
 }>()
 </script>
 
@@ -41,7 +57,8 @@ const emit = defineEmits<{
             </div>
 
             <div class="grid grid-cols-2 gap-4">
-                <Input :modelValue="departureAirport" @update:modelValue="emit('update:departureAirport', String($event))"
+                <Input :modelValue="departureAirport"
+                    @update:modelValue="emit('update:departureAirport', String($event))"
                     placeholder="Departure Airport (IATA)" />
                 <Input :modelValue="arrivalAirport" @update:modelValue="emit('update:arrivalAirport', String($event))"
                     placeholder="Arrival Airport (IATA)" />
@@ -58,8 +75,10 @@ const emit = defineEmits<{
             </div>
 
             <div class="grid grid-cols-2 gap-4">
-                <Input :modelValue="arrivalDate" @update:modelValue="emit('update:arrivalDate', String($event))" type="date" />
-                <Input :modelValue="arrivalTime" @update:modelValue="emit('update:arrivalTime', String($event))" type="time" />
+                <Input :modelValue="arrivalDate" @update:modelValue="emit('update:arrivalDate', String($event))"
+                    type="date" />
+                <Input :modelValue="arrivalTime" @update:modelValue="emit('update:arrivalTime', String($event))"
+                    type="time" />
             </div>
 
             <div class="grid grid-cols-2 gap-4">
