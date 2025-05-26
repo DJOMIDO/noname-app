@@ -10,6 +10,7 @@ import iconFlight from '@/assets/images/flight.png'
 import iconTrain from '@/assets/images/train.png'
 import hiking from '@/assets/images/hiking.svg'
 import travelers from '@/assets/images/travelers.svg'
+import airports from '@/assets/data/airports.json'
 
 const activeTab = ref('flights')
 
@@ -26,6 +27,11 @@ const currentTrainPage = ref(1)
 const totalTrainCount = ref(0)
 const trainsPerPage = 6
 const totalTrainPages = computed(() => Math.ceil(totalTrainCount.value / trainsPerPage))
+
+const getCityFromIATA = (iata: string): string | undefined => {
+    const match = airports.find(a => a.iata === iata)
+    return match?.city
+}
 
 const fetchFlights = async () => {
     loadingFlights.value = true
@@ -129,8 +135,8 @@ watch(currentTrainPage, fetchTrains)
                                 <div>{{ flight.departure_date }}</div>
                             </div>
                             <div class="text-center text-gray-800 dark:text-white font-medium text-lg">
-                                {{ flight.departure_city || flight.departure_airport }} → {{ flight.arrival_city ||
-                                    flight.arrival_airport }}
+                                {{ getCityFromIATA(flight.departure_airport) || flight.departure_airport }} → {{
+                                    getCityFromIATA(flight.arrival_airport) || flight.arrival_airport }}
                             </div>
                             <div class="text-center text-sm text-gray-500 dark:text-gray-400 tracking-wide">
                                 {{ flight.departure_airport }} → {{ flight.arrival_airport }}

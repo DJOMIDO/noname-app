@@ -2,6 +2,8 @@
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
+import AirlineSelector from '@/components/AirlineSelector.vue'
+import AirportSelector from '@/components/AirportSelector.vue'
 
 defineProps<{
     airlineCode: string
@@ -50,18 +52,18 @@ const emit = defineEmits<{
             <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">Add a Flight – Detailed</h2>
 
             <div class="grid grid-cols-2 gap-4">
-                <Input :modelValue="airlineCode" @update:modelValue="emit('update:airlineCode', String($event))"
-                    placeholder="Airline Code (e.g. AF)" />
+                <AirlineSelector :modelValue="airlineCode" @update:modelValue="emit('update:airlineCode', $event)" />
                 <Input :modelValue="flightNumber" @update:modelValue="emit('update:flightNumber', String($event))"
                     placeholder="Flight Number (e.g. 1234)" />
             </div>
 
             <div class="grid grid-cols-2 gap-4">
-                <Input :modelValue="departureAirport"
-                    @update:modelValue="emit('update:departureAirport', String($event))"
-                    placeholder="Departure Airport (IATA)" />
-                <Input :modelValue="arrivalAirport" @update:modelValue="emit('update:arrivalAirport', String($event))"
-                    placeholder="Arrival Airport (IATA)" />
+                <AirportSelector :modelValue="departureAirport"
+                    @update:modelValue="emit('update:departureAirport', $event)"
+                    placeholder="Departure Airport (e.g. CDG or Charles de Gaulle)" />
+
+                <AirportSelector :modelValue="arrivalAirport" @update:modelValue="emit('update:arrivalAirport', $event)"
+                    placeholder="Arrival Airport (e.g. LHR or Heathrow)" />
             </div>
 
             <Input :modelValue="stopoverAirport" @update:modelValue="emit('update:stopoverAirport', String($event))"
