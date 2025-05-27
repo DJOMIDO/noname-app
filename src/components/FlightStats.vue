@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { Card } from '@/components/ui/card'
 import FlightBarChart from '@/views/FlightBarChart.vue';
 import FlightRouteChart from '@/views/FlightRouteChart.vue';
 import FlightMapChart from '@/views/FlightMapChart.vue';
@@ -18,9 +17,7 @@ defineProps<{ flights: any[] }>()
 
         <FlightStatsSummary :flights="flights" />
 
-        <div class="max-w-6xl mx-auto flex flex-col md:flex-row gap-6">
-            <FlightDurationStats :flights="flights" />
-        </div>
+        <FlightDurationStats :flights="flights" />
 
         <div class="max-w-6xl mx-auto flex flex-col md:flex-row gap-6">
             <div class="w-full md:w-1/2 h-[300px]">
