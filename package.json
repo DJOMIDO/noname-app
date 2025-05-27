@@ -11,6 +11,7 @@
   "dependencies": {
     "@supabase/supabase-js": "^2.49.7",
     "@tailwindcss/vite": "^4.1.7",
+    "@turf/turf": "^7.2.0",
     "@vue-leaflet/vue-leaflet": "^0.10.1",
     "@vueuse/core": "^13.2.0",
     "chart.js": "^4.4.9",
