@@ -6,6 +6,7 @@ import airportData from '@/assets/data/airports.json'
 import airportIcon from '@/assets/images/airport.png'
 import airportIconLight from '@/assets/images/airport_white.png'
 import L from 'leaflet'
+import * as turf from '@turf/turf'
 
 const isDark = ref(false)
 
@@ -15,11 +16,9 @@ onMounted(() => {
     }
 
     checkDark()
-
     const observer = new MutationObserver(checkDark)
     observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] })
 })
-
 
 const tileUrl = computed(() =>
     isDark.value
@@ -30,8 +29,8 @@ const tileUrl = computed(() =>
 const customIcon = computed(() =>
     L.icon({
         iconUrl: isDark.value ? airportIconLight : airportIcon,
-        iconSize: [16, 16],
-        iconAnchor: [12, 12],
+        iconSize: [12, 12],
+        iconAnchor: [10, 10],
     })
 )
 
@@ -39,20 +38,39 @@ const props = defineProps<{ flights: any[] }>()
 
 const center = ref<[number, number]>([30, 10])
 const zoom = ref(2)
-
 const routes = ref<Array<{ coords: [number, number][], label: string }>>([])
-
 const markers = ref<Array<{ lat: number, lng: number, label: string }>>([])
+
+function generateGreatCirclePath(dep: { lat: number, lng: number }, arr: { lat: number, lng: number }) {
+    const from = [dep.lng, dep.lat]
+    const to = [arr.lng, arr.lat]
+
+    const greatCircle = turf.greatCircle(
+        turf.point(from),
+        turf.point(to),
+        { npoints: 100 }
+    )
+
+    return greatCircle.geometry.coordinates.map(coord => [coord[1], coord[0]] as [number, number])
+}
+
+function deduplicateMarkers(arr: typeof markers.value) {
+    const seen = new Set<string>()
+    return arr.filter(m => {
+        const key = `${m.lat},${m.lng}`
+        if (seen.has(key)) return false
+        seen.add(key)
+        return true
+    })
+}
 
 watch(
     () => props.flights,
     () => {
         const points: typeof markers.value = []
-
         routes.value = []
 
         props.flights.forEach(flight => {
-
             const dep = airportData.find(a => a.iata === flight.departure_airport)
             const arr = airportData.find(a => a.iata === flight.arrival_airport)
 
@@ -61,11 +79,10 @@ watch(
                 typeof dep.lat === 'number' && typeof dep.lng === 'number' &&
                 typeof arr.lat === 'number' && typeof arr.lng === 'number'
             ) {
+                const path = generateGreatCirclePath(dep, arr)
+
                 routes.value.push({
-                    coords: [
-                        [dep.lat, dep.lng],
-                        [arr.lat, arr.lng]
-                    ],
+                    coords: path,
                     label: `${dep.city} → ${arr.city}`
                 })
 
@@ -81,22 +98,11 @@ watch(
     { immediate: true }
 )
 
-function deduplicateMarkers(arr: typeof markers.value) {
-    const seen = new Set<string>()
-    return arr.filter(m => {
-        const key = `${m.lat},${m.lng}`
-        if (seen.has(key)) return false
-        seen.add(key)
-        return true
-    })
-}
-
 onMounted(() => {
     nextTick(() => {
         window.dispatchEvent(new Event('resize'))
     })
 })
-
 </script>
 
 <template>
