@@ -97,11 +97,45 @@ const fetchData = async () => {
 
 onMounted(fetchData)
 
-const totalSpent = computed(() => {
-    const flightSum = flights.value.reduce((acc, f) => acc + (f.price || 0), 0)
-    const trainSum = trains.value.reduce((acc, t) => acc + (t.price || 0), 0)
-    return flightSum + trainSum
+const totalFlightSpentByCurrency = computed(() => {
+    const totals: Record<string, number> = {}
+
+    flights.value.forEach(f => {
+        const price = Number(f.price)
+        const currency = f.currency
+        if (!currency || !price) return
+        if (!totals[currency]) totals[currency] = 0
+        totals[currency] += price
+    })
+
+    return totals
 })
+
+const totalTrainSpentByCurrency = computed(() => {
+    const totals: Record<string, number> = {}
+
+    trains.value.forEach(t => {
+        const price = Number(t.price)
+        const currency = t.currency
+        if (!currency || !price) return
+        if (!totals[currency]) totals[currency] = 0
+        totals[currency] += price
+    })
+
+    return totals
+})
+
+const totalSpentByCurrency = computed(() => {
+    const merged: Record<string, number> = { ...totalFlightSpentByCurrency.value }
+
+    for (const [currency, amount] of Object.entries(totalTrainSpentByCurrency.value)) {
+        if (!merged[currency]) merged[currency] = 0
+        merged[currency] += amount
+    }
+
+    return merged
+})
+
 </script>
 
 <template>
@@ -121,18 +155,19 @@ const totalSpent = computed(() => {
             </div>
 
             <TabsContent value="overview">
-                <StatOverview :flight-count="flights.length" :train-count="trains.length" :total-spent="totalSpent"
-                    :first-departure="firstDepartureDate" :last-departure="lastDepartureDate"
-                    :top-city="mostVisitedCity" :most-used-transport="mostUsedTransport"
-                    :most-used-airline="mostUsedAirline" :most-used-train-company="mostUsedTrainCompany" />
+                <StatOverview :flight-count="flights.length" :train-count="trains.length"
+                    :total-spent-by-currency="totalSpentByCurrency" :first-departure="firstDepartureDate"
+                    :last-departure="lastDepartureDate" :top-city="mostVisitedCity"
+                    :most-used-transport="mostUsedTransport" :most-used-airline="mostUsedAirline"
+                    :most-used-train-company="mostUsedTrainCompany" />
             </TabsContent>
 
             <TabsContent value="flights">
-                <FlightStats :flights="flights" />
+                <FlightStats :flights="flights" :total-spent-by-currency="totalFlightSpentByCurrency" />
             </TabsContent>
 
             <TabsContent value="trains">
-                <TrainStats :trains="trains" />
+                <TrainStats :trains="trains" :total-spent-by-currency="totalTrainSpentByCurrency" />
             </TabsContent>
 
         </Tabs>

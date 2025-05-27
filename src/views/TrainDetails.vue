@@ -9,6 +9,7 @@ import BackButton from '@/components/BackButton.vue'
 import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent } from '@/components/ui/card'
 import iconTrain from '@/assets/images/train.png'
+import CurrencySelector from '@/components/CurrencySelector.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -129,7 +130,8 @@ onMounted(fetchTrain)
                         <h3 class="text-lg font-semibold text-gray-800 dark:text-white">Price</h3>
                         <div class="grid grid-cols-2 gap-4">
                             <Input v-model="form.price" :disabled="!isEditing" type="number" placeholder="Price" />
-                            <Input v-model="form.currency" :disabled="!isEditing" placeholder="Currency" />
+                            <CurrencySelector :modelValue="form.currency" :disabled="!isEditing"
+                                @update:modelValue="form.currency = $event" />
                         </div>
 
                         <h3 class="text-lg font-semibold text-gray-800 dark:text-white">Notes</h3>

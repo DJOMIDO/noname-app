@@ -11,6 +11,9 @@ import { Card, CardContent } from '@/components/ui/card'
 import iconPlane from '@/assets/images/flight.png'
 import airlines from '@/assets/data/airlines.json'
 import airports from '@/assets/data/airports.json'
+import AirlineSelector from '@/components/AirlineSelector.vue'
+import AirportSelector from '@/components/AirportSelector.vue'
+import CurrencySelector from '@/components/CurrencySelector.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -118,7 +121,8 @@ onMounted(fetchFlight)
                     <div class="space-y-4">
                         <h3 class="text-lg font-semibold text-gray-800 dark:text-white">Flight Info</h3>
                         <div class="grid grid-cols-2 gap-4">
-                            <Input v-model="form.airline_code" :disabled="!isEditing" placeholder="Airline Code" />
+                            <AirlineSelector :modelValue="form.airline_code" :disabled="!isEditing"
+                                @update:modelValue="form.airline_code = $event" />
                             <Input v-model="form.flight_number" :disabled="!isEditing" placeholder="Flight Number" />
                             <Input v-model="form.aircraft_type" :disabled="!isEditing" placeholder="Aircraft Type" />
                             <Input v-model="form.aircraft_reg" :disabled="!isEditing"
@@ -127,10 +131,11 @@ onMounted(fetchFlight)
 
                         <h3 class="text-lg font-semibold text-gray-800 dark:text-white">Airports</h3>
                         <div class="grid grid-cols-2 gap-4">
-                            <Input v-model="form.departure_airport" :disabled="!isEditing"
+                            <AirportSelector :modelValue="form.departure_airport" :disabled="!isEditing"
+                                @update:modelValue="form.departure_airport = $event"
                                 placeholder="Departure Airport" />
-                            <Input v-model="form.arrival_airport" :disabled="!isEditing"
-                                placeholder="Arrival Airport" />
+                            <AirportSelector :modelValue="form.arrival_airport" :disabled="!isEditing"
+                                @update:modelValue="form.arrival_airport = $event" placeholder="Arrival Airport" />
                             <Input v-model="form.departure_city" :disabled="!isEditing" placeholder="Departure City" />
                             <Input v-model="form.arrival_city" :disabled="!isEditing" placeholder="Arrival City" />
                             <Input v-model="form.stopover_airport" :disabled="!isEditing"
@@ -155,7 +160,8 @@ onMounted(fetchFlight)
                         <h3 class="text-lg font-semibold text-gray-800 dark:text-white">Price</h3>
                         <div class="grid grid-cols-2 gap-4">
                             <Input v-model="form.price" :disabled="!isEditing" type="number" placeholder="Price" />
-                            <Input v-model="form.currency" :disabled="!isEditing" placeholder="Currency" />
+                            <CurrencySelector :modelValue="form.currency" :disabled="!isEditing"
+                                @update:modelValue="form.currency = $event" />
                         </div>
 
                         <h3 class="text-lg font-semibold text-gray-800 dark:text-white">Notes</h3>
