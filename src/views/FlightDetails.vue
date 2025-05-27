@@ -52,14 +52,6 @@ const getCityFromIATA = (code: string): string | null => {
     return match?.city || null
 }
 
-const departureCityFallback = computed(() =>
-    form.value.departure_city || getCityFromIATA(form.value.departure_airport) || ''
-)
-
-const arrivalCityFallback = computed(() =>
-    form.value.arrival_city || getCityFromIATA(form.value.arrival_airport) || ''
-)
-
 const fetchFlight = async () => {
     const { data, error } = await supabase
         .from('flights')
@@ -70,6 +62,9 @@ const fetchFlight = async () => {
     if (error) {
         toast.error('Failed to load flight record.')
     } else {
+        if (!data.departure_city) data.departure_city = getCityFromIATA(data.departure_airport) || ''
+        if (!data.arrival_city) data.arrival_city = getCityFromIATA(data.arrival_airport) || ''
+
         flight.value = data
         Object.assign(form.value, data)
     }
@@ -136,10 +131,8 @@ onMounted(fetchFlight)
                                 placeholder="Departure Airport" />
                             <Input v-model="form.arrival_airport" :disabled="!isEditing"
                                 placeholder="Arrival Airport" />
-                            <Input :value="departureCityFallback" :disabled="!isEditing" placeholder="Departure City"
-                                @input="form.departure_city = $event.target.value" />
-                            <Input :value="arrivalCityFallback" :disabled="!isEditing" placeholder="Arrival City"
-                                @input="form.arrival_city = $event.target.value" />
+                            <Input v-model="form.departure_city" :disabled="!isEditing" placeholder="Departure City" />
+                            <Input v-model="form.arrival_city" :disabled="!isEditing" placeholder="Arrival City" />
                             <Input v-model="form.stopover_airport" :disabled="!isEditing"
                                 placeholder="Stopover Airport" />
                         </div>
