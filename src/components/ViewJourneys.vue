@@ -11,6 +11,7 @@ import iconTrain from '@/assets/images/train.png'
 import hiking from '@/assets/images/hiking.svg'
 import travelers from '@/assets/images/travelers.svg'
 import airports from '@/assets/data/airports.json'
+import { getFlightDuration } from '@/utils/getFlightDuration.ts'
 
 const activeTab = ref('flights')
 
@@ -32,6 +33,24 @@ const getCityFromIATA = (iata: string): string | undefined => {
     const match = airports.find(a => a.iata === iata)
     return match?.city
 }
+
+const getFlightDurationDisplay = (flight: any) => {
+    const duration = getFlightDuration(
+        flight.departure_airport,
+        flight.departure_date,
+        flight.departure_time,
+        flight.arrival_airport,
+        flight.arrival_date,
+        flight.arrival_time
+    )
+
+    if (duration === null) return null
+
+    const hours = Math.floor(duration / 60)
+    const minutes = duration % 60
+    return `${hours}h ${minutes}m`
+}
+
 
 const fetchFlights = async () => {
     loadingFlights.value = true
@@ -131,6 +150,9 @@ watch(currentTrainPage, fetchTrains)
                             <div class="flex justify-between items-center text-sm text-gray-600 dark:text-gray-300">
                                 <div class="font-bold text-gray-900 dark:text-white text-base">
                                     {{ flight.airline_code }}{{ flight.flight_number }}
+                                </div>
+                                <div v-if="getFlightDurationDisplay(flight)">
+                                    {{ getFlightDurationDisplay(flight) }}
                                 </div>
                                 <div>{{ flight.departure_date }}</div>
                             </div>

@@ -5,7 +5,8 @@
     "city": "Beijing",
     "country": "China",
     "lat": 40.0799,
-    "lng": 116.6031
+    "lng": 116.6031,
+    "timezone": "Asia/Shanghai"
   },
   {
     "iata": "PKX",
@@ -13,7 +14,8 @@
     "city": "Beijing",
     "country": "China",
     "lat": 39.5092,
-    "lng": 116.4106
+    "lng": 116.4106,
+    "timezone": "Asia/Shanghai"
   },
   {
     "iata": "SHA",
@@ -21,7 +23,8 @@
     "city": "Shanghai",
     "country": "China",
     "lat": 31.1979,
-    "lng": 121.3363
+    "lng": 121.3363,
+    "timezone": "Asia/Shanghai"
   },
   {
     "iata": "PVG",
@@ -29,7 +32,8 @@
     "city": "Shanghai",
     "country": "China",
     "lat": 31.1443,
-    "lng": 121.8083
+    "lng": 121.8083,
+    "timezone": "Asia/Shanghai"
   },
   {
     "iata": "CAN",
@@ -37,7 +41,8 @@
     "city": "Guangzhou",
     "country": "China",
     "lat": 23.3924,
-    "lng": 113.299
+    "lng": 113.299,
+    "timezone": "Asia/Shanghai"
   },
   {
     "iata": "SZX",
@@ -45,7 +50,8 @@
     "city": "Shenzhen",
     "country": "China",
     "lat": 22.6393,
-    "lng": 113.8107
+    "lng": 113.8107,
+    "timezone": "Asia/Shanghai"
   },
   {
     "iata": "CTU",
@@ -53,7 +59,8 @@
     "city": "Chengdu",
     "country": "China",
     "lat": 30.5785,
-    "lng": 103.9471
+    "lng": 103.9471,
+    "timezone": "Asia/Shanghai"
   },
   {
     "iata": "TFU",
@@ -61,7 +68,8 @@
     "city": "Chengdu",
     "country": "China",
     "lat": 30.3139,
-    "lng": 104.4427
+    "lng": 104.4427,
+    "timezone": "Asia/Shanghai"
   },
   {
     "iata": "WUH",
@@ -69,7 +77,8 @@
     "city": "Wuhan",
     "country": "China",
     "lat": 30.7838,
-    "lng": 114.2081
+    "lng": 114.2081,
+    "timezone": "Asia/Shanghai"
   },
   {
     "iata": "HGH",
@@ -77,7 +86,8 @@
     "city": "Hangzhou",
     "country": "China",
     "lat": 30.2295,
-    "lng": 120.4345
+    "lng": 120.4345,
+    "timezone": "Asia/Shanghai"
   },
   {
     "iata": "NKG",
@@ -85,7 +95,8 @@
     "city": "Nanjing",
     "country": "China",
     "lat": 31.742,
-    "lng": 118.8614
+    "lng": 118.8614,
+    "timezone": "Asia/Shanghai"
   },
   {
     "iata": "XIY",
@@ -93,7 +104,8 @@
     "city": "Xi'an",
     "country": "China",
     "lat": 34.4471,
-    "lng": 108.7516
+    "lng": 108.7516,
+    "timezone": "Asia/Shanghai"
   },
   {
     "iata": "CSX",
@@ -101,7 +113,8 @@
     "city": "Changsha",
     "country": "China",
     "lat": 28.1892,
-    "lng": 113.2205
+    "lng": 113.2205,
+    "timezone": "Asia/Shanghai"
   },
   {
     "iata": "CKG",
@@ -109,7 +122,8 @@
     "city": "Chongqing",
     "country": "China",
     "lat": 29.7192,
-    "lng": 106.6416
+    "lng": 106.6416,
+    "timezone": "Asia/Shanghai"
   },
   {
     "iata": "XMN",
@@ -117,7 +131,8 @@
     "city": "Xiamen",
     "country": "China",
     "lat": 24.544,
-    "lng": 118.127
+    "lng": 118.127,
+    "timezone": "Asia/Shanghai"
   },
   {
     "iata": "TAO",
@@ -125,7 +140,8 @@
     "city": "Qingdao",
     "country": "China",
     "lat": 36.267,
-    "lng": 120.374
+    "lng": 120.374,
+    "timezone": "Asia/Shanghai"
   },
   {
     "iata": "NGB",
@@ -133,7 +149,8 @@
     "city": "Ningbo",
     "country": "China",
     "lat": 29.8267,
-    "lng": 121.4648
+    "lng": 121.4648,
+    "timezone": "Asia/Shanghai"
   },
   {
     "iata": "FOC",
@@ -141,7 +158,8 @@
     "city": "Fuzhou",
     "country": "China",
     "lat": 25.934,
-    "lng": 119.663
+    "lng": 119.663,
+    "timezone": "Asia/Shanghai"
   },
   {
     "iata": "SHE",
@@ -149,7 +167,8 @@
     "city": "Shenyang",
     "country": "China",
     "lat": 41.6398,
-    "lng": 123.4831
+    "lng": 123.4831,
+    "timezone": "Asia/Shanghai"
   },
   {
     "iata": "HRB",
@@ -157,7 +176,8 @@
     "city": "Harbin",
     "country": "China",
     "lat": 45.6234,
-    "lng": 126.2503
+    "lng": 126.2503,
+    "timezone": "Asia/Shanghai"
   },
   {
     "iata": "TSN",
@@ -165,7 +185,8 @@
     "city": "Tianjin",
     "country": "China",
     "lat": 39.1244,
-    "lng": 117.3467
+    "lng": 117.3467,
+    "timezone": "Asia/Shanghai"
   },
   {
     "iata": "KMG",
@@ -173,7 +194,8 @@
     "city": "Kunming",
     "country": "China",
     "lat": 25.1019,
-    "lng": 102.9292
+    "lng": 102.9292,
+    "timezone": "Asia/Shanghai"
   },
   {
     "iata": "KWE",
@@ -181,7 +203,8 @@
     "city": "Guiyang",
     "country": "China",
     "lat": 26.5414,
-    "lng": 106.6416
+    "lng": 106.6416,
+    "timezone": "Asia/Shanghai"
   },
   {
     "iata": "URC",
@@ -189,7 +212,8 @@
     "city": "Ürümqi",
     "country": "China",
     "lat": 43.9028,
-    "lng": 87.4806
+    "lng": 87.4806,
+    "timezone": "Asia/Shanghai"
   },
   {
     "iata": "CGO",
@@ -197,7 +221,8 @@
     "city": "Zhengzhou",
     "country": "China",
     "lat": 34.5197,
-    "lng": 113.8411
+    "lng": 113.8411,
+    "timezone": "Asia/Shanghai"
   },
   {
     "iata": "LJG",
@@ -205,7 +230,8 @@
     "city": "Lijiang",
     "country": "China",
     "lat": 26.8725,
-    "lng": 100.2331
+    "lng": 100.2331,
+    "timezone": "Asia/Shanghai"
   },
   {
     "iata": "HKG",
@@ -213,7 +239,8 @@
     "city": "Hong Kong",
     "country": "Hong Kong, China",
     "lat": 22.3089,
-    "lng": 113.9146
+    "lng": 113.9146,
+    "timezone": "Asia/Hong_Kong"
   },
   {
     "iata": "MFM",
@@ -221,7 +248,8 @@
     "city": "Macau",
     "country": "Macau, China",
     "lat": 22.1496,
-    "lng": 113.5925
+    "lng": 113.5925,
+    "timezone": "Asia/Macau"
   },
   {
     "iata": "TPE",
@@ -229,7 +257,8 @@
     "city": "Taipei",
     "country": "Taiwan, China",
     "lat": 25.0777,
-    "lng": 121.2328
+    "lng": 121.2328,
+    "timezone": "Asia/Taipei"
   },
   {
     "iata": "TSA",
@@ -237,7 +266,8 @@
     "city": "Taipei",
     "country": "Taiwan, China",
     "lat": 25.0694,
-    "lng": 121.5523
+    "lng": 121.5523,
+    "timezone": "Asia/Taipei"
   },
   {
     "iata": "KHH",
@@ -245,7 +275,8 @@
     "city": "Kaohsiung",
     "country": "Taiwan, China",
     "lat": 22.5771,
-    "lng": 120.3493
+    "lng": 120.3493,
+    "timezone": "Asia/Taipei"
   },
   {
     "iata": "RMQ",
@@ -253,7 +284,8 @@
     "city": "Taichung",
     "country": "Taiwan, China",
     "lat": 24.2647,
-    "lng": 120.6205
+    "lng": 120.6205,
+    "timezone": "Asia/Taipei"
   },
   {
     "iata": "HUN",
@@ -261,7 +293,8 @@
     "city": "Hualien",
     "country": "Taiwan, China",
     "lat": 24.0231,
-    "lng": 121.6175
+    "lng": 121.6175,
+    "timezone": "Asia/Taipei"
   },
   {
     "iata": "KNH",
@@ -269,7 +302,8 @@
     "city": "Kinmen",
     "country": "Taiwan, China",
     "lat": 24.4279,
-    "lng": 118.3592
+    "lng": 118.3592,
+    "timezone": "Asia/Taipei"
   },
   {
     "iata": "MZG",
@@ -277,7 +311,8 @@
     "city": "Magong",
     "country": "Taiwan, China",
     "lat": 23.5687,
-    "lng": 119.6283
+    "lng": 119.6283,
+    "timezone": "Asia/Taipei"
   },
   {
     "iata": "TTT",
@@ -285,7 +320,8 @@
     "city": "Taitung",
     "country": "Taiwan, China",
     "lat": 22.7556,
-    "lng": 121.1017
+    "lng": 121.1017,
+    "timezone": "Asia/Taipei"
   },
   {
     "iata": "COO",
@@ -293,7 +329,8 @@
     "city": "Cotonou",
     "country": "Benin",
     "lat": 6.357,
-    "lng": 2.384
+    "lng": 2.384,
+    "timezone": "Africa/Porto-Novo"
   },
   {
     "iata": "ADD",
@@ -301,7 +338,8 @@
     "city": "Addis Ababa",
     "country": "Ethiopia",
     "lat": 8.9779,
-    "lng": 38.7993
+    "lng": 38.7993,
+    "timezone": "Africa/Addis_Ababa"
   },
   {
     "iata": "JNB",
@@ -309,7 +347,8 @@
     "city": "Johannesburg",
     "country": "South Africa",
     "lat": -26.1392,
-    "lng": 28.2461
+    "lng": 28.2461,
+    "timezone": "Africa/Johannesburg"
   },
   {
     "iata": "CPT",
@@ -317,7 +356,8 @@
     "city": "Cape Town",
     "country": "South Africa",
     "lat": -33.9648,
-    "lng": 18.6012
+    "lng": 18.6012,
+    "timezone": "Africa/Johannesburg"
   },
   {
     "iata": "LOS",
@@ -325,7 +365,8 @@
     "city": "Lagos",
     "country": "Nigeria",
     "lat": 6.5775,
-    "lng": 3.3219
+    "lng": 3.3219,
+    "timezone": "Africa/Lagos"
   },
   {
     "iata": "ACC",
@@ -333,7 +374,8 @@
     "city": "Accra",
     "country": "Ghana",
     "lat": 5.6052,
-    "lng": -0.1625
+    "lng": -0.1625,
+    "timezone": "Africa/Accra"
   },
   {
     "iata": "NBO",
@@ -341,7 +383,8 @@
     "city": "Nairobi",
     "country": "Kenya",
     "lat": -1.319167,
-    "lng": 36.9275
+    "lng": 36.9275,
+    "timezone": "Africa/Nairobi"
   },
   {
     "iata": "LHR",
@@ -349,7 +392,8 @@
     "city": "London",
     "country": "United Kingdom",
     "lat": 51.47,
-    "lng": -0.4543
+    "lng": -0.4543,
+    "timezone": "Europe/London"
   },
   {
     "iata": "NRT",
@@ -357,7 +401,8 @@
     "city": "Tokyo",
     "country": "Japan",
     "lat": 35.772,
-    "lng": 140.3929
+    "lng": 140.3929,
+    "timezone": "Asia/Tokyo"
   },
   {
     "iata": "HND",
@@ -365,7 +410,17 @@
     "city": "Tokyo",
     "country": "Japan",
     "lat": 35.5494,
-    "lng": 139.7798
+    "lng": 139.7798,
+    "timezone": "Asia/Tokyo"
+  },
+  {
+    "iata": "KIX",
+    "name": "Kansai International Airport",
+    "city": "Osaka",
+    "country": "Japan",
+    "lat": 34.4342,
+    "lng": 135.244,
+    "timezone": "Asia/Tokyo"
   },
   {
     "iata": "SIN",
@@ -373,7 +428,8 @@
     "city": "Singapore",
     "country": "Singapore",
     "lat": 1.3644,
-    "lng": 103.9915
+    "lng": 103.9915,
+    "timezone": "Asia/Singapore"
   },
   {
     "iata": "FRA",
@@ -381,7 +437,8 @@
     "city": "Frankfurt",
     "country": "Germany",
     "lat": 50.0379,
-    "lng": 8.5622
+    "lng": 8.5622,
+    "timezone": "Europe/Berlin"
   },
   {
     "iata": "AMS",
@@ -389,7 +446,8 @@
     "city": "Amsterdam",
     "country": "Netherlands",
     "lat": 52.3105,
-    "lng": 4.7683
+    "lng": 4.7683,
+    "timezone": "Europe/Amsterdam"
   },
   {
     "iata": "DXB",
@@ -397,7 +455,8 @@
     "city": "Dubai",
     "country": "United Arab Emirates",
     "lat": 25.2532,
-    "lng": 55.3657
+    "lng": 55.3657,
+    "timezone": "Asia/Dubai"
   },
   {
     "iata": "SYD",
@@ -405,7 +464,8 @@
     "city": "Sydney",
     "country": "Australia",
     "lat": -33.9399,
-    "lng": 151.1753
+    "lng": 151.1753,
+    "timezone": "Australia/Sydney"
   },
   {
     "iata": "YVR",
@@ -413,7 +473,8 @@
     "city": "Vancouver",
     "country": "Canada",
     "lat": 49.1951,
-    "lng": -123.1779
+    "lng": -123.1779,
+    "timezone": "America/Vancouver"
   },
   {
     "iata": "CMN",
@@ -421,7 +482,8 @@
     "city": "Casablanca",
     "country": "Morocco",
     "lat": 33.367,
-    "lng": -7.5898
+    "lng": -7.5898,
+    "timezone": "Africa/Casablanca"
   },
   {
     "iata": "NKC",
@@ -429,7 +491,8 @@
     "city": "Nouakchott",
     "country": "Mauritania",
     "lat": 18.085,
-    "lng": -15.965
+    "lng": -15.965,
+    "timezone": "Africa/Nouakchott"
   },
   {
     "iata": "NDB",
@@ -437,7 +500,8 @@
     "city": "Nouadhibou",
     "country": "Mauritania",
     "lat": 20.931,
-    "lng": -17.034
+    "lng": -17.034,
+    "timezone": "Africa/Nouakchott"
   },
   {
     "iata": "DSS",
@@ -445,7 +509,8 @@
     "city": "Dakar",
     "country": "Senegal",
     "lat": 14.733,
-    "lng": -17.021
+    "lng": -17.021,
+    "timezone": "Africa/Dakar"
   },
   {
     "iata": "IST",
@@ -453,7 +518,8 @@
     "city": "Istanbul",
     "country": "Turkey",
     "lat": 41.2753,
-    "lng": 28.7519
+    "lng": 28.7519,
+    "timezone": "Europe/Istanbul"
   },
   {
     "iata": "SAW",
@@ -461,7 +527,17 @@
     "city": "Istanbul",
     "country": "Turkey",
     "lat": 40.8989,
-    "lng": 29.3092
+    "lng": 29.3092,
+    "timezone": "Europe/Istanbul"
+  },
+  {
+    "iata": "ISL",
+    "name": "Istanbul Atatürk Airport",
+    "city": "Istanbul",
+    "country": "Turkey",
+    "lat": 40.9762,
+    "lng": 28.8146,
+    "timezone": "Europe/Istanbul"
   },
   {
     "iata": "DOH",
@@ -469,7 +545,8 @@
     "city": "Doha",
     "country": "Qatar",
     "lat": 25.2765,
-    "lng": 51.6081
+    "lng": 51.6081,
+    "timezone": "Asia/Qatar"
   },
   {
     "iata": "DXB",
@@ -477,7 +554,8 @@
     "city": "Dubai",
     "country": "United Arab Emirates",
     "lat": 25.2532,
-    "lng": 55.3657
+    "lng": 55.3657,
+    "timezone": "Asia/Dubai"
   },
   {
     "iata": "AUH",
@@ -485,7 +563,8 @@
     "city": "Abu Dhabi",
     "country": "United Arab Emirates",
     "lat": 24.4334,
-    "lng": 54.6519
+    "lng": 54.6519,
+    "timezone": "Asia/Dubai"
   },
   {
     "iata": "CDG",
@@ -493,7 +572,8 @@
     "city": "Paris",
     "country": "France",
     "lat": 49.0097,
-    "lng": 2.5479
+    "lng": 2.5479,
+    "timezone": "Europe/Paris"
   },
   {
     "iata": "ORY",
@@ -501,7 +581,8 @@
     "city": "Paris",
     "country": "France",
     "lat": 48.7262,
-    "lng": 2.3599
+    "lng": 2.3599,
+    "timezone": "Europe/Paris"
   },
   {
     "iata": "NCE",
@@ -509,7 +590,8 @@
     "city": "Nice",
     "country": "France",
     "lat": 43.6651,
-    "lng": 7.2159
+    "lng": 7.2159,
+    "timezone": "Europe/Paris"
   },
   {
     "iata": "LYS",
@@ -517,7 +599,8 @@
     "city": "Lyon",
     "country": "France",
     "lat": 45.7262,
-    "lng": 5.0811
+    "lng": 5.0811,
+    "timezone": "Europe/Paris"
   },
   {
     "iata": "MRS",
@@ -525,7 +608,8 @@
     "city": "Marseille",
     "country": "France",
     "lat": 43.4392,
-    "lng": 5.2214
+    "lng": 5.2214,
+    "timezone": "Europe/Paris"
   },
   {
     "iata": "BVA",
@@ -533,7 +617,8 @@
     "city": "Beauvais",
     "country": "France",
     "lat": 49.4547,
-    "lng": 2.1125
+    "lng": 2.1125,
+    "timezone": "Europe/Paris"
   },
   {
     "iata": "TLS",
@@ -541,7 +626,8 @@
     "city": "Toulouse",
     "country": "France",
     "lat": 43.6292,
-    "lng": 1.3633
+    "lng": 1.3633,
+    "timezone": "Europe/Paris"
   },
   {
     "iata": "NTE",
@@ -549,7 +635,8 @@
     "city": "Nantes",
     "country": "France",
     "lat": 47.1542,
-    "lng": -1.6106
+    "lng": -1.6106,
+    "timezone": "Europe/Paris"
   },
   {
     "iata": "BOD",
@@ -557,7 +644,8 @@
     "city": "Bordeaux",
     "country": "France",
     "lat": 44.8281,
-    "lng": -0.7156
+    "lng": -0.7156,
+    "timezone": "Europe/Paris"
   },
   {
     "iata": "TLN",
@@ -565,7 +653,8 @@
     "city": "Toulon",
     "country": "France",
     "lat": 43.1181,
-    "lng": 6.1294
+    "lng": 6.1294,
+    "timezone": "Europe/Paris"
   },
   {
     "iata": "BES",
@@ -573,7 +662,8 @@
     "city": "Brest",
     "country": "France",
     "lat": 48.4472,
-    "lng": -4.4153
+    "lng": -4.4153,
+    "timezone": "Europe/Paris"
   },
   {
     "iata": "LIL",
@@ -581,7 +671,8 @@
     "city": "Lille",
     "country": "France",
     "lat": 50.5647,
-    "lng": 3.0875
+    "lng": 3.0875,
+    "timezone": "Europe/Paris"
   },
   {
     "iata": "RNS",
@@ -589,7 +680,8 @@
     "city": "Rennes",
     "country": "France",
     "lat": 48.0692,
-    "lng": -1.7219
+    "lng": -1.7219,
+    "timezone": "Europe/Paris"
   },
   {
     "iata": "AJA",
@@ -597,7 +689,8 @@
     "city": "Ajaccio",
     "country": "France",
     "lat": 41.9192,
-    "lng": 8.8056
+    "lng": 8.8056,
+    "timezone": "Europe/Paris"
   },
   {
     "iata": "BIA",
@@ -605,7 +698,8 @@
     "city": "Bastia",
     "country": "France",
     "lat": 42.5525,
-    "lng": 9.4833
+    "lng": 9.4833,
+    "timezone": "Europe/Paris"
   },
   {
     "iata": "CLY",
@@ -613,7 +707,8 @@
     "city": "Calvi",
     "country": "France",
     "lat": 42.5481,
-    "lng": 8.7925
+    "lng": 8.7925,
+    "timezone": "Europe/Paris"
   },
   {
     "iata": "FSC",
@@ -621,7 +716,8 @@
     "city": "Figari",
     "country": "France",
     "lat": 41.5167,
-    "lng": 9.1514
+    "lng": 9.1514,
+    "timezone": "Europe/Paris"
   },
   {
     "iata": "PGF",
@@ -629,7 +725,8 @@
     "city": "Perpignan",
     "country": "France",
     "lat": 42.7406,
-    "lng": 2.8753
+    "lng": 2.8753,
+    "timezone": "Europe/Paris"
   },
   {
     "iata": "LDE",
@@ -637,7 +734,8 @@
     "city": "Tarbes",
     "country": "France",
     "lat": 43.1781,
-    "lng": -0.0069
+    "lng": -0.0069,
+    "timezone": "Europe/Paris"
   },
   {
     "iata": "JFK",
@@ -645,7 +743,8 @@
     "city": "New York",
     "country": "United States",
     "lat": 40.6413,
-    "lng": -73.7781
+    "lng": -73.7781,
+    "timezone": "America/New_York"
   },
   {
     "iata": "LGA",
@@ -653,7 +752,8 @@
     "city": "New York",
     "country": "United States",
     "lat": 40.7769,
-    "lng": -73.874
+    "lng": -73.874,
+    "timezone": "America/New_York"
   },
   {
     "iata": "EWR",
@@ -661,7 +761,8 @@
     "city": "Newark",
     "country": "United States",
     "lat": 40.6925,
-    "lng": -74.1687
+    "lng": -74.1687,
+    "timezone": "America/New_York"
   },
   {
     "iata": "LAX",
@@ -669,7 +770,8 @@
     "city": "Los Angeles",
     "country": "United States",
     "lat": 33.9425,
-    "lng": -118.4081
+    "lng": -118.4081,
+    "timezone": "America/Los_Angeles"
   },
   {
     "iata": "ORD",
@@ -677,7 +779,8 @@
     "city": "Chicago",
     "country": "United States",
     "lat": 41.9742,
-    "lng": -87.9073
+    "lng": -87.9073,
+    "timezone": "America/Chicago"
   },
   {
     "iata": "ATL",
@@ -685,7 +788,8 @@
     "city": "Atlanta",
     "country": "United States",
     "lat": 33.6407,
-    "lng": -84.4279
+    "lng": -84.4279,
+    "timezone": "America/New_York"
   },
   {
     "iata": "SFO",
@@ -693,7 +797,8 @@
     "city": "San Francisco",
     "country": "United States",
     "lat": 37.6213,
-    "lng": -122.379
+    "lng": -122.379,
+    "timezone": "America/Los_Angeles"
   },
   {
     "iata": "SEA",
@@ -701,7 +806,8 @@
     "city": "Seattle",
     "country": "United States",
     "lat": 47.4502,
-    "lng": -122.3088
+    "lng": -122.3088,
+    "timezone": "America/Los_Angeles"
   },
   {
     "iata": "MIA",
@@ -709,7 +815,8 @@
     "city": "Miami",
     "country": "United States",
     "lat": 25.7933,
-    "lng": -80.2906
+    "lng": -80.2906,
+    "timezone": "America/New_York"
   },
   {
     "iata": "DFW",
@@ -717,7 +824,8 @@
     "city": "Dallas/Fort Worth",
     "country": "United States",
     "lat": 32.8968,
-    "lng": -97.038
+    "lng": -97.038,
+    "timezone": "America/Chicago"
   },
   {
     "iata": "LAS",
@@ -725,7 +833,8 @@
     "city": "Las Vegas",
     "country": "United States",
     "lat": 36.0801,
-    "lng": -115.1522
+    "lng": -115.1522,
+    "timezone": "America/Los_Angeles"
   },
   {
     "iata": "PHX",
@@ -733,7 +842,8 @@
     "city": "Phoenix",
     "country": "United States",
     "lat": 33.4342,
-    "lng": -112.0116
+    "lng": -112.0116,
+    "timezone": "America/Phoenix"
   },
   {
     "iata": "IAH",
@@ -741,7 +851,8 @@
     "city": "Houston",
     "country": "United States",
     "lat": 29.9844,
-    "lng": -95.3414
+    "lng": -95.3414,
+    "timezone": "America/Chicago"
   },
   {
     "iata": "BOS",
@@ -749,7 +860,8 @@
     "city": "Boston",
     "country": "United States",
     "lat": 42.3641,
-    "lng": -71.0052
+    "lng": -71.0052,
+    "timezone": "America/New_York"
   },
   {
     "iata": "IAD",
@@ -757,7 +869,8 @@
     "city": "Washington, D.C.",
     "country": "United States",
     "lat": 38.9445,
-    "lng": -77.4558
+    "lng": -77.4558,
+    "timezone": "America/New_York"
   },
   {
     "iata": "MCO",
@@ -765,7 +878,8 @@
     "city": "Orlando",
     "country": "United States",
     "lat": 28.4294,
-    "lng": -81.3089
+    "lng": -81.3089,
+    "timezone": "America/New_York"
   },
   {
     "iata": "TPA",
@@ -773,7 +887,8 @@
     "city": "Tampa",
     "country": "United States",
     "lat": 27.9755,
-    "lng": -82.5333
+    "lng": -82.5333,
+    "timezone": "America/New_York"
   },
   {
     "iata": "SAN",
@@ -781,7 +896,8 @@
     "city": "San Diego",
     "country": "United States",
     "lat": 32.7336,
-    "lng": -117.1901
+    "lng": -117.1901,
+    "timezone": "America/Los_Angeles"
   },
   {
     "iata": "PDX",
@@ -789,7 +905,8 @@
     "city": "Portland",
     "country": "United States",
     "lat": 45.5889,
-    "lng": -122.5975
+    "lng": -122.5975,
+    "timezone": "America/Los_Angeles"
   },
   {
     "iata": "HNL",
@@ -797,7 +914,8 @@
     "city": "Honolulu",
     "country": "United States",
     "lat": 21.3187,
-    "lng": -157.9216
+    "lng": -157.9216,
+    "timezone": "Pacific/Honolulu"
   },
   {
     "iata": "CLT",
@@ -805,7 +923,8 @@
     "city": "Charlotte",
     "country": "United States",
     "lat": 35.214,
-    "lng": -80.9431
+    "lng": -80.9431,
+    "timezone": "America/New_York"
   },
   {
     "iata": "BWI",
@@ -813,7 +932,8 @@
     "city": "Baltimore",
     "country": "United States",
     "lat": 39.1754,
-    "lng": -76.6684
+    "lng": -76.6684,
+    "timezone": "America/New_York"
   },
   {
     "iata": "SLC",
@@ -821,6 +941,7 @@
     "city": "Salt Lake City",
     "country": "United States",
     "lat": 40.7859,
-    "lng": -111.9791
+    "lng": -111.9791,
+    "timezone": "America/Denver"
   }
 ]
