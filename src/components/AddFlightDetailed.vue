@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import AirlineSelector from '@/components/AirlineSelector.vue'
 import AirportSelector from '@/components/AirportSelector.vue'
+import CurrencySelector from '@/components/CurrencySelector.vue'
 
 defineProps<{
     airlineCode: string
@@ -100,8 +101,7 @@ const emit = defineEmits<{
             <div class="grid grid-cols-2 gap-4">
                 <Input :modelValue="price" @update:modelValue="emit('update:price', String($event))" type="number"
                     placeholder="Price (e.g. 89.50)" />
-                <Input :modelValue="currency" @update:modelValue="emit('update:currency', String($event))"
-                    placeholder="Currency (e.g. EUR)" />
+                <CurrencySelector :modelValue="currency" @update:modelValue="emit('update:currency', $event)" />
             </div>
 
             <Input :modelValue="bookingRef" @update:modelValue="emit('update:bookingRef', String($event))"

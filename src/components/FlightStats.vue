@@ -5,7 +5,10 @@ import FlightMapChart from '@/views/FlightMapChart.vue';
 import FlightDurationStats from '@/views/FlightDurationStats.vue';
 import FlightStatsSummary from '@/views/FlightStatsSummary.vue';
 
-defineProps<{ flights: any[] }>()
+defineProps<{
+    flights: any[]
+    totalSpentByCurrency: Record<string, number>
+}>()
 </script>
 
 <template>
@@ -15,7 +18,7 @@ defineProps<{ flights: any[] }>()
             <FlightMapChart :flights="flights" />
         </div>
 
-        <FlightStatsSummary :flights="flights" />
+        <FlightStatsSummary :flights="flights" :total-spent-by-currency="totalSpentByCurrency" />
 
         <FlightDurationStats :flights="flights" />
 
