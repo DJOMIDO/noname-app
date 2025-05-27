@@ -62,40 +62,13 @@ const mostUsedAirline = computed(() => {
     if (!topCode) return 'N/A'
 
     const matched = airlines.find(a => a.code === topCode)
-    return matched ? `${matched.name} (${matched.code})` : topCode
+    return matched ? matched.name : topCode
 })
 
 const mostUsedTrainCompany = computed(() => {
     const companies = trains.value.map(t => t.train_company).filter(Boolean)
     const count: Record<string, number> = {}
     for (const c of companies) count[c] = (count[c] || 0) + 1
-    return Object.entries(count).sort((a, b) => b[1] - a[1])[0]?.[0] || 'N/A'
-})
-
-const mostUsedFlightNo = computed(() => {
-    const combos = flights.value
-        .filter(f => f.airline_code && f.flight_number)
-        .map(f => `${f.airline_code}${f.flight_number}`)
-
-    const count: Record<string, number> = {}
-    for (const combo of combos) {
-        count[combo] = (count[combo] || 0) + 1
-    }
-
-    return Object.entries(count).sort((a, b) => b[1] - a[1])[0]?.[0] || 'N/A'
-})
-
-const mostCommonFlightRoute = computed(() => {
-    const routes = flights.value.map(f => `${f.departure_airport} → ${f.arrival_airport}`).filter(Boolean)
-    const count: Record<string, number> = {}
-    for (const r of routes) count[r] = (count[r] || 0) + 1
-    return Object.entries(count).sort((a, b) => b[1] - a[1])[0]?.[0] || 'N/A'
-})
-
-const mostCommonTrainRoute = computed(() => {
-    const routes = trains.value.map(t => `${t.departure_station} → ${t.arrival_station}`).filter(Boolean)
-    const count: Record<string, number> = {}
-    for (const r of routes) count[r] = (count[r] || 0) + 1
     return Object.entries(count).sort((a, b) => b[1] - a[1])[0]?.[0] || 'N/A'
 })
 
@@ -151,9 +124,7 @@ const totalSpent = computed(() => {
                 <StatOverview :flight-count="flights.length" :train-count="trains.length" :total-spent="totalSpent"
                     :first-departure="firstDepartureDate" :last-departure="lastDepartureDate"
                     :top-city="mostVisitedCity" :most-used-transport="mostUsedTransport"
-                    :most-used-airline="mostUsedAirline" :most-used-train-company="mostUsedTrainCompany"
-                    :most-common-flight-route="mostCommonFlightRoute" :most-common-train-route="mostCommonTrainRoute"
-                    :most-used-flight-number="mostUsedFlightNo" />
+                    :most-used-airline="mostUsedAirline" :most-used-train-company="mostUsedTrainCompany" />
             </TabsContent>
 
             <TabsContent value="flights">

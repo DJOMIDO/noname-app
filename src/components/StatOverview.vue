@@ -12,9 +12,6 @@ defineProps<{
     mostUsedTransport: string
     mostUsedAirline: string
     mostUsedTrainCompany: string
-    mostCommonFlightRoute: string
-    mostUsedFlightNumber: string
-    mostCommonTrainRoute: string
 }>()
 </script>
 
@@ -60,21 +57,6 @@ defineProps<{
         <Card class="p-6 text-center shadow-md bg-gray-100 dark:bg-gray-800">
             <h3 class="text-sm text-gray-500 dark:text-gray-300 mb-1">Top Train Company</h3>
             <p class="text-xl font-semibold text-indigo-600 dark:text-indigo-300">{{ mostUsedTrainCompany }}</p>
-        </Card>
-
-        <Card class="p-6 text-center shadow-md bg-gray-100 dark:bg-gray-800">
-            <h3 class="text-sm text-gray-500 dark:text-gray-300 mb-1">Top Flight Route</h3>
-            <p class="text-xl font-semibold text-indigo-600 dark:text-indigo-300">{{ mostCommonFlightRoute }}</p>
-        </Card>
-
-        <Card class="p-6 text-center shadow-md bg-gray-100 dark:bg-gray-800">
-            <h3 class="text-sm text-gray-500 dark:text-gray-300 mb-1">Top Flight Number</h3>
-            <p class="text-xl font-semibold text-indigo-600 dark:text-indigo-300">{{ mostUsedFlightNumber }}</p>
-        </Card>
-
-        <Card class="p-6 text-center shadow-md bg-gray-100 dark:bg-gray-800">
-            <h3 class="text-sm text-gray-500 dark:text-gray-300 mb-1">Top Train Route</h3>
-            <p class="text-xl font-semibold text-indigo-600 dark:text-indigo-300">{{ mostCommonTrainRoute }}</p>
         </Card>
 
     </div>

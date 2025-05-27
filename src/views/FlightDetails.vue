@@ -44,7 +44,7 @@ const form = ref({
 const airlineDisplayName = computed(() => {
     const code = form.value.airline_code
     const match = airlines.find(a => a.code === code)
-    return match ? `${match.name} (${match.code})` : code || 'Unknown Airline'
+    return match ? match.name : code || 'Unknown Airline'
 })
 
 const getCityFromIATA = (code: string): string | null => {
