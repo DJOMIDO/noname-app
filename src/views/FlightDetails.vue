@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { supabase } from '@/lib/supabase'
 import { toast } from 'vue-sonner'
@@ -9,6 +9,8 @@ import BackButton from '@/components/BackButton.vue'
 import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent } from '@/components/ui/card'
 import iconPlane from '@/assets/images/flight.png'
+import airlines from '@/assets/data/airlines.json'
+import airports from '@/assets/data/airports.json'
 
 const route = useRoute()
 const router = useRouter()
@@ -38,6 +40,25 @@ const form = ref({
     currency: '',
     notes: ''
 })
+
+const airlineDisplayName = computed(() => {
+    const code = form.value.airline_code
+    const match = airlines.find(a => a.code === code)
+    return match ? `${match.name} (${match.code})` : code || 'Unknown Airline'
+})
+
+const getCityFromIATA = (code: string): string | null => {
+    const match = airports.find(a => a.iata === code)
+    return match?.city || null
+}
+
+const departureCityFallback = computed(() =>
+    form.value.departure_city || getCityFromIATA(form.value.departure_airport) || ''
+)
+
+const arrivalCityFallback = computed(() =>
+    form.value.arrival_city || getCityFromIATA(form.value.arrival_airport) || ''
+)
 
 const fetchFlight = async () => {
     const { data, error } = await supabase
@@ -89,7 +110,7 @@ onMounted(fetchFlight)
         <div class="flex items-center justify-between max-w-2xl mx-auto mb-6">
             <div class="flex gap-2 items-center text-xl font-semibold text-gray-800 dark:text-white">
                 <img :src="iconPlane" class="w-6 h-6 object-contain" />
-                <span>{{ form.airline_code }}{{ form.flight_number }}</span>
+                <span>{{ airlineDisplayName }} {{ form.flight_number }}</span>
             </div>
             <BackButton />
         </div>
@@ -115,8 +136,10 @@ onMounted(fetchFlight)
                                 placeholder="Departure Airport" />
                             <Input v-model="form.arrival_airport" :disabled="!isEditing"
                                 placeholder="Arrival Airport" />
-                            <Input v-model="form.departure_city" :disabled="!isEditing" placeholder="Departure City" />
-                            <Input v-model="form.arrival_city" :disabled="!isEditing" placeholder="Arrival City" />
+                            <Input :value="departureCityFallback" :disabled="!isEditing" placeholder="Departure City"
+                                @input="form.departure_city = $event.target.value" />
+                            <Input :value="arrivalCityFallback" :disabled="!isEditing" placeholder="Arrival City"
+                                @input="form.arrival_city = $event.target.value" />
                             <Input v-model="form.stopover_airport" :disabled="!isEditing"
                                 placeholder="Stopover Airport" />
                         </div>

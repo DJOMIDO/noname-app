@@ -5,6 +5,7 @@ import { toast } from 'vue-sonner'
 import StatOverview from '@/components/StatOverview.vue'
 import BackButton from '@/components/BackButton.vue'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
+import airlines from '@/assets/data/airlines.json'
 
 import FlightStats from './FlightStats.vue'
 import TrainStats from './TrainStats.vue'
@@ -50,10 +51,18 @@ const mostUsedTransport = computed(() => {
 })
 
 const mostUsedAirline = computed(() => {
-    const airlines = flights.value.map(f => f.airline_code).filter(Boolean)
+    const airlinesUsed = flights.value.map(f => f.airline_code).filter(Boolean)
     const count: Record<string, number> = {}
-    for (const a of airlines) count[a] = (count[a] || 0) + 1
-    return Object.entries(count).sort((a, b) => b[1] - a[1])[0]?.[0] || 'N/A'
+    for (const code of airlinesUsed) {
+        count[code] = (count[code] || 0) + 1
+    }
+
+    const topCode = Object.entries(count).sort((a, b) => b[1] - a[1])[0]?.[0]
+
+    if (!topCode) return 'N/A'
+
+    const matched = airlines.find(a => a.code === topCode)
+    return matched ? `${matched.name} (${matched.code})` : topCode
 })
 
 const mostUsedTrainCompany = computed(() => {

@@ -1,0 +1,513 @@
+[
+    {
+        "code": "AF",
+        "name": "Air France",
+        "country": "France",
+        "region": "Europe",
+        "alliance": "SkyTeam"
+    },
+    {
+        "code": "LH",
+        "name": "Lufthansa",
+        "country": "Germany",
+        "region": "Europe",
+        "alliance": "Star Alliance"
+    },
+    {
+        "code": "BA",
+        "name": "British Airways",
+        "country": "United Kingdom",
+        "region": "Europe",
+        "alliance": "Oneworld"
+    },
+    {
+        "code": "KL",
+        "name": "KLM Royal Dutch Airlines",
+        "country": "Netherlands",
+        "region": "Europe",
+        "alliance": "SkyTeam"
+    },
+    {
+        "code": "AZ",
+        "name": "ITA Airways",
+        "country": "Italy",
+        "region": "Europe",
+        "alliance": "SkyTeam"
+    },
+    {
+        "code": "IB",
+        "name": "Iberia",
+        "country": "Spain",
+        "region": "Europe",
+        "alliance": "Oneworld"
+    },
+    {
+        "code": "LX",
+        "name": "SWISS International Air Lines",
+        "country": "Switzerland",
+        "region": "Europe",
+        "alliance": "Star Alliance"
+    },
+    {
+        "code": "OS",
+        "name": "Austrian Airlines",
+        "country": "Austria",
+        "region": "Europe",
+        "alliance": "Star Alliance"
+    },
+    {
+        "code": "AY",
+        "name": "Finnair",
+        "country": "Finland",
+        "region": "Europe",
+        "alliance": "Oneworld"
+    },
+    {
+        "code": "SK",
+        "name": "Scandinavian Airlines (SAS)",
+        "country": "Denmark/Sweden/Norway",
+        "region": "Europe",
+        "alliance": "Star Alliance"
+    },
+    {
+        "code": "SN",
+        "name": "Brussels Airlines",
+        "country": "Belgium",
+        "region": "Europe",
+        "alliance": "Star Alliance"
+    },
+    {
+        "code": "TP",
+        "name": "TAP Air Portugal",
+        "country": "Portugal",
+        "region": "Europe",
+        "alliance": "Star Alliance"
+    },
+    {
+        "code": "TK",
+        "name": "Turkish Airlines",
+        "country": "Turkey",
+        "region": "Europe",
+        "alliance": "Star Alliance"
+    },
+    {
+        "code": "SU",
+        "name": "Aeroflot Russian Airlines",
+        "country": "Russia",
+        "region": "Europe",
+        "alliance": "SkyTeam"
+    },
+    {
+        "code": "LH",
+        "name": "Lufthansa CityLine",
+        "country": "Germany",
+        "region": "Europe",
+        "alliance": "Star Alliance"
+    },
+    {
+        "code": "EW",
+        "name": "Eurowings",
+        "country": "Germany",
+        "region": "Europe",
+        "alliance": "None"
+    },
+    {
+        "code": "VY",
+        "name": "Vueling Airlines",
+        "country": "Spain",
+        "region": "Europe",
+        "alliance": "None"
+    },
+    {
+        "code": "FR",
+        "name": "Ryanair",
+        "country": "Ireland",
+        "region": "Europe",
+        "alliance": "None"
+    },
+    {
+        "code": "U2",
+        "name": "easyJet",
+        "country": "United Kingdom",
+        "region": "Europe",
+        "alliance": "None"
+    },
+    {
+        "code": "W6",
+        "name": "Wizz Air",
+        "country": "Hungary",
+        "region": "Europe",
+        "alliance": "None"
+    },
+    {
+        "code": "V7",
+        "name": "Volotea",
+        "country": "Spain",
+        "region": "Europe",
+        "alliance": "None"
+    },
+    {
+        "code": "U2",
+        "name": "easyJet",
+        "country": "United Kingdom",
+        "region": "Europe",
+        "alliance": "None"
+    },
+    {
+        "code": "AA",
+        "name": "American Airlines",
+        "country": "United States",
+        "region": "North America",
+        "alliance": "Oneworld"
+    },
+    {
+        "code": "DL",
+        "name": "Delta Air Lines",
+        "country": "United States",
+        "region": "North America",
+        "alliance": "SkyTeam"
+    },
+    {
+        "code": "UA",
+        "name": "United Airlines",
+        "country": "United States",
+        "region": "North America",
+        "alliance": "Star Alliance"
+    },
+    {
+        "code": "AC",
+        "name": "Air Canada",
+        "country": "Canada",
+        "region": "North America",
+        "alliance": "Star Alliance"
+    },
+    {
+        "code": "AM",
+        "name": "Aeroméxico",
+        "country": "Mexico",
+        "region": "North America",
+        "alliance": "SkyTeam"
+    },
+    {
+        "code": "WS",
+        "name": "WestJet",
+        "country": "Canada",
+        "region": "North America",
+        "alliance": "None"
+    },
+    {
+        "code": "VX",
+        "name": "Virgin America",
+        "country": "United States",
+        "region": "North America",
+        "alliance": "None"
+    },
+    {
+        "code": "AS",
+        "name": "Alaska Airlines",
+        "country": "United States",
+        "region": "North America",
+        "alliance": "Oneworld"
+    },
+    {
+        "code": "CA",
+        "name": "Air China",
+        "country": "China",
+        "region": "Asia",
+        "alliance": "Star Alliance"
+    },
+    {
+        "code": "MU",
+        "name": "China Eastern Airlines",
+        "country": "China",
+        "region": "Asia",
+        "alliance": "SkyTeam"
+    },
+    {
+        "code": "CZ",
+        "name": "China Southern Airlines",
+        "country": "China",
+        "region": "Asia",
+        "alliance": "SkyTeam"
+    },
+    {
+        "code": "HU",
+        "name": "Hainan Airlines",
+        "country": "China",
+        "region": "Asia",
+        "alliance": "None"
+    },
+    {
+        "code": "ZH",
+        "name": "Shenzhen Airlines",
+        "country": "China",
+        "region": "Asia",
+        "alliance": "Star Alliance"
+    },
+    {
+        "code": "3U",
+        "name": "Sichuan Airlines",
+        "country": "China",
+        "region": "Asia",
+        "alliance": "None"
+    },
+    {
+        "code": "MF",
+        "name": "Xiamen Airlines",
+        "country": "China",
+        "region": "Asia",
+        "alliance": "SkyTeam"
+    },
+    {
+        "code": "FM",
+        "name": "Shanghai Airlines",
+        "country": "China",
+        "region": "Asia",
+        "alliance": "Star Alliance Connecting Partner"
+    },
+    {
+        "code": "HO",
+        "name": "Juneyao Airlines",
+        "country": "China",
+        "region": "Asia",
+        "alliance": "Star Alliance Connecting Partner"
+    },
+    {
+        "code": "9C",
+        "name": "Spring Airlines",
+        "country": "China",
+        "region": "Asia",
+        "alliance": "None"
+    },
+    {
+        "code": "CX",
+        "name": "Cathay Pacific",
+        "country": "Hong Kong, China",
+        "region": "Asia",
+        "alliance": "Oneworld"
+    },
+    {
+        "code": "HX",
+        "name": "Hong Kong Airlines",
+        "country": "Hong Kong, China",
+        "region": "Asia",
+        "alliance": "None"
+    },
+    {
+        "code": "UO",
+        "name": "Hong Kong Express Airways",
+        "country": "Hong Kong, China",
+        "region": "Asia",
+        "alliance": "None"
+    },
+    {
+        "code": "NX",
+        "name": "Air Macau",
+        "country": "Macau, China",
+        "region": "Asia",
+        "alliance": "None"
+    },
+    {
+        "code": "CI",
+        "name": "China Airlines",
+        "country": "Taiwan, ROC",
+        "region": "Asia",
+        "alliance": "SkyTeam"
+    },
+    {
+        "code": "BR",
+        "name": "EVA Air",
+        "country": "Taiwan, ROC",
+        "region": "Asia",
+        "alliance": "Star Alliance"
+    },
+    {
+        "code": "JL",
+        "name": "Japan Airlines",
+        "country": "Japan",
+        "region": "Asia",
+        "alliance": "Oneworld"
+    },
+    {
+        "code": "NH",
+        "name": "All Nippon Airways (ANA)",
+        "country": "Japan",
+        "region": "Asia",
+        "alliance": "Star Alliance"
+    },
+    {
+        "code": "KE",
+        "name": "Korean Air",
+        "country": "South Korea",
+        "region": "Asia",
+        "alliance": "SkyTeam"
+    },
+    {
+        "code": "SQ",
+        "name": "Singapore Airlines",
+        "country": "Singapore",
+        "region": "Asia",
+        "alliance": "Star Alliance"
+    },
+    {
+        "code": "TG",
+        "name": "Thai Airways",
+        "country": "Thailand",
+        "region": "Asia",
+        "alliance": "Star Alliance"
+    },
+    {
+        "code": "FD",
+        "name": "Thai AirAsia",
+        "country": "Thailand",
+        "region": "Asia",
+        "alliance": "None"
+    },
+    {
+        "code": "PG",
+        "name": "Bangkok Airways",
+        "country": "Thailand",
+        "region": "Asia",
+        "alliance": "None"
+    },
+    {
+        "code": "OD",
+        "name": "Malindo Air",
+        "country": "Malaysia",
+        "region": "Asia",
+        "alliance": "None"
+    },
+    {
+        "code": "AK",
+        "name": "AirAsia",
+        "country": "Malaysia",
+        "region": "Asia",
+        "alliance": "None"
+    },
+    {
+        "code": "D7",
+        "name": "AirAsia X",
+        "country": "Malaysia",
+        "region": "Asia",
+        "alliance": "None"
+    },
+    {
+        "code": "SL",
+        "name": "Thai Lion Air",
+        "country": "Thailand",
+        "region": "Asia",
+        "alliance": "None"
+    },
+    {
+        "code": "QF",
+        "name": "Qantas",
+        "country": "Australia",
+        "region": "Oceania",
+        "alliance": "Oneworld"
+    },
+    {
+        "code": "NZ",
+        "name": "Air New Zealand",
+        "country": "New Zealand",
+        "region": "Oceania",
+        "alliance": "Star Alliance"
+    },
+    {
+        "code": "EK",
+        "name": "Emirates",
+        "country": "United Arab Emirates",
+        "region": "Middle East",
+        "alliance": "None"
+    },
+    {
+        "code": "QR",
+        "name": "Qatar Airways",
+        "country": "Qatar",
+        "region": "Middle East",
+        "alliance": "Oneworld"
+    },
+    {
+        "code": "EY",
+        "name": "Etihad Airways",
+        "country": "United Arab Emirates",
+        "region": "Middle East",
+        "alliance": "None"
+    },
+    {
+        "code": "SV",
+        "name": "Saudia",
+        "country": "Saudi Arabia",
+        "region": "Middle East",
+        "alliance": "SkyTeam"
+    },
+    {
+        "code": "LA",
+        "name": "LATAM Airlines",
+        "country": "Chile",
+        "region": "South America",
+        "alliance": "None"
+    },
+    {
+        "code": "AV",
+        "name": "Avianca",
+        "country": "Colombia",
+        "region": "South America",
+        "alliance": "Star Alliance"
+    },
+    {
+        "code": "AR",
+        "name": "Aerolíneas Argentinas",
+        "country": "Argentina",
+        "region": "South America",
+        "alliance": "SkyTeam"
+    },
+    {
+        "code": "ET",
+        "name": "Ethiopian Airlines",
+        "country": "Ethiopia",
+        "region": "Africa",
+        "alliance": "Star Alliance"
+    },
+    {
+        "code": "MS",
+        "name": "EgyptAir",
+        "country": "Egypt",
+        "region": "Africa",
+        "alliance": "Star Alliance"
+    },
+    {
+        "code": "KQ",
+        "name": "Kenya Airways",
+        "country": "Kenya",
+        "region": "Africa",
+        "alliance": "SkyTeam"
+    },
+    {
+        "code": "AT",
+        "name": "Royal Air Maroc",
+        "country": "Morocco",
+        "region": "Africa",
+        "alliance": "Oneworld"
+    },
+    {
+        "code": "SA",
+        "name": "South African Airways",
+        "country": "South Africa",
+        "region": "Africa",
+        "alliance": "Star Alliance"
+    },
+    {
+        "code": "AH",
+        "name": "Air Algérie",
+        "country": "Algeria",
+        "region": "Africa",
+        "alliance": "None"
+    },
+    {
+        "code": "L6",
+        "name": "Mauritania Airlines",
+        "country": "Mauritania",
+        "region": "Africa",
+        "alliance": "None"
+    }
+]
