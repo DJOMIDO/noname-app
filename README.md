@@ -52,7 +52,13 @@ npm run dev
 ```env
 VITE_SUPABASE_URL=your-supabase-url
 VITE_SUPABASE_ANON_KEY=your-anon-key
+VITE_SITE_URL=https://your-netlify-site.netlify.app
 ```
+
+`VITE_SITE_URL` is used as the email confirmation redirect URL. In Supabase,
+add the same URL to **Authentication → URL Configuration → Redirect URLs**
+(and set it as the Site URL if desired). For local development, you can use
+`http://localhost:3000`.
 
 ---
 

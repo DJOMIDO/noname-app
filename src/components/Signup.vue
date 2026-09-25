@@ -3,7 +3,7 @@ import { ref } from 'vue'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { supabase } from '@/lib/supabase'
+import { authRedirectUrl, supabase } from '@/lib/supabase'
 import { toast } from 'vue-sonner'
 
 const username = ref('')
@@ -40,7 +40,8 @@ const handleSignup = async () => {
     options: {
       data: {
         username: username.value
-      }
+      },
+      emailRedirectTo: authRedirectUrl
     }
   })
 
