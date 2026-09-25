@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { toast } from 'vue-sonner'
+import { Upload } from 'lucide-vue-next'
 import { supabase } from '@/lib/supabase'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import BackButton from '@/components/BackButton.vue'
 import AddFlightBasic from '@/components/AddFlightBasic.vue'
 import AddFlightDetailed from '@/components/AddFlightDetailed.vue'
+import CsvImportPanel from '@/components/CsvImportPanel.vue'
 import hiking from '@/assets/images/hiking.svg'
 import travelers from '@/assets/images/travelers.svg'
 
@@ -29,6 +31,7 @@ const bookingRef = ref('')
 const notes = ref('')
 
 const currentTab = ref('basic')
+const showImport = ref(false)
 
 const handleSubmit = async () => {
     if (!airlineCode.value || !flightNumber.value || !departureAirport.value || !arrivalAirport.value || !departureDate.value) {
@@ -106,7 +109,13 @@ const handleSubmit = async () => {
                         <span>Detailed</span>
                     </TabsTrigger>
                 </TabsList>
-                <BackButton />
+                <div class="flex flex-wrap justify-end gap-2">
+                    <Button variant="outline" size="sm" @click="showImport = true">
+                        <Upload class="mr-2 size-4" aria-hidden="true" />
+                        Import CSV
+                    </Button>
+                    <BackButton />
+                </div>
             </div>
 
             <TabsContent value="basic">
@@ -129,5 +138,6 @@ const handleSubmit = async () => {
                 <Button class="w-full" @click="handleSubmit">Save Flight</Button>
             </div>
         </Tabs>
+        <CsvImportPanel v-if="showImport" type="flight" @close="showImport = false" />
     </section>
 </template>

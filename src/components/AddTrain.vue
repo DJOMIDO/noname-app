@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { toast } from 'vue-sonner'
+import { Upload } from 'lucide-vue-next'
 import { supabase } from '@/lib/supabase'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import BackButton from '@/components/BackButton.vue'
 import AddTrainBasic from '@/components/AddTrainBasic.vue'
 import AddTrainDetailed from '@/components/AddTrainDetailed.vue'
+import CsvImportPanel from '@/components/CsvImportPanel.vue'
 import hiking from '@/assets/images/hiking.svg'
 import travelers from '@/assets/images/travelers.svg'
 
@@ -29,6 +31,7 @@ const bookingRef = ref('')
 const notes = ref('')
 
 const currentTab = ref('basic')
+const showImport = ref(false)
 
 const handleSubmit = async () => {
     const isBlank = (val: string) => !val || val.trim() === ''
@@ -110,7 +113,13 @@ const handleSubmit = async () => {
                     <TabsTrigger value="basic" class="flex items-center gap-2">Basic</TabsTrigger>
                     <TabsTrigger value="detailed" class="flex items-center gap-2">Detailed</TabsTrigger>
                 </TabsList>
-                <BackButton />
+                <div class="flex flex-wrap justify-end gap-2">
+                    <Button variant="outline" size="sm" @click="showImport = true">
+                        <Upload class="mr-2 size-4" aria-hidden="true" />
+                        Import CSV
+                    </Button>
+                    <BackButton />
+                </div>
             </div>
 
             <TabsContent value="basic">
@@ -134,5 +143,6 @@ const handleSubmit = async () => {
                 <Button class="w-full" @click="handleSubmit">Save Train Journey</Button>
             </div>
         </Tabs>
+        <CsvImportPanel v-if="showImport" type="train" @close="showImport = false" />
     </section>
 </template>

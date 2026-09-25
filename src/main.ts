@@ -1,7 +1,9 @@
 import { createApp } from "vue";
 import "./style.css";
 import App from "./App.vue";
+import ConfigurationError from "./components/ConfigurationError.vue";
 import router from "./router";
+import { isSupabaseConfigured } from "./lib/supabase";
 import "leaflet/dist/leaflet.css";
 
 import L from "leaflet";
@@ -16,6 +18,6 @@ L.Icon.Default.mergeOptions({
     .href,
 });
 
-const app = createApp(App);
-app.use(router);
+const app = createApp(isSupabaseConfigured ? App : ConfigurationError);
+if (isSupabaseConfigured) app.use(router);
 app.mount("#app");

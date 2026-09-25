@@ -13,7 +13,6 @@ const routes = [
   { path: "/login", component: Login },
   { path: "/signup", component: Signup },
   { path: "/home", component: Home },
-  { path: "/:pathMatch(.*)*", component: NotFound },
   { path: "/add-flight", component: AddFlight },
   { path: "/add-train", component: AddTrain },
   { path: "/journeys", component: ViewJourneys },
@@ -28,6 +27,7 @@ const routes = [
     component: () => import("@/views/TrainDetails.vue"),
   },
   { path: "/stats", component: Stats },
+  { path: "/:pathMatch(.*)*", component: NotFound },
 ];
 
 const router = createRouter({
