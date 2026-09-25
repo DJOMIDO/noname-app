@@ -55,7 +55,10 @@ npm run dev
 ### 4. Setup Supabase
 
 - Create a Supabase project
-- Add tables: `flights`, `trains`, `users` as required
+- Apply the migration in
+  [`supabase/migrations/20260925200000_create_journey_tables.sql`](./supabase/migrations/20260925200000_create_journey_tables.sql)
+  in the Supabase SQL Editor. It creates the `flights` and `trains` tables,
+  indexes, grants, and per-user Row Level Security policies.
 - Set up Supabase URL and anon key in your `.env` file:
 
 ```env
@@ -74,6 +77,11 @@ the project's publishable/anon key. Restart the Vite dev server after changing
 add the same URL to **Authentication → URL Configuration → Redirect URLs**
 (and set it as the Site URL if desired). For local development, you can use
 `http://localhost:3000`.
+
+If Supabase reports `Could not find the table 'public.flights' in the schema
+cache`, the migration has not been applied yet, or PostgREST has not refreshed
+its cache. Apply the migration, run `NOTIFY pgrst, 'reload schema';` if
+needed, and restart the development server.
 
 ### CSV journey import
 
