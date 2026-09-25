@@ -9,6 +9,7 @@ import L from 'leaflet'
 import * as turf from '@turf/turf'
 
 const isDark = ref(false)
+const cartoApiKey = import.meta.env.VITE_CARTO_API_KEY
 
 onMounted(() => {
     const checkDark = () => {
@@ -22,8 +23,8 @@ onMounted(() => {
 
 const tileUrl = computed(() =>
     isDark.value
-        ? 'https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png'
-        : 'https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png'
+        ? `https://basemaps.cartocdn.com/rastertiles/dark_nolabels/{z}/{x}/{y}.png?key=${cartoApiKey}`
+        : `https://basemaps.cartocdn.com/rastertiles/light_nolabels/{z}/{x}/{y}.png?key=${cartoApiKey}`
 )
 
 const customIcon = computed(() =>
@@ -108,7 +109,8 @@ onMounted(() => {
 <template>
     <div class="map-container">
         <LMap :zoom="zoom" :center="center" class="z-10">
-            <LTileLayer :key="tileUrl" :url="tileUrl" />
+            <LTileLayer :key="tileUrl" :url="tileUrl"
+                attribution="&copy; OpenStreetMap contributors &copy; CARTO" />
 
             <LPolyline v-for="(route, index) in routes" :key="'route-' + index" :lat-lngs="route.coords"
                 :color="isDark ? 'white' : 'black'" :weight="1.5" :opacity="0.5" :smooth-factor="1">
