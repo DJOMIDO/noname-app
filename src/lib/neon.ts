@@ -1,27 +1,25 @@
 import { createClient, defaultDeriveNeonUrls, SupabaseAuthAdapter } from '@neondatabase/neon-js'
+import { normalizeNeonUrl, type NeonUrlResult } from './neonUrl'
 
-const neonUrl = String(import.meta.env.VITE_NEON_URL || '').trim()
-
-const isPlaceholder = (value: string) =>
-  !value || value.includes('your-') || value.includes('your_')
+const normalized = normalizeNeonUrl(String(import.meta.env.VITE_NEON_URL || ''))
 
 // Derives the Neon Auth and Data API endpoints from the database base URL.
-// Returns null when the URL is missing, a placeholder, or not a Neon URL.
-const deriveUrls = (value: string) => {
-  if (isPlaceholder(value)) return null
+const deriveUrls = (result: NeonUrlResult) => {
+  if (!result.ok) return null
 
   try {
-    const url = new URL(value)
-    if (url.protocol !== 'https:' && url.protocol !== 'http:') return null
-    return defaultDeriveNeonUrls(value)
+    return defaultDeriveNeonUrls(result.baseUrl)
   } catch {
     return null
   }
 }
 
-const neonUrls = deriveUrls(neonUrl)
+const neonUrls = deriveUrls(normalized)
 
 export const isNeonConfigured = neonUrls !== null
+
+// Why the configuration was rejected, for ConfigurationError.vue.
+export const neonConfigError = normalized.ok ? (neonUrls ? null : 'invalid') : normalized.reason
 
 // Keep the client export stable for existing components. The app does not mount
 // those components when configuration is invalid.
