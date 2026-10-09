@@ -2,7 +2,7 @@
 import { computed, ref } from 'vue'
 import { toast } from 'vue-sonner'
 import { Download, X } from 'lucide-vue-next'
-import { supabase } from '@/lib/supabase'
+import { client } from '@/lib/neon'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import CsvImportPreview from '@/components/CsvImportPreview.vue'
@@ -76,7 +76,7 @@ const importRows = async () => {
 
   isImporting.value = true
   try {
-    const { data: { user } } = await supabase.auth.getUser()
+    const { data: { user } } = await client.auth.getUser()
     if (!user) {
       toast.error('You must be logged in.')
       return
@@ -87,7 +87,7 @@ const importRows = async () => {
       user_id: user.id,
       ...toDatabaseRow(props.type, row.values),
     }))
-    const { error } = await supabase.from(table).insert(payload)
+    const { error } = await client.from(table).insert(payload)
     if (error) {
       toast.error(`Import failed: ${error.message}`)
       return

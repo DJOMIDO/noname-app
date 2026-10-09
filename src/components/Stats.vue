@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { supabase } from '@/lib/supabase'
+import { client } from '@/lib/neon'
 import { toast } from 'vue-sonner'
 import StatOverview from '@/components/StatOverview.vue'
 import BackButton from '@/components/BackButton.vue'
@@ -74,7 +74,7 @@ const mostUsedTrainCompany = computed(() => {
 
 const fetchData = async () => {
     loading.value = true
-    const { data: { user } } = await supabase.auth.getUser()
+    const { data: { user } } = await client.auth.getUser()
     if (!user) {
         toast.error('You must be logged in.')
         loading.value = false
@@ -82,8 +82,8 @@ const fetchData = async () => {
     }
 
     const [flightRes, trainRes] = await Promise.all([
-        supabase.from('flights').select('*').eq('user_id', user.id),
-        supabase.from('trains').select('*').eq('user_id', user.id)
+        client.from('flights').select('*').eq('user_id', user.id),
+        client.from('trains').select('*').eq('user_id', user.id)
     ])
 
     if (flightRes.error) toast.error(flightRes.error.message)
