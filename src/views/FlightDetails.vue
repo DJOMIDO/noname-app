@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { supabase } from '@/lib/supabase'
+import { client } from '@/lib/neon'
 import { toast } from 'vue-sonner'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -56,7 +56,7 @@ const getCityFromIATA = (code: string): string | null => {
 }
 
 const fetchFlight = async () => {
-    const { data, error } = await supabase
+    const { data, error } = await client
         .from('flights')
         .select('*')
         .eq('id', route.params.id)
@@ -78,7 +78,7 @@ const handleDelete = async () => {
     const confirmDelete = window.confirm('Are you sure you want to delete this flight?')
     if (!confirmDelete) return
 
-    const { error } = await supabase.from('flights').delete().eq('id', route.params.id)
+    const { error } = await client.from('flights').delete().eq('id', route.params.id)
 
     if (error) {
         toast.error('Delete failed: ' + error.message)
@@ -89,7 +89,7 @@ const handleDelete = async () => {
 }
 
 const handleUpdate = async () => {
-    const { error } = await supabase.from('flights').update(form.value).eq('id', route.params.id)
+    const { error } = await client.from('flights').update(form.value).eq('id', route.params.id)
 
     if (error) {
         toast.error('Update failed: ' + error.message)

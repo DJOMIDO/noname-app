@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { supabase } from '@/lib/supabase'
+import { client } from '@/lib/neon'
 import { toast } from 'vue-sonner'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -39,7 +39,7 @@ const form = ref({
 })
 
 const fetchTrain = async () => {
-    const { data, error } = await supabase.from('trains').select('*').eq('id', route.params.id).single()
+    const { data, error } = await client.from('trains').select('*').eq('id', route.params.id).single()
 
     if (error) {
         toast.error('Failed to load train record.')
@@ -54,7 +54,7 @@ const handleDelete = async () => {
     const confirmDelete = window.confirm('Are you sure you want to delete this train journey?')
     if (!confirmDelete) return
 
-    const { error } = await supabase.from('trains').delete().eq('id', route.params.id)
+    const { error } = await client.from('trains').delete().eq('id', route.params.id)
 
     if (error) {
         toast.error('Delete failed: ' + error.message)
@@ -65,7 +65,7 @@ const handleDelete = async () => {
 }
 
 const handleUpdate = async () => {
-    const { error } = await supabase.from('trains').update(form.value).eq('id', route.params.id)
+    const { error } = await client.from('trains').update(form.value).eq('id', route.params.id)
 
     if (error) {
         toast.error('Update failed: ' + error.message)

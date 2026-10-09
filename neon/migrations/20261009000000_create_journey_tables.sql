@@ -1,9 +1,16 @@
 -- Creates the tables used by the flight/train forms, list pages, statistics,
 -- details pages, and CSV importer.
+--
+-- Requires Neon Auth and the Neon Data API to be enabled on the same branch and
+-- database: the `authenticated` role is created by the Data API.
+-- auth.user_id() comes from the pg_session_jwt extension and returns the
+-- signed-in user id (the JWT `sub` claim, which matches neon_auth.user.id).
+
+create extension if not exists pg_session_jwt;
 
 create table if not exists public.flights (
   id uuid primary key default gen_random_uuid(),
-  user_id uuid not null references auth.users (id) on delete cascade,
+  user_id text not null default (auth.user_id()),
   airline_code text not null,
   flight_number text not null,
   departure_airport text not null,
@@ -27,7 +34,7 @@ create table if not exists public.flights (
 
 create table if not exists public.trains (
   id uuid primary key default gen_random_uuid(),
-  user_id uuid not null references auth.users (id) on delete cascade,
+  user_id text not null default (auth.user_id()),
   train_company text not null,
   train_number text not null,
   train_type text,
@@ -61,48 +68,54 @@ alter table public.trains enable row level security;
 drop policy if exists "Users can view their own flights" on public.flights;
 create policy "Users can view their own flights"
   on public.flights for select
-  using (auth.uid() = user_id);
+  to authenticated
+  using ((select auth.user_id()) = user_id);
 
 drop policy if exists "Users can create their own flights" on public.flights;
 create policy "Users can create their own flights"
   on public.flights for insert
-  with check (auth.uid() = user_id);
+  to authenticated
+  with check ((select auth.user_id()) = user_id);
 
 drop policy if exists "Users can update their own flights" on public.flights;
 create policy "Users can update their own flights"
   on public.flights for update
-  using (auth.uid() = user_id)
-  with check (auth.uid() = user_id);
+  to authenticated
+  using ((select auth.user_id()) = user_id)
+  with check ((select auth.user_id()) = user_id);
 
 drop policy if exists "Users can delete their own flights" on public.flights;
 create policy "Users can delete their own flights"
   on public.flights for delete
-  using (auth.uid() = user_id);
+  to authenticated
+  using ((select auth.user_id()) = user_id);
 
 drop policy if exists "Users can view their own trains" on public.trains;
 create policy "Users can view their own trains"
   on public.trains for select
-  using (auth.uid() = user_id);
+  to authenticated
+  using ((select auth.user_id()) = user_id);
 
 drop policy if exists "Users can create their own trains" on public.trains;
 create policy "Users can create their own trains"
   on public.trains for insert
-  with check (auth.uid() = user_id);
+  to authenticated
+  with check ((select auth.user_id()) = user_id);
 
 drop policy if exists "Users can update their own trains" on public.trains;
 create policy "Users can update their own trains"
   on public.trains for update
-  using (auth.uid() = user_id)
-  with check (auth.uid() = user_id);
+  to authenticated
+  using ((select auth.user_id()) = user_id)
+  with check ((select auth.user_id()) = user_id);
 
 drop policy if exists "Users can delete their own trains" on public.trains;
 create policy "Users can delete their own trains"
   on public.trains for delete
-  using (auth.uid() = user_id);
+  to authenticated
+  using ((select auth.user_id()) = user_id);
 
+grant usage on schema public to authenticated;
 grant select, insert, update, delete on public.flights to authenticated;
 grant select, insert, update, delete on public.trains to authenticated;
 
--- Ask PostgREST to reload its schema cache immediately after applying this
--- migration in the Supabase SQL editor or migration runner.
-notify pgrst, 'reload schema';

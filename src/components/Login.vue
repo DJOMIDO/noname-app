@@ -4,7 +4,7 @@ import { useRouter } from 'vue-router'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { supabase } from '@/lib/supabase'
+import { client } from '@/lib/neon'
 import { toast } from 'vue-sonner'
 
 const email = ref('')
@@ -17,7 +17,7 @@ const handleLogin = async () => {
     return
   }
 
-  const { data, error } = await supabase.auth.signInWithPassword({
+  const { data, error } = await client.auth.signInWithPassword({
     email: email.value,
     password: password.value
   })

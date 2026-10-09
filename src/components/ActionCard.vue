@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { supabase } from '@/lib/supabase'
+import { client } from '@/lib/neon'
 import { useRouter } from 'vue-router'
 import { toast } from 'vue-sonner'
 
@@ -12,7 +12,7 @@ const props = defineProps<{
 const router = useRouter()
 
 const handleClick = async () => {
-  const { data } = await supabase.auth.getUser()
+  const { data } = await client.auth.getUser()
   if (!data.user) {
     toast.error('Please log in to access this feature.')
     return

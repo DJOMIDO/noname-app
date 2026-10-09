@@ -2,7 +2,7 @@
 import { ref } from 'vue'
 import { toast } from 'vue-sonner'
 import { Upload } from 'lucide-vue-next'
-import { supabase } from '@/lib/supabase'
+import { client } from '@/lib/neon'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import BackButton from '@/components/BackButton.vue'
@@ -41,14 +41,14 @@ const handleSubmit = async () => {
 
     const {
         data: { user },
-    } = await supabase.auth.getUser()
+    } = await client.auth.getUser()
 
     if (!user) {
         toast.error('You must be logged in.')
         return
     }
 
-    const { error } = await supabase.from('flights').insert({
+    const { error } = await client.from('flights').insert({
         user_id: user.id,
         airline_code: airlineCode.value,
         flight_number: flightNumber.value,

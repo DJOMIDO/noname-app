@@ -1,7 +1,7 @@
 # ✈️🚆 Travel Tracker App
 
 A modern travel journaling web app for logging flights and train journeys.  
-Built with **Vue 3**, **TypeScript**, **Shadcn-Vue**, **Supabase**, and **Leaflet** for real-time stats and visualizations.
+Built with **Vue 3**, **TypeScript**, **Shadcn-Vue**, **Neon** (Postgres, Auth and Data API), and **Leaflet** for real-time stats and visualizations.
 
 ## 📐 Project Development Requirements
 
@@ -52,36 +52,37 @@ npm install
 npm run dev
 ```
 
-### 4. Setup Supabase
+### 4. Setup Neon
 
-- Create a Supabase project
+- Create a Neon project
+- In the Neon Console, enable **Auth** (Neon Auth) and the **Data API** for
+  the project's database. The Data API must be enabled before applying the
+  migration, because it creates the `authenticated` role used by the RLS
+  policies. Enable it on the same branch and database you run the migration
+  against.
 - Apply the migration in
-  [`supabase/migrations/20260925200000_create_journey_tables.sql`](./supabase/migrations/20260925200000_create_journey_tables.sql)
-  in the Supabase SQL Editor. It creates the `flights` and `trains` tables,
+  [`neon/migrations/20261009000000_create_journey_tables.sql`](./neon/migrations/20261009000000_create_journey_tables.sql)
+  in the Neon SQL Editor. It creates the `flights` and `trains` tables,
   indexes, grants, and per-user Row Level Security policies.
-- Set up Supabase URL and anon key in your `.env` file:
+- Set up the Neon URL in your `.env` file:
 
 ```env
-VITE_SUPABASE_URL=your-supabase-url
-VITE_SUPABASE_ANON_KEY=your-anon-key
+VITE_NEON_URL=https://ep-xxx.c-2.us-east-2.aws.neon.tech/neondb
 VITE_SITE_URL=https://your-netlify-site.netlify.app
 ```
 
-`VITE_SUPABASE_URL` must be a real project URL such as
-`https://your-project-ref.supabase.co`, not the literal example value
-`your-supabase-url`. `VITE_SUPABASE_ANON_KEY` must likewise be replaced with
-the project's publishable/anon key. Restart the Vite dev server after changing
+`VITE_NEON_URL` is the database base URL, without credentials or query
+parameters. Take the **API URL** from **Postgres database → Data API**, remove
+`.apirest` from the hostname and `/rest/v1` from the path, e.g.
+`https://ep-xxx.apirest.c-2.us-east-2.aws.neon.tech/neondb/rest/v1` becomes
+`https://ep-xxx.c-2.us-east-2.aws.neon.tech/neondb`. The SDK derives the Neon
+Auth and Data API endpoints from it. Restart the Vite dev server after changing
 `.env`; Vite does not reload environment files automatically.
 
-`VITE_SITE_URL` is used as the email confirmation redirect URL. In Supabase,
-add the same URL to **Authentication → URL Configuration → Redirect URLs**
-(and set it as the Site URL if desired). For local development, you can use
-`http://localhost:3000`.
-
-If Supabase reports `Could not find the table 'public.flights' in the schema
-cache`, the migration has not been applied yet, or PostgREST has not refreshed
-its cache. Apply the migration, run `NOTIFY pgrst, 'reload schema';` if
-needed, and restart the development server.
+`VITE_SITE_URL` is used as the email verification redirect URL. In Neon,
+add your site's origin (e.g. `https://your-netlify-site.netlify.app`, no
+trailing slash) under **Auth → Configuration → Domains**. Localhost on any port
+is allowed by default.
 
 ### CSV journey import
 

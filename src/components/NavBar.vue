@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { supabase } from '@/lib/supabase'
+import { client } from '@/lib/neon'
 
 import sun from '@/assets/images/sun.png'
 import moon from '@/assets/images/moon.png'
@@ -10,7 +10,7 @@ const user = ref<any>(null)
 const router = useRouter()
 
 const fetchUser = async () => {
-    const { data } = await supabase.auth.getUser()
+    const { data } = await client.auth.getUser()
     user.value = data.user
 }
 
@@ -22,7 +22,7 @@ onMounted(() => {
 })
 
 const handleLogout = async () => {
-    await supabase.auth.signOut()
+    await client.auth.signOut()
     user.value = null
     router.push('/')
 }
@@ -54,7 +54,7 @@ const toggleDark = () => {
 
             <template v-if="user">
                 <span class="hidden md:block text-gray-700 dark:text-gray-200">
-                    Welcome, {{ user.user_metadata?.username || 'User' }}
+                    Welcome, {{ user.user_metadata?.displayName || 'User' }}
                 </span>
                 <button @click="handleLogout"
                     class="px-3 py-1 border border-indigo-400 dark:border-indigo-300 text-indigo-600 dark:text-indigo-200 rounded hover:bg-indigo-50 dark:hover:bg-indigo-800 hover:text-indigo-900 dark:hover:text-white">

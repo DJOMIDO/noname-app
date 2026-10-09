@@ -3,7 +3,7 @@ import { ref } from 'vue'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { authRedirectUrl, supabase } from '@/lib/supabase'
+import { authRedirectUrl, client } from '@/lib/neon'
 import { toast } from 'vue-sonner'
 
 const username = ref('')
@@ -34,26 +34,30 @@ const handleSignup = async () => {
     return
   }
 
-  const { data, error } = await supabase.auth.signUp({
+  const { data, error } = await client.auth.signUp({
     email: email.value,
     password: password.value,
     options: {
       data: {
-        username: username.value
+        displayName: username.value
       },
       emailRedirectTo: authRedirectUrl
     }
   })
 
   if (error) {
-    if (error.message.includes('User already registered')) {
+    if (error.code === 'user_already_exists' || error.code === 'email_exists') {
       toast.error('This email is already registered. Please log in.')
+    } else if (error.code === 'session_not_found') {
+      // Neon Auth creates the account but withholds the session until the
+      // email address is verified.
+      toast.success('Registration successful. Check your email to verify your account.')
     } else {
       toast.error(error.message)
     }
   } else {
     console.log('Registration successful:', data)
-    toast.success('Registration successful. Check your email to verify your account.')
+    toast.success('Registration successful. You are now logged in.')
   }
 }
 

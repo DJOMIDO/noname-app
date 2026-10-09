@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, watch, computed } from 'vue'
-import { supabase } from '@/lib/supabase'
+import { client } from '@/lib/neon'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { Card, CardContent } from '@/components/ui/card'
 import BackButton from '@/components/BackButton.vue'
@@ -54,7 +54,7 @@ const getFlightDurationDisplay = (flight: any) => {
 
 const fetchFlights = async () => {
     loadingFlights.value = true
-    const { data: { user } } = await supabase.auth.getUser()
+    const { data: { user } } = await client.auth.getUser()
     if (!user) {
         toast.error('You must be logged in.')
         loadingFlights.value = false
@@ -64,7 +64,7 @@ const fetchFlights = async () => {
     const from = (currentFlightPage.value - 1) * flightsPerPage
     const to = from + flightsPerPage - 1
 
-    const { data, count, error } = await supabase
+    const { data, count, error } = await client
         .from('flights')
         .select('*', { count: 'exact' })
         .eq('user_id', user.id)
@@ -82,7 +82,7 @@ const fetchFlights = async () => {
 
 const fetchTrains = async () => {
     loadingTrains.value = true
-    const { data: { user } } = await supabase.auth.getUser()
+    const { data: { user } } = await client.auth.getUser()
     if (!user) {
         toast.error('You must be logged in.')
         loadingTrains.value = false
@@ -92,7 +92,7 @@ const fetchTrains = async () => {
     const from = (currentTrainPage.value - 1) * trainsPerPage
     const to = from + trainsPerPage - 1
 
-    const { data, count, error } = await supabase
+    const { data, count, error } = await client
         .from('trains')
         .select('*', { count: 'exact' })
         .eq('user_id', user.id)
