@@ -67,16 +67,18 @@ npm run dev
 - Set up the Neon URL in your `.env` file:
 
 ```env
-VITE_NEON_URL=https://ep-xxx.c-2.us-east-2.aws.neon.tech/neondb
+VITE_NEON_URL=https://ep-xxx.apirest.c-2.us-east-2.aws.neon.tech/neondb/rest/v1
 VITE_SITE_URL=https://your-netlify-site.netlify.app
 ```
 
-`VITE_NEON_URL` is the database base URL, without credentials or query
-parameters. Take the **API URL** from **Postgres database → Data API**, remove
-`.apirest` from the hostname and `/rest/v1` from the path, e.g.
-`https://ep-xxx.apirest.c-2.us-east-2.aws.neon.tech/neondb/rest/v1` becomes
-`https://ep-xxx.c-2.us-east-2.aws.neon.tech/neondb`. The SDK derives the Neon
-Auth and Data API endpoints from it. Restart the Vite dev server after changing
+Use the **API URL** shown in **Postgres database → Data API**. The database
+base URL (`https://ep-xxx.c-2.us-east-2.aws.neon.tech/neondb`) also works; the
+SDK derives the Neon Auth and Data API endpoints from either form.
+
+**Never use the Postgres connection string** (`postgresql://user:password@...`)
+here. Every `VITE_` variable is inlined into the public JavaScript bundle, so
+the database password would be published with the site. The build fails if a
+connection string is detected. Restart the Vite dev server after changing
 `.env`; Vite does not reload environment files automatically.
 
 `VITE_SITE_URL` is used as the email verification redirect URL. In Neon,
