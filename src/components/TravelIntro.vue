@@ -3,7 +3,7 @@ import travelImg from '@/assets/images/Travel.svg'
 </script>
 
 <template>
-  <div class="relative flex flex-col items-center text-center mb-14">
+  <div class="relative flex flex-col items-center text-center mb-8">
     <h1
       class="animate-in fade-in slide-in-from-bottom-6 mt-2 max-w-3xl text-4xl font-extrabold tracking-tight sm:text-5xl">
       Every Journey Has a
@@ -19,7 +19,7 @@ import travelImg from '@/assets/images/Travel.svg'
       Keep track of your flights and train rides as you explore the world.
     </p>
 
-    <div class="animate-in fade-in zoom-in mt-10 [animation-delay:350ms]">
+    <div class="animate-in fade-in zoom-in mt-6 [animation-delay:350ms]">
       <img :src="travelImg" class="w-full max-w-[320px] animate-float drop-shadow-2xl" alt="Travel" />
     </div>
   </div>

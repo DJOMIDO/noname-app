@@ -32,7 +32,7 @@ const showImport = ref(false)
 </script>
 
 <template>
-  <section class="relative min-h-screen overflow-hidden px-4 pb-10 pt-10 transition-colors
+  <section class="relative min-h-full overflow-hidden px-4 pb-24 lg:pb-10 pt-10 transition-colors
     bg-gradient-to-b from-lilac/40 via-white to-white
     text-gray-800 dark:from-gray-950 dark:via-gray-900 dark:to-gray-900 dark:text-gray-100">
 
