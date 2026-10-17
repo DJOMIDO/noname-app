@@ -5,7 +5,7 @@
 - **项目目标**：帮助旅行者记录并分析自己的航班与火车行程，把每次出行变成可查看、可统计的故事。
 - **核心需求**：
   - 行程录入：航班 / 火车，支持 Basic 与 Detailed 两种模式
-  - 行程浏览：列表、详情、分页
+  - 行程浏览：列表、搜索筛选、详情、分页
   - 统计分析：总览、路线、时长、地图可视化
   - CSV 批量导入行程
   - 用户鉴权与数据隔离（Neon Auth + Neon Postgres）
@@ -20,7 +20,6 @@
 
 - [ ] 确认部署环境（Netlify）的 `VITE_NEON_URL` 与本地共用同一 endpoint（`ep-floral-sun-b9mm9800`）；若是则 migration 已直接生效（app 实测写入 user_id 正确），无需额外操作；若部署指向另一 Neon 分支，则需对该分支重跑本 migration
 - [ ] 接入密码重置与 Remember me 功能（当前为占位死链）（建议分支 `feat/password-reset`）
-- [ ] 欢迎页区分登录态：登录后展示最近行程 / 数据摘要（建议分支 `feat/home-logged-in-summary`）
 
 ### In progress
 
@@ -28,6 +27,8 @@
 
 ### Done
 
+- [x] 欢迎页区分登录态（分支 `feat/home-logged-in-summary`，PR #28 已合并：新增 HomeSummary 个性化卡片——问候语 + 航班/火车计数 chips + 最近 3 条行程快捷入口；零行程的登录用户仍看 TravelIntro 激励页，与游客一致；数据加载完成后才切换展示，避免闪现）
+- [x] 行程列表搜索与年份筛选（分支 `feat/journey-search-filter`：新增 JourneysFilterBar（防抖搜索框 + 年份 chips，同时作用于两个 Tab）；PostgREST or/ilike 多字段匹配，城市名自动扩展为 IATA 码集合（airports.json 本地查表），MU5101 式连写航班号识别航司前缀拆分匹配；过滤变化页码归 1（合并 watcher 防重复请求）；空态区分「无数据」与「无匹配」；踩坑：date 列不能 ILIKE，or=() 语法不支持 cast(text)，日期收窄由年份 chips 的 gte/lte 承担）
 - [x] 统一未登录访问逻辑（分支 `feat/guest-browse-auth-states`：消除「首页卡片拦截、导航栏放行」的矛盾——所有入口都可进入页面；Journeys/Stats 与 CSV 导入用可复用的 GuestState 引导登录，取代红色 error toast；useAuthUser 收敛为鉴权单一真源（isLoggedIn/ready/refresh）；录入表单游客可填写，保存时跳 `login?next` 并用 localStorage 草稿保留输入，登录后回原页恢复；登录/注册按 next 回跳并清理调试日志）
 
 - [x] 修复 Neon Data API 下 RLS 读写全面失效（分支 `fix/neon-rls-user-id`：根因——Data API 只写入 `request.jwt.claims`（角色可切换）却未初始化 pg_session_jwt，`auth.user_id()` 恒为 NULL。新增 `public.current_user_id()` 从 `current_setting('request.jwt.claims', true)::jsonb ->> 'sub'` 取用户 id；migration 的 `user_id` 默认值与全部 RLS 策略改用该函数，并对已存在表 `ALTER COLUMN ... SET DEFAULT`。开发库以 authenticated 角色 + claims 模拟验证增/查/改/删全部通过，临时 dev policies 已回滚）
