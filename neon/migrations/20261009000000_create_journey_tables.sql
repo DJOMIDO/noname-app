@@ -3,14 +3,24 @@
 --
 -- Requires Neon Auth and the Neon Data API to be enabled on the same branch and
 -- database: the `authenticated` role is created by the Data API.
--- auth.user_id() comes from the pg_session_jwt extension and returns the
--- signed-in user id (the JWT `sub` claim, which matches neon_auth.user.id).
+-- The signed-in user id is the JWT `sub` claim (matches neon_auth.user.id). The
+-- Data API exposes it through the `request.jwt.claims` GUC, but it does NOT
+-- initialize pg_session_jwt, so auth.user_id() is always NULL in this
+-- environment. Read `sub` from request.jwt.claims instead.
 
-create extension if not exists pg_session_jwt;
+-- Returns the signed-in user id from the Data API's request.jwt.claims GUC, or
+-- NULL when absent (unauthenticated request or a direct owner connection).
+create or replace function public.current_user_id()
+  returns text
+  language sql
+  stable
+as $$
+  select nullif(current_setting('request.jwt.claims', true), '')::jsonb ->> 'sub'
+$$;
 
 create table if not exists public.flights (
   id uuid primary key default gen_random_uuid(),
-  user_id text not null default (auth.user_id()),
+  user_id text not null default (public.current_user_id()),
   airline_code text not null,
   flight_number text not null,
   departure_airport text not null,
@@ -34,7 +44,7 @@ create table if not exists public.flights (
 
 create table if not exists public.trains (
   id uuid primary key default gen_random_uuid(),
-  user_id text not null default (auth.user_id()),
+  user_id text not null default (public.current_user_id()),
   train_company text not null,
   train_number text not null,
   train_type text,
@@ -62,6 +72,11 @@ create index if not exists flights_user_id_departure_date_idx
 create index if not exists trains_user_id_departure_date_idx
   on public.trains (user_id, departure_date desc);
 
+-- Existing deployments created user_id with the old auth.user_id() default;
+-- repoint the column defaults at the claims-based helper.
+alter table public.flights alter column user_id set default (public.current_user_id());
+alter table public.trains alter column user_id set default (public.current_user_id());
+
 alter table public.flights enable row level security;
 alter table public.trains enable row level security;
 
@@ -69,51 +84,51 @@ drop policy if exists "Users can view their own flights" on public.flights;
 create policy "Users can view their own flights"
   on public.flights for select
   to authenticated
-  using ((select auth.user_id()) = user_id);
+  using (public.current_user_id() = user_id);
 
 drop policy if exists "Users can create their own flights" on public.flights;
 create policy "Users can create their own flights"
   on public.flights for insert
   to authenticated
-  with check ((select auth.user_id()) = user_id);
+  with check (public.current_user_id() = user_id);
 
 drop policy if exists "Users can update their own flights" on public.flights;
 create policy "Users can update their own flights"
   on public.flights for update
   to authenticated
-  using ((select auth.user_id()) = user_id)
-  with check ((select auth.user_id()) = user_id);
+  using (public.current_user_id() = user_id)
+  with check (public.current_user_id() = user_id);
 
 drop policy if exists "Users can delete their own flights" on public.flights;
 create policy "Users can delete their own flights"
   on public.flights for delete
   to authenticated
-  using ((select auth.user_id()) = user_id);
+  using (public.current_user_id() = user_id);
 
 drop policy if exists "Users can view their own trains" on public.trains;
 create policy "Users can view their own trains"
   on public.trains for select
   to authenticated
-  using ((select auth.user_id()) = user_id);
+  using (public.current_user_id() = user_id);
 
 drop policy if exists "Users can create their own trains" on public.trains;
 create policy "Users can create their own trains"
   on public.trains for insert
   to authenticated
-  with check ((select auth.user_id()) = user_id);
+  with check (public.current_user_id() = user_id);
 
 drop policy if exists "Users can update their own trains" on public.trains;
 create policy "Users can update their own trains"
   on public.trains for update
   to authenticated
-  using ((select auth.user_id()) = user_id)
-  with check ((select auth.user_id()) = user_id);
+  using (public.current_user_id() = user_id)
+  with check (public.current_user_id() = user_id);
 
 drop policy if exists "Users can delete their own trains" on public.trains;
 create policy "Users can delete their own trains"
   on public.trains for delete
   to authenticated
-  using ((select auth.user_id()) = user_id);
+  using (public.current_user_id() = user_id);
 
 grant usage on schema public to authenticated;
 grant select, insert, update, delete on public.flights to authenticated;
