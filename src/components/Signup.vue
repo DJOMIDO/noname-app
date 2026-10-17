@@ -2,7 +2,7 @@
 import { ref } from 'vue'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
+import AuthShell from '@/components/AuthShell.vue'
 import { authRedirectUrl, client } from '@/lib/neon'
 import { toast } from 'vue-sonner'
 
@@ -10,6 +10,7 @@ const username = ref('')
 const email = ref('')
 const password = ref('')
 const confirmPassword = ref('')
+const submitting = ref(false)
 
 const handleSignup = async () => {
 
@@ -34,72 +35,88 @@ const handleSignup = async () => {
     return
   }
 
-  const { data, error } = await client.auth.signUp({
-    email: email.value,
-    password: password.value,
-    options: {
-      data: {
-        displayName: username.value
-      },
-      emailRedirectTo: authRedirectUrl
-    }
-  })
+  submitting.value = true
+  try {
+    const { data, error } = await client.auth.signUp({
+      email: email.value,
+      password: password.value,
+      options: {
+        data: {
+          displayName: username.value
+        },
+        emailRedirectTo: authRedirectUrl
+      }
+    })
 
-  if (error) {
-    if (error.code === 'user_already_exists' || error.code === 'email_exists') {
-      toast.error('This email is already registered. Please log in.')
-    } else if (error.code === 'session_not_found') {
-      // Neon Auth creates the account but withholds the session until the
-      // email address is verified.
-      toast.success('Registration successful. Check your email to verify your account.')
+    if (error) {
+      if (error.code === 'user_already_exists' || error.code === 'email_exists') {
+        toast.error('This email is already registered. Please log in.')
+      } else if (error.code === 'session_not_found') {
+        // Neon Auth creates the account but withholds the session until the
+        // email address is verified.
+        toast.success('Registration successful. Check your email to verify your account.')
+      } else {
+        toast.error(error.message)
+      }
     } else {
-      toast.error(error.message)
+      console.log('Registration successful:', data)
+      toast.success('Registration successful. You are now logged in.')
     }
-  } else {
-    console.log('Registration successful:', data)
-    toast.success('Registration successful. You are now logged in.')
+  } finally {
+    submitting.value = false
   }
 }
 
 </script>
 
 <template>
-  <div class="flex flex-col md:flex-row min-h-screen dark:bg-gray-900 transition-colors">
-
-    <div class="hidden md:flex w-1/2 items-center justify-center bg-white/80 dark:bg-gray-900">
-      <img src="@/assets/images/Login.svg" class="max-w-full max-h-full object-contain" alt="Signup background" />
+  <AuthShell>
+    <div class="text-center">
+      <h1 class="text-3xl font-extrabold tracking-tight text-gray-900 dark:text-white">
+        Hello,
+        <span class="bg-gradient-to-r from-indigo-500 via-violet-500 to-sky-500 bg-clip-text text-transparent">there</span>!
+      </h1>
+      <p class="mt-2 text-gray-500 dark:text-gray-300">Create your account and start your story.</p>
     </div>
 
-    <img src="@/assets/images/Login.svg"
-      class="block md:hidden absolute top-5 left-1/2 -translate-x-1/2 w-64 opacity-100 pointer-events-none select-none" />
+    <form class="mt-8 flex flex-col space-y-4" @submit.prevent="handleSignup">
+      <div class="space-y-1.5">
+        <label for="signup-username" class="text-sm font-medium text-gray-700 dark:text-gray-200">Username</label>
+        <Input id="signup-username" placeholder="Your name" v-model="username" autocomplete="name"
+          class="border-indigo-200/60 bg-white/70 focus-visible:border-indigo-400 focus-visible:ring-indigo-400/40 dark:border-white/10 dark:bg-white/5" />
+      </div>
 
-    <div class="flex-1 flex items-center justify-center bg-white/80 dark:bg-gray-900">
-      <Card
-        class="w-[90%] max-w-[360px] h-[520px] backdrop-blur-sm bg-white/80 dark:bg-white/10 shadow-md transition-colors">
-        <CardContent class="p-6 flex flex-col justify-between h-full">
+      <div class="space-y-1.5">
+        <label for="signup-email" class="text-sm font-medium text-gray-700 dark:text-gray-200">Email</label>
+        <Input id="signup-email" type="email" placeholder="you@example.com" v-model="email" autocomplete="email"
+          class="border-indigo-200/60 bg-white/70 focus-visible:border-indigo-400 focus-visible:ring-indigo-400/40 dark:border-white/10 dark:bg-white/5" />
+      </div>
 
-          <div class="text-center">
-            <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Hello, there!</h1>
-            <p class="text-xl text-gray-500 dark:text-gray-300">Please create your account.</p>
-          </div>
+      <div class="space-y-1.5">
+        <label for="signup-password" class="text-sm font-medium text-gray-700 dark:text-gray-200">Password</label>
+        <Input id="signup-password" type="password" placeholder="••••••••" v-model="password"
+          autocomplete="new-password"
+          class="border-indigo-200/60 bg-white/70 focus-visible:border-indigo-400 focus-visible:ring-indigo-400/40 dark:border-white/10 dark:bg-white/5" />
+      </div>
 
-          <div class="flex flex-col space-y-4 justify-center">
-            <Input placeholder="Username" v-model="username" />
-            <Input placeholder="Email" type="email" v-model="email" />
-            <Input type="password" placeholder="Password" v-model="password" />
-            <Input type="password" placeholder="Confirm Password" v-model="confirmPassword" />
-          </div>
+      <div class="space-y-1.5">
+        <label for="signup-confirm" class="text-sm font-medium text-gray-700 dark:text-gray-200">Confirm Password</label>
+        <Input id="signup-confirm" type="password" placeholder="••••••••" v-model="confirmPassword"
+          autocomplete="new-password"
+          class="border-indigo-200/60 bg-white/70 focus-visible:border-indigo-400 focus-visible:ring-indigo-400/40 dark:border-white/10 dark:bg-white/5" />
+      </div>
 
-          <div class="flex flex-col space-y-3">
-            <Button class="w-full" @click="handleSignup">Sign Up</Button>
-            <p class="text-sm text-center text-gray-600 dark:text-gray-300">
-              Already have an account?
-              <RouterLink to="/login" class="text-indigo-500 hover:underline">Log In</RouterLink>
-            </p>
-          </div>
+      <Button type="submit" class="mt-2 w-full border-0 bg-gradient-to-r from-indigo-500 to-violet-500 font-semibold
+        text-white shadow-lg shadow-indigo-500/25 transition-all duration-300
+        hover:-translate-y-0.5 hover:shadow-xl hover:shadow-indigo-500/30 disabled:pointer-events-none disabled:opacity-60"
+        :disabled="submitting">
+        {{ submitting ? 'Creating account…' : 'Sign Up' }}
+      </Button>
 
-        </CardContent>
-      </Card>
-    </div>
-  </div>
+      <p class="text-sm text-center text-gray-600 dark:text-gray-300">
+        Already have an account?
+        <RouterLink to="/login" class="font-medium text-indigo-500 hover:underline">Log In</RouterLink>
+      </p>
+    </form>
+  </AuthShell>
 </template>

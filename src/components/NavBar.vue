@@ -17,8 +17,9 @@ const fetchUser = async () => {
 onMounted(() => {
     fetchUser()
 
+    // Reflect the current theme for the toggle icon; applying it to <html>
+    // is handled once in App.vue.
     isDark.value = localStorage.getItem('theme') === 'dark'
-    document.documentElement.classList.toggle('dark', isDark.value)
 })
 
 const handleLogout = async () => {
