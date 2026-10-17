@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Input } from '@/components/ui/input'
-import { Card, CardContent } from '@/components/ui/card'
+import FormField from '@/components/FormField.vue'
+import { fieldClass } from '@/lib/formStyles'
 
 defineProps<{
     trainCompany: string
@@ -20,25 +21,36 @@ const emit = defineEmits<{
 </script>
 
 <template>
-    <Card class="relative z-10 max-w-2xl mx-auto bg-gray-50 dark:bg-gray-800 shadow-md">
-        <CardContent class="p-6 space-y-4">
-            <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">Add a Train – Basic</h2>
+    <div class="space-y-4">
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <FormField label="Train Company" required>
+                <Input :model-value="trainCompany"
+                    @update:model-value="emit('update:trainCompany', String($event))" placeholder="e.g. SNCF"
+                    :class="fieldClass" />
+            </FormField>
 
-            <div class="grid grid-cols-2 gap-4">
-                <Input :modelValue="trainCompany" @update:modelValue="emit('update:trainCompany', String($event))"
-                    placeholder="Train Company (e.g. SNCF)" />
-                <Input :modelValue="trainNumber" @update:modelValue="emit('update:trainNumber', String($event))"
-                    placeholder="Train Number (e.g. TGV 8475)" />
-            </div>
+            <FormField label="Train Number" required>
+                <Input :model-value="trainNumber" @update:model-value="emit('update:trainNumber', String($event))"
+                    placeholder="e.g. TGV 8475" :class="fieldClass" />
+            </FormField>
+        </div>
 
-            <div class="grid grid-cols-2 gap-4">
-                <Input :modelValue="departureStation" @update:modelValue="emit('update:departureStation', String($event))"
-                    placeholder="Departure Station" />
-                <Input :modelValue="arrivalStation" @update:modelValue="emit('update:arrivalStation', String($event))"
-                    placeholder="Arrival Station" />
-            </div>
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <FormField label="Departure Station" required>
+                <Input :model-value="departureStation"
+                    @update:model-value="emit('update:departureStation', String($event))" placeholder="e.g. Gare de Lyon"
+                    :class="fieldClass" />
+            </FormField>
 
-            <Input :modelValue="departureDate" @update:modelValue="emit('update:departureDate', String($event))" type="date" />
-        </CardContent>
-    </Card>
+            <FormField label="Arrival Station" required>
+                <Input :model-value="arrivalStation" @update:model-value="emit('update:arrivalStation', String($event))"
+                    placeholder="e.g. London St Pancras" :class="fieldClass" />
+            </FormField>
+        </div>
+
+        <FormField label="Departure Date" required>
+            <Input :model-value="departureDate" @update:model-value="emit('update:departureDate', String($event))"
+                type="date" :class="fieldClass" />
+        </FormField>
+    </div>
 </template>

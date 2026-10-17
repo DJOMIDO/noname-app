@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
+import FormField from '@/components/FormField.vue'
 import AirlineSelector from '@/components/AirlineSelector.vue'
 import AirportSelector from '@/components/AirportSelector.vue'
 import CurrencySelector from '@/components/CurrencySelector.vue'
+import { fieldClass } from '@/lib/formStyles'
 
 defineProps<{
     airlineCode: string
@@ -48,67 +49,126 @@ const emit = defineEmits<{
 </script>
 
 <template>
-    <Card class="relative z-10 max-w-2xl mx-auto bg-gray-50 dark:bg-gray-800 shadow-md">
-        <CardContent class="p-6 space-y-4">
-            <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">Add a Flight – Detailed</h2>
+    <div class="space-y-6">
+        <!-- Route -->
+        <fieldset class="space-y-4">
+            <legend class="mb-1 text-xs font-semibold uppercase tracking-wider text-indigo-500 dark:text-indigo-300">Route</legend>
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <FormField label="Airline" required>
+                    <AirlineSelector :model-value="airlineCode"
+                        @update:model-value="emit('update:airlineCode', $event)" />
+                </FormField>
 
-            <div class="grid grid-cols-2 gap-4">
-                <AirlineSelector :modelValue="airlineCode" @update:modelValue="emit('update:airlineCode', $event)" />
-                <Input :modelValue="flightNumber" @update:modelValue="emit('update:flightNumber', String($event))"
-                    placeholder="Flight Number (e.g. 1234)" />
+                <FormField label="Flight Number" required>
+                    <Input :model-value="flightNumber" @update:model-value="emit('update:flightNumber', String($event))"
+                        placeholder="e.g. 1234" :class="fieldClass" />
+                </FormField>
             </div>
 
-            <div class="grid grid-cols-2 gap-4">
-                <AirportSelector :modelValue="departureAirport"
-                    @update:modelValue="emit('update:departureAirport', $event)"
-                    placeholder="Departure Airport (e.g. CDG or Charles de Gaulle)" />
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <FormField label="Departure Airport" required>
+                    <AirportSelector :model-value="departureAirport"
+                        @update:model-value="emit('update:departureAirport', $event)"
+                        placeholder="e.g. CDG or Charles de Gaulle" />
+                </FormField>
 
-                <AirportSelector :modelValue="arrivalAirport" @update:modelValue="emit('update:arrivalAirport', $event)"
-                    placeholder="Arrival Airport (e.g. LHR or Heathrow)" />
+                <FormField label="Arrival Airport" required>
+                    <AirportSelector :model-value="arrivalAirport"
+                        @update:model-value="emit('update:arrivalAirport', $event)"
+                        placeholder="e.g. LHR or Heathrow" />
+                </FormField>
             </div>
 
-            <Input :modelValue="stopoverAirport" @update:modelValue="emit('update:stopoverAirport', String($event))"
-                placeholder="Stopover Airport (optional)" />
+            <FormField label="Stopover Airport">
+                <AirportSelector :model-value="stopoverAirport"
+                    @update:model-value="emit('update:stopoverAirport', $event)"
+                    placeholder="Optional — e.g. JFK" />
+            </FormField>
+        </fieldset>
 
-            <div class="grid grid-cols-2 gap-4">
-                <Input :modelValue="departureDate" @update:modelValue="emit('update:departureDate', String($event))"
-                    type="date" />
-                <Input :modelValue="departureTime" @update:modelValue="emit('update:departureTime', String($event))"
-                    type="time" />
+        <!-- Schedule -->
+        <fieldset class="space-y-4">
+            <legend class="mb-1 text-xs font-semibold uppercase tracking-wider text-indigo-500 dark:text-indigo-300">Schedule</legend>
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <FormField label="Departure Date" required>
+                    <Input :model-value="departureDate"
+                        @update:model-value="emit('update:departureDate', String($event))" type="date"
+                        :class="fieldClass" />
+                </FormField>
+                <FormField label="Departure Time">
+                    <Input :model-value="departureTime"
+                        @update:model-value="emit('update:departureTime', String($event))" type="time"
+                        :class="fieldClass" />
+                </FormField>
             </div>
 
-            <div class="grid grid-cols-2 gap-4">
-                <Input :modelValue="arrivalDate" @update:modelValue="emit('update:arrivalDate', String($event))"
-                    type="date" />
-                <Input :modelValue="arrivalTime" @update:modelValue="emit('update:arrivalTime', String($event))"
-                    type="time" />
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <FormField label="Arrival Date">
+                    <Input :model-value="arrivalDate"
+                        @update:model-value="emit('update:arrivalDate', String($event))" type="date"
+                        :class="fieldClass" />
+                </FormField>
+                <FormField label="Arrival Time">
+                    <Input :model-value="arrivalTime"
+                        @update:model-value="emit('update:arrivalTime', String($event))" type="time"
+                        :class="fieldClass" />
+                </FormField>
+            </div>
+        </fieldset>
+
+        <!-- Seat & Aircraft -->
+        <fieldset class="space-y-4">
+            <legend class="mb-1 text-xs font-semibold uppercase tracking-wider text-indigo-500 dark:text-indigo-300">Seat &amp; Aircraft</legend>
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <FormField label="Gate">
+                    <Input :model-value="gate" @update:model-value="emit('update:gate', String($event))"
+                        placeholder="e.g. A23" :class="fieldClass" />
+                </FormField>
+                <FormField label="Seat Number">
+                    <Input :model-value="seatNumber"
+                        @update:model-value="emit('update:seatNumber', String($event))" placeholder="e.g. 12A"
+                        :class="fieldClass" />
+                </FormField>
             </div>
 
-            <div class="grid grid-cols-2 gap-4">
-                <Input :modelValue="gate" @update:modelValue="emit('update:gate', String($event))"
-                    placeholder="Gate (e.g. A23)" />
-                <Input :modelValue="seatNumber" @update:modelValue="emit('update:seatNumber', String($event))"
-                    placeholder="Seat Number (e.g. 12A)" />
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <FormField label="Aircraft Type">
+                    <Input :model-value="aircraftType"
+                        @update:model-value="emit('update:aircraftType', String($event))" placeholder="e.g. A320"
+                        :class="fieldClass" />
+                </FormField>
+                <FormField label="Registration">
+                    <Input :model-value="aircraftReg"
+                        @update:model-value="emit('update:aircraftReg', String($event))" placeholder="e.g. F-GKXA"
+                        :class="fieldClass" />
+                </FormField>
+            </div>
+        </fieldset>
+
+        <!-- Booking -->
+        <fieldset class="space-y-4">
+            <legend class="mb-1 text-xs font-semibold uppercase tracking-wider text-indigo-500 dark:text-indigo-300">Booking</legend>
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <FormField label="Price">
+                    <Input :model-value="price" @update:model-value="emit('update:price', String($event))"
+                        type="number" placeholder="e.g. 89.50" :class="fieldClass" />
+                </FormField>
+                <FormField label="Currency">
+                    <CurrencySelector :model-value="currency"
+                        @update:model-value="emit('update:currency', $event)" />
+                </FormField>
             </div>
 
-            <div class="grid grid-cols-2 gap-4">
-                <Input :modelValue="aircraftType" @update:modelValue="emit('update:aircraftType', String($event))"
-                    placeholder="Aircraft Type (e.g. A320)" />
-                <Input :modelValue="aircraftReg" @update:modelValue="emit('update:aircraftReg', String($event))"
-                    placeholder="Registration (e.g. F-GKXA)" />
-            </div>
+            <FormField label="Booking Reference">
+                <Input :model-value="bookingRef"
+                    @update:model-value="emit('update:bookingRef', String($event))" placeholder="e.g. XYZ123"
+                    :class="fieldClass" />
+            </FormField>
 
-            <div class="grid grid-cols-2 gap-4">
-                <Input :modelValue="price" @update:modelValue="emit('update:price', String($event))" type="number"
-                    placeholder="Price (e.g. 89.50)" />
-                <CurrencySelector :modelValue="currency" @update:modelValue="emit('update:currency', $event)" />
-            </div>
-
-            <Input :modelValue="bookingRef" @update:modelValue="emit('update:bookingRef', String($event))"
-                placeholder="Booking Reference (e.g. XYZ123)" />
-
-            <Textarea :modelValue="notes" @update:modelValue="emit('update:notes', String($event))"
-                placeholder="Additional notes..." rows="3" />
-        </CardContent>
-    </Card>
+            <FormField label="Notes">
+                <Textarea :model-value="notes" @update:model-value="emit('update:notes', String($event))"
+                    placeholder="Additional notes..." rows="3" :class="fieldClass" />
+            </FormField>
+        </fieldset>
+    </div>
 </template>
