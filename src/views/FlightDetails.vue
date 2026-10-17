@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { DateTime } from 'luxon'
 import { Plane } from 'lucide-vue-next'
 import { client } from '@/lib/neon'
+import { invalidateJourneysCache } from '@/composables/useJourneys'
 import { toast } from 'vue-sonner'
 import airlines from '@/assets/data/airlines.json'
 import { airportByIata, haversineKm, timezoneOffsetDiffHours } from '@/lib/geo'
@@ -121,6 +122,7 @@ const handleSave = async () => {
         toast.error('Update failed: ' + error.message)
     } else {
         toast.success('Flight updated.')
+        invalidateJourneysCache()
         isEditing.value = false
         fetchFlight()
     }
@@ -133,6 +135,7 @@ const handleDelete = async () => {
         toast.error('Delete failed: ' + error.message)
     } else {
         toast.success('Flight deleted.')
+        invalidateJourneysCache()
         router.push('/journeys')
     }
 }

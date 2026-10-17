@@ -27,6 +27,7 @@
 
 ### Done
 
+- [x] 数据层收敛与统计页加载优化（分支 `refactor/journeys-data-layer`：新增 useJourneys composable——统计专用窄列查询（裁掉 notes/booking_ref/gate 等图表不消费字段，全量拉取 payload 大幅减小）+ 按 userId 隔离的 module 级缓存；Stats.vue 改用它，二次进入秒开；7 个写入点（录入/编辑/删除/CSV 导入）全部接入缓存失效，增删改后统计不会显示脏数据；类型出口用客户端官方 .returns<T>() 无强转）
 - [x] 欢迎页区分登录态（分支 `feat/home-logged-in-summary`，PR #28 已合并：新增 HomeSummary 个性化卡片——问候语 + 航班/火车计数 chips + 最近 3 条行程快捷入口；零行程的登录用户仍看 TravelIntro 激励页，与游客一致；数据加载完成后才切换展示，避免闪现）
 - [x] 行程列表搜索与年份筛选（分支 `feat/journey-search-filter`：新增 JourneysFilterBar（防抖搜索框 + 年份 chips，同时作用于两个 Tab）；PostgREST or/ilike 多字段匹配，城市名自动扩展为 IATA 码集合（airports.json 本地查表），MU5101 式连写航班号识别航司前缀拆分匹配；过滤变化页码归 1（合并 watcher 防重复请求）；空态区分「无数据」与「无匹配」；踩坑：date 列不能 ILIKE，or=() 语法不支持 cast(text)，日期收窄由年份 chips 的 gte/lte 承担）
 - [x] 统一未登录访问逻辑（分支 `feat/guest-browse-auth-states`：消除「首页卡片拦截、导航栏放行」的矛盾——所有入口都可进入页面；Journeys/Stats 与 CSV 导入用可复用的 GuestState 引导登录，取代红色 error toast；useAuthUser 收敛为鉴权单一真源（isLoggedIn/ready/refresh）；录入表单游客可填写，保存时跳 `login?next` 并用 localStorage 草稿保留输入，登录后回原页恢复；登录/注册按 next 回跳并清理调试日志）

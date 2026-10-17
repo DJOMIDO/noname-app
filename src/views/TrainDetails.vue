@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { DateTime } from 'luxon'
 import { Train } from 'lucide-vue-next'
 import { client } from '@/lib/neon'
+import { invalidateJourneysCache } from '@/composables/useJourneys'
 import { toast } from 'vue-sonner'
 import JourneyDetailShell from '@/components/JourneyDetailShell.vue'
 import AddTrainDetailed from '@/components/AddTrainDetailed.vue'
@@ -108,6 +109,7 @@ const handleSave = async () => {
         toast.error('Update failed: ' + error.message)
     } else {
         toast.success('Train journey updated.')
+        invalidateJourneysCache()
         isEditing.value = false
         fetchTrain()
     }
@@ -120,6 +122,7 @@ const handleDelete = async () => {
         toast.error('Delete failed: ' + error.message)
     } else {
         toast.success('Train journey deleted.')
+        invalidateJourneysCache()
         router.push('/journeys')
     }
 }

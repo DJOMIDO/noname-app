@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router'
 import { toast } from 'vue-sonner'
 import { client } from '@/lib/neon'
 import { useAuthUser } from '@/composables/useAuthUser'
+import { invalidateJourneysCache } from '@/composables/useJourneys'
 import { saveDraft, loadDraft, clearDraft } from '@/lib/drafts'
 import JourneyFormShell from '@/components/JourneyFormShell.vue'
 import AddFlightBasic from '@/components/AddFlightBasic.vue'
@@ -89,6 +90,7 @@ const handleSubmit = async () => {
             toast.error(error.message)
         } else {
             toast.success('Flight added successfully!')
+            invalidateJourneysCache()
             resetForm()
             clearDraft(DRAFT_KEY)
         }

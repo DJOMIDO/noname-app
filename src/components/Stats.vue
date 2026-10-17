@@ -1,9 +1,8 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { client } from '@/lib/neon'
 import { useAuthUser } from '@/composables/useAuthUser'
+import { useJourneys } from '@/composables/useJourneys'
 import { toast } from 'vue-sonner'
-import type { Flight, Train } from '@/types/journeys'
 import { useJourneyStats } from '@/composables/useJourneyStats'
 import StatOverview from '@/components/StatOverview.vue'
 import FlightStats from '@/components/FlightStats.vue'
@@ -16,9 +15,7 @@ import iconJourney from '@/assets/images/journey.png'
 import iconFlight from '@/assets/images/flight.png'
 import iconTrain from '@/assets/images/train.png'
 
-const flights = ref<Flight[]>([])
-const trains = ref<Train[]>([])
-const loading = ref(true)
+const { flights, trains, loading, error, load } = useJourneys()
 const activeTab = ref('overview')
 
 const { user, isLoggedIn, ready, fetchUser } = useAuthUser()
@@ -37,28 +34,14 @@ const {
 
 const hasJourneys = computed(() => flights.value.length > 0 || trains.value.length > 0)
 
-const fetchData = async () => {
-    if (!isLoggedIn.value) return
-    loading.value = true
-
-    const [flightRes, trainRes] = await Promise.all([
-        client.from('flights').select('*').eq('user_id', user.value.id),
-        client.from('trains').select('*').eq('user_id', user.value.id),
-    ])
-
-    if (flightRes.error) toast.error(flightRes.error.message)
-    else flights.value = flightRes.data || []
-
-    if (trainRes.error) toast.error(trainRes.error.message)
-    else trains.value = trainRes.data || []
-
-    loading.value = false
-}
-
 onMounted(async () => {
     await fetchUser()
-    if (isLoggedIn.value) fetchData()
-    else loading.value = false
+    if (isLoggedIn.value && user.value) {
+        await load(user.value.id)
+        if (error.value) toast.error(error.value)
+    } else {
+        loading.value = false
+    }
 })
 </script>
 

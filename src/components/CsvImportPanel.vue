@@ -5,6 +5,7 @@ import { toast } from 'vue-sonner'
 import { Download, Upload, X } from 'lucide-vue-next'
 import { client } from '@/lib/neon'
 import { useAuthUser } from '@/composables/useAuthUser'
+import { invalidateJourneysCache } from '@/composables/useJourneys'
 import { Button } from '@/components/ui/button'
 import CsvImportPreview from '@/components/CsvImportPreview.vue'
 import {
@@ -120,6 +121,7 @@ const importRows = async () => {
     }
 
     toast.success(`${validRows.value.length} ${label.value} journeys imported successfully.`)
+    invalidateJourneysCache()
     reset()
     emit('close')
   } finally {
