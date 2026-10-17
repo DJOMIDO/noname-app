@@ -1,11 +1,20 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { Card } from '@/components/ui/card'
+import type { Flight } from '@/types/journeys'
 import { getFlightDuration } from '@/utils/getFlightDuration'
-const props = defineProps<{ flights: any[] }>()
+import StatCard from '@/components/stats/StatCard.vue'
 
-const durations = computed(() => {
-    return props.flights
+const props = defineProps<{ flights: Flight[] }>()
+
+type FlightWithDuration = Flight & { duration: number }
+
+const glassPanel =
+    'rounded-2xl border border-white/60 bg-white/70 p-6 text-center shadow-sm backdrop-blur-md ' +
+    'transition-all duration-300 hover:-translate-y-0.5 hover:border-brand/40 hover:shadow-lg hover:shadow-brand/15 ' +
+    'dark:border-white/10 dark:bg-white/5 dark:hover:border-brand/40'
+
+const durations = computed<FlightWithDuration[]>(() =>
+    props.flights
         .map(f => {
             const mins = getFlightDuration(
                 f.departure_airport,
@@ -13,19 +22,17 @@ const durations = computed(() => {
                 f.departure_time,
                 f.arrival_airport,
                 f.arrival_date,
-                f.arrival_time
+                f.arrival_time,
             )
             return mins != null ? { ...f, duration: mins } : null
         })
-        .filter(Boolean)
-        .sort((a, b) => b!.duration - a!.duration)
-})
-
-const totalMinutes = computed(() =>
-    durations.value.reduce((sum, f) => sum + f.duration, 0)
+        .filter((f): f is FlightWithDuration => f !== null)
+        .sort((a, b) => b.duration - a.duration),
 )
+
+const totalMinutes = computed(() => durations.value.reduce((sum, f) => sum + f.duration, 0))
 const top5Longest = computed(() => durations.value.slice(0, 5))
-const shortest = computed(() => durations.value[durations.value.length - 1] || null)
+const shortest = computed(() => durations.value[durations.value.length - 1] ?? null)
 
 function formatDuration(mins: number): string {
     const h = Math.floor(mins / 60)
@@ -35,44 +42,32 @@ function formatDuration(mins: number): string {
 </script>
 
 <template>
-    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 w-full max-w-6xl mx-auto">
-        <Card class="p-6 text-center bg-gray-100 dark:bg-gray-800">
-            <h3 class="text-sm text-gray-500 dark:text-gray-300 mb-1">Total Flight Time</h3>
-            <div class="flex-1 flex items-center justify-center">
-                <p class="text-3xl font-bold text-indigo-600 dark:text-indigo-300">
-                    {{ formatDuration(totalMinutes) }}
-                </p>
-            </div>
-        </Card>
+    <div class="mx-auto grid w-full max-w-6xl grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <StatCard label="Total Flight Time" :value="formatDuration(totalMinutes)" />
 
-        <Card class="p-6 text-center bg-gray-100 dark:bg-gray-800">
-            <h3 class="text-sm text-gray-500 dark:text-gray-300 mb-2 text-center">Top 5 Longest Flights</h3>
-            <ul class="text-sm text-gray-700 dark:text-gray-200 space-y-1">
+        <div :class="glassPanel">
+            <h3 class="mb-2 text-sm text-gray-500 dark:text-gray-300">Top 5 Longest Flights</h3>
+            <ul v-if="top5Longest.length" class="space-y-1 text-sm text-gray-700 dark:text-gray-200">
                 <li v-for="f in top5Longest" :key="f.id">
-                    <span class="text-indigo-600 dark:text-indigo-300">
+                    <span class="font-medium text-brand dark:text-violet-200">
                         {{ f.departure_airport }} → {{ f.arrival_airport }}
                     </span>
-                    :
-                    <span class="text-green-600 dark:text-green-300">
-                        {{ formatDuration(f.duration) }}
-                    </span>
+                    <span class="mx-1 text-gray-400">·</span>
+                    <span class="text-mint dark:text-green-300">{{ formatDuration(f.duration) }}</span>
                 </li>
             </ul>
-        </Card>
+            <p v-else class="text-sm italic text-gray-400">No duration data yet</p>
+        </div>
 
-        <Card v-if="shortest" class="p-6 bg-gray-100 dark:bg-gray-800">
-            <h3 class="text-sm text-gray-500 dark:text-gray-300 mb-2 text-center">Shortest Flight</h3>
-            <div class="flex-1 flex items-center justify-center">
-                <p class="text-sm text-center">
-                    <span class="text-indigo-600 dark:text-indigo-300">
-                        {{ shortest.departure_airport }} → {{ shortest.arrival_airport }}
-                    </span>
-                    :
-                    <span class="text-green-600 dark:text-green-300">
-                        {{ formatDuration(shortest.duration) }}
-                    </span>
-                </p>
-            </div>
-        </Card>
+        <div v-if="shortest" :class="glassPanel">
+            <h3 class="mb-2 text-sm text-gray-500 dark:text-gray-300">Shortest Flight</h3>
+            <p class="text-sm">
+                <span class="font-medium text-brand dark:text-violet-200">
+                    {{ shortest.departure_airport }} → {{ shortest.arrival_airport }}
+                </span>
+                <span class="mx-1 text-gray-400">·</span>
+                <span class="text-mint dark:text-green-300">{{ formatDuration(shortest.duration) }}</span>
+            </p>
+        </div>
     </div>
 </template>

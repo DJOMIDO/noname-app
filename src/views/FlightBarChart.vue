@@ -10,10 +10,11 @@ import {
     LinearScale
 } from 'chart.js'
 import { computed } from 'vue'
+import type { Flight } from '@/types/journeys'
 
 ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale)
 
-const props = defineProps<{ flights: any[] }>()
+const props = defineProps<{ flights: Flight[] }>()
 
 const chartData = computed(() => {
     const counts: Record<string, number> = {}
@@ -34,7 +35,7 @@ const chartData = computed(() => {
             {
                 label: 'Flights per Month',
                 data,
-                backgroundColor: '#4f46e5'
+                backgroundColor: '#7b5ff1'
             }
         ]
     }
