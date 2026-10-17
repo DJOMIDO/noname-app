@@ -42,8 +42,8 @@ const toggleDark = () => {
          bg-white/80 dark:bg-gray-900 backdrop-blur border-b border-slate-200
          dark:border-slate-700">
         <router-link to="/"
-            class="text-xl font-semibold text-brand dark:text-violet-300 hover:text-violet-700 dark:hover:text-violet-200 hover:scale-105 transition">
-            NoNameApp
+            class="font-display text-xl font-semibold tracking-tight text-brand dark:text-violet-300 hover:text-violet-700 dark:hover:text-violet-200 hover:scale-105 transition">
+            vivavia
         </router-link>
 
         <div class="flex items-center space-x-4">

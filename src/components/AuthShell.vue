@@ -26,8 +26,8 @@ defineProps<{
 
     <!-- Brand link (auth pages render without NavBar, see App.vue) -->
     <router-link to="/"
-      class="animate-in fade-in relative z-20 px-6 py-5 text-xl font-semibold text-brand transition hover:scale-105 hover:text-violet-700 dark:text-violet-300 dark:hover:text-violet-100">
-      NoNameApp
+      class="font-display animate-in fade-in relative z-20 px-6 py-5 text-xl font-semibold tracking-tight text-brand transition hover:scale-105 hover:text-violet-700 dark:text-violet-300 dark:hover:text-violet-100">
+      vivavia
     </router-link>
 
     <div class="relative z-10 flex flex-1 items-center justify-center px-4 pb-10 lg:px-16">
