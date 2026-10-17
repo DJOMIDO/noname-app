@@ -18,7 +18,7 @@
 
 ### Todo
 
-- [ ] 【阻塞·高优】修复 Neon Data API 下 `auth.user_id()` 返回 NULL 导致 RLS 读写全面失效（app 无法增删查自身数据，本地与部署版均受影响）。根因：JWT claims 进了 `request.jwt.claims`（角色可切换）但未进 `pg_session_jwt`。修法：migration 的 RLS 策略与 `user_id` 默认值改用 `current_setting('request.jwt.claims', true)::jsonb ->> 'sub'`（建议分支 `fix/neon-rls-user-id`）
+- [ ] 确认部署环境（Netlify）的 `VITE_NEON_URL` 与本地共用同一 endpoint（`ep-floral-sun-b9mm9800`）；若是则 migration 已直接生效（app 实测写入 user_id 正确），无需额外操作；若部署指向另一 Neon 分支，则需对该分支重跑本 migration
 - [ ] 接入密码重置与 Remember me 功能（当前为占位死链）（建议分支 `feat/password-reset`）
 - [ ] 欢迎页区分登录态：登录后展示最近行程 / 数据摘要（建议分支 `feat/home-logged-in-summary`）
 
@@ -28,6 +28,7 @@
 
 ### Done
 
+- [x] 修复 Neon Data API 下 RLS 读写全面失效（分支 `fix/neon-rls-user-id`：根因——Data API 只写入 `request.jwt.claims`（角色可切换）却未初始化 pg_session_jwt，`auth.user_id()` 恒为 NULL。新增 `public.current_user_id()` 从 `current_setting('request.jwt.claims', true)::jsonb ->> 'sub'` 取用户 id；migration 的 `user_id` 默认值与全部 RLS 策略改用该函数，并对已存在表 `ALTER COLUMN ... SET DEFAULT`。开发库以 authenticated 角色 + claims 模拟验证增/查/改/删全部通过，临时 dev policies 已回滚）
 - [x] 查看记录列表页改版（分支 `feat/redesign-journeys-list`：玻璃卡片 + RouterLink 可访问性修复、中性 iOS 分段控件、骨架屏 / 空态 CTA、胶囊分页；过程中发现数据层 auth 阻塞，已转 Todo 单独修复）
 - [x] 全站配色体系重构（分支 `feat/tune-form-palette`：从 Travel.svg 插画提取 brand/sunset/mint/lilac 四色注册为 @theme 令牌；色彩角色分工——橙=实色 CTA、紫=小面积状态指示、绿=氛围光斑、白=主体；渐变统一紫→天蓝且橙色不入渐变；Tabs 改中性 iOS 分段控件；Login/Signup 输入框样式收敛到共享 fieldClass）
 - [x] 添加航班 / 添加火车页改版（分支 `feat/redesign-add-journey-pages`：抽取 JourneyFormShell / FormField / AutocompleteInput 共享件消除两页重复；全字段补 label、Detailed 分组、移动端单列；模式切换移入卡片内与表单贴近；CSV 导入面板重做：玻璃模态 + 拖拽上传 + Esc/遮罩关闭；修复选择器保存后不重置的存量 bug）
