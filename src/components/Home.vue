@@ -76,7 +76,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <section class="relative flex min-h-full flex-col items-center justify-center overflow-hidden px-4 py-10 transition-colors
+  <section class="relative flex min-h-full flex-col items-center justify-center overflow-hidden px-4 pt-10 pb-24 transition-colors
     bg-gradient-to-b from-lilac/40 via-white to-white
     text-gray-800 dark:from-gray-950 dark:via-gray-900 dark:to-gray-900 dark:text-gray-100">
 
