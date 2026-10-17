@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { Input } from '@/components/ui/input'
-import { Card, CardContent } from '@/components/ui/card'
+import FormField from '@/components/FormField.vue'
 import AirlineSelector from '@/components/AirlineSelector.vue'
 import AirportSelector from '@/components/AirportSelector.vue'
+import { fieldClass } from '@/lib/formStyles'
 
 defineProps<{
     airlineCode: string
@@ -22,29 +23,35 @@ const emit = defineEmits<{
 </script>
 
 <template>
-    <Card class="relative z-10 max-w-2xl mx-auto bg-gray-50 dark:bg-gray-800 shadow-md">
-        <CardContent class="p-6 space-y-4">
-            <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">Add a Flight – Basic</h2>
+    <div class="space-y-4">
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <FormField label="Airline" required>
+                <AirlineSelector :model-value="airlineCode"
+                    @update:model-value="emit('update:airlineCode', $event)" />
+            </FormField>
 
-            <div class="grid grid-cols-2 gap-4">
-                <AirlineSelector :modelValue="airlineCode" @update:modelValue="emit('update:airlineCode', $event)" />
+            <FormField label="Flight Number" required>
+                <Input :model-value="flightNumber" @update:model-value="emit('update:flightNumber', String($event))"
+                    placeholder="e.g. 1234" :class="fieldClass" />
+            </FormField>
+        </div>
 
-                <Input :modelValue="flightNumber" @update:modelValue="emit('update:flightNumber', String($event))"
-                    placeholder="Flight Number (e.g. 1234)" />
-            </div>
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <FormField label="Departure Airport" required>
+                <AirportSelector :model-value="departureAirport"
+                    @update:model-value="emit('update:departureAirport', $event)"
+                    placeholder="e.g. CDG or Charles de Gaulle" />
+            </FormField>
 
-            <div class="grid grid-cols-2 gap-4">
-                <AirportSelector :modelValue="departureAirport"
-                    @update:modelValue="emit('update:departureAirport', $event)"
-                    placeholder="Departure Airport (e.g. CDG or Charles de Gaulle)" />
+            <FormField label="Arrival Airport" required>
+                <AirportSelector :model-value="arrivalAirport"
+                    @update:model-value="emit('update:arrivalAirport', $event)" placeholder="e.g. LHR or Heathrow" />
+            </FormField>
+        </div>
 
-                <AirportSelector :modelValue="arrivalAirport" @update:modelValue="emit('update:arrivalAirport', $event)"
-                    placeholder="Arrival Airport (e.g. LHR or Heathrow)" />
-
-            </div>
-
-            <Input :modelValue="departureDate" @update:modelValue="emit('update:departureDate', String($event))"
-                type="date" />
-        </CardContent>
-    </Card>
+        <FormField label="Departure Date" required>
+            <Input :model-value="departureDate" @update:model-value="emit('update:departureDate', String($event))"
+                type="date" :class="fieldClass" />
+        </FormField>
+    </div>
 </template>
