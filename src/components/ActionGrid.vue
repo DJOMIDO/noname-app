@@ -14,7 +14,7 @@ const actions = [
 </script>
 
 <template>
-  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-3xl mx-auto">
-    <ActionCard v-for="(action, index) in actions" :key="index" v-bind="action" />
+  <div class="mx-auto grid max-w-4xl grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+    <ActionCard v-for="(action, index) in actions" :key="index" v-bind="action" :index="index" />
   </div>
 </template>
