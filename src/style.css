@@ -10,6 +10,9 @@
   --color-mint: #55d087;    /* illustration green */
   --color-lilac: #e3e3ff;   /* illustration pale tint */
 
+  /* Display font for the brand wordmark (loaded via Google Fonts in index.html) */
+  --font-display: "Outfit", ui-sans-serif, system-ui, sans-serif;
+
   --animate-float: float 5s ease-in-out infinite;
   --animate-blob: blob 14s ease-in-out infinite;
 
