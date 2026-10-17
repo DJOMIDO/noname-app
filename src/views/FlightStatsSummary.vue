@@ -1,13 +1,14 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { Flight, CurrencyTotals } from '@/types/journeys'
+import type { CurrencyTotals } from '@/types/journeys'
+import type { FlightStatsRow } from '@/lib/journeyColumns'
 import { mostFrequent, type TopResult } from '@/lib/stats'
 import StatCard from '@/components/stats/StatCard.vue'
 import CurrencyTotalsList from '@/components/stats/CurrencyTotalsList.vue'
 import airlines from '@/assets/data/airlines.json'
 
 const props = defineProps<{
-    flights: Flight[]
+    flights: FlightStatsRow[]
     totalSpentByCurrency: CurrencyTotals
 }>()
 

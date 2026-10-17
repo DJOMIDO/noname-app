@@ -4,35 +4,20 @@
 // the stats dashboard never shows stale aggregates.
 import { ref } from 'vue'
 import { client } from '@/lib/neon'
-import type { Flight, Train } from '@/types/journeys'
+import {
+    FLIGHT_STATS_COLUMNS, TRAIN_STATS_COLUMNS,
+    type FlightStatsRow, type TrainStatsRow,
+} from '@/lib/journeyColumns'
 
-// Narrow column sets for the stats dashboard — detail-only fields like notes,
-// booking refs or seat numbers are deliberately excluded to keep the
-// full-dataset payload minimal.
-export const FLIGHT_STATS_COLUMNS = [
-    'id', 'airline_code', 'flight_number',
-    'departure_airport', 'arrival_airport',
-    'departure_date', 'arrival_date', 'departure_time', 'arrival_time',
-    'aircraft_type', 'price', 'currency',
-].join(',')
-
-export const TRAIN_STATS_COLUMNS = [
-    'id', 'train_company', 'train_number', 'train_type',
-    'departure_station', 'arrival_station',
-    'departure_city', 'arrival_city',
-    'departure_date', 'arrival_date', 'departure_time', 'arrival_time',
-    'price', 'currency',
-].join(',')
-
-let cache: { userId: string; flights: Flight[]; trains: Train[] } | null = null
+let cache: { userId: string; flights: FlightStatsRow[]; trains: TrainStatsRow[] } | null = null
 
 export function invalidateJourneysCache() {
     cache = null
 }
 
 export function useJourneys() {
-    const flights = ref<Flight[]>([])
-    const trains = ref<Train[]>([])
+    const flights = ref<FlightStatsRow[]>([])
+    const trains = ref<TrainStatsRow[]>([])
     const loading = ref(false)
     const error = ref<string | null>(null)
 
@@ -48,8 +33,8 @@ export function useJourneys() {
         error.value = null
 
         const [flightRes, trainRes] = await Promise.all([
-            client.from('flights').select(FLIGHT_STATS_COLUMNS).eq('user_id', userId).returns<Flight[]>(),
-            client.from('trains').select(TRAIN_STATS_COLUMNS).eq('user_id', userId).returns<Train[]>(),
+            client.from('flights').select(FLIGHT_STATS_COLUMNS).eq('user_id', userId).returns<FlightStatsRow[]>(),
+            client.from('trains').select(TRAIN_STATS_COLUMNS).eq('user_id', userId).returns<TrainStatsRow[]>(),
         ])
 
         if (flightRes.error || trainRes.error) {

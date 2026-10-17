@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import type { Flight, CurrencyTotals } from '@/types/journeys'
+import type { CurrencyTotals } from '@/types/journeys'
+import type { FlightStatsRow } from '@/lib/journeyColumns'
 import FlightMapChart from '@/views/FlightMapChart.vue'
 import FlightRouteChart from '@/views/FlightRouteChart.vue'
 import FlightBarChart from '@/views/FlightBarChart.vue'
@@ -8,7 +9,7 @@ import FlightStatsSummary from '@/views/FlightStatsSummary.vue'
 import ChartPanel from '@/components/stats/ChartPanel.vue'
 
 defineProps<{
-    flights: Flight[]
+    flights: FlightStatsRow[]
     totalSpentByCurrency: CurrencyTotals
 }>()
 </script>

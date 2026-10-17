@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { Train, CurrencyTotals } from '@/types/journeys'
+import type { CurrencyTotals } from '@/types/journeys'
+import type { TrainStatsRow } from '@/lib/journeyColumns'
 import { mostFrequent, type TopResult } from '@/lib/stats'
 import StatCard from '@/components/stats/StatCard.vue'
 import CurrencyTotalsList from '@/components/stats/CurrencyTotalsList.vue'
 
 const props = defineProps<{
-    trains: Train[]
+    trains: TrainStatsRow[]
     totalSpentByCurrency: CurrencyTotals
 }>()
 
