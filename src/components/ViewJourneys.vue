@@ -5,11 +5,13 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import BackButton from '@/components/BackButton.vue'
 import Pagination from '@/components/Pagination.vue'
 import GuestState from '@/components/GuestState.vue'
+import JourneysFilterBar from '@/components/JourneysFilterBar.vue'
 import { useAuthUser } from '@/composables/useAuthUser'
 import { toast } from 'vue-sonner'
 import iconFlight from '@/assets/images/flight.png'
 import iconTrain from '@/assets/images/train.png'
 import airports from '@/assets/data/airports.json'
+import airlines from '@/assets/data/airlines.json'
 import { getFlightDuration } from '@/utils/getFlightDuration.ts'
 
 const activeTab = ref('flights')
@@ -29,6 +31,74 @@ const currentTrainPage = ref(1)
 const totalTrainCount = ref(0)
 const trainsPerPage = 6
 const totalTrainPages = computed(() => Math.ceil(totalTrainCount.value / trainsPerPage))
+
+// --- Search & year filters (applied to both tabs) ---
+const searchQuery = ref('')
+const yearFilter = ref<number | null>(null)
+const years = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i)
+const hasActiveFilter = computed(() => searchQuery.value !== '' || yearFilter.value !== null)
+
+// Commas/parens/% would break the PostgREST `or(...)` syntax, so strip them.
+const sanitize = (q: string) => q.replace(/[,%()%]/g, ' ').trim()
+
+// The cards show city names and "MU5101"-style concatenated numbers, while the
+// rows store IATA codes and split fields — expand the term so users can search
+// exactly what they see.
+const flightOrFilter = (q: string): string => {
+    const like = `%${q}%`
+    const parts = [
+        `airline_code.ilike.${like}`,
+        `flight_number.ilike.${like}`,
+        `departure_airport.ilike.${like}`,
+        `arrival_airport.ilike.${like}`,
+        // NB: no date text search here — `or=()` rejects cast(text), and ILIKE
+        // on a `date` column errors. The year chips cover date narrowing.
+    ]
+
+    const ql = q.toLowerCase()
+    const codes = [
+        ...new Set(
+            (airports as { iata: string; city?: string; name?: string }[])
+                .filter(a => a.city?.toLowerCase().includes(ql) || a.name?.toLowerCase().includes(ql))
+                .map(a => a.iata),
+        ),
+    ].slice(0, 30)
+    if (codes.length) {
+        parts.push(`departure_airport.in.(${codes.join(',')})`)
+        parts.push(`arrival_airport.in.(${codes.join(',')})`)
+    }
+
+    const m = q.toUpperCase().match(/^([A-Z0-9]{2})(\d.+)$/)
+    if (m && (airlines as { code: string }[]).some(a => a.code === m[1])) {
+        parts.push(`and(airline_code.eq.${m[1]},flight_number.ilike.%${m[2]}%)`)
+    }
+
+    return parts.join(',')
+}
+
+const trainOrFilter = (q: string): string => {
+    const like = `%${q}%`
+    return [
+        `train_company.ilike.${like}`,
+        `train_number.ilike.${like}`,
+        `departure_station.ilike.${like}`,
+        `arrival_station.ilike.${like}`,
+        `departure_city.ilike.${like}`,
+        `arrival_city.ilike.${like}`,
+    ].join(',')
+}
+
+const onSearch = (q: string) => {
+    searchQuery.value = q
+    currentFlightPage.value = 1
+    currentTrainPage.value = 1
+}
+
+const onYearChange = (y: number | null) => {
+    yearFilter.value = y
+    currentFlightPage.value = 1
+    currentTrainPage.value = 1
+}
 
 const getCityFromIATA = (iata: string): string | undefined => {
     const match = airports.find(a => a.iata === iata)
@@ -59,10 +129,22 @@ const fetchFlights = async () => {
     const from = (currentFlightPage.value - 1) * flightsPerPage
     const to = from + flightsPerPage - 1
 
-    const { data, count, error } = await client
+    let build = client
         .from('flights')
         .select('*', { count: 'exact' })
         .eq('user_id', user.value.id)
+
+    const q = sanitize(searchQuery.value)
+    if (q) {
+        build = build.or(flightOrFilter(q))
+    }
+    if (yearFilter.value) {
+        build = build
+            .gte('departure_date', `${yearFilter.value}-01-01`)
+            .lte('departure_date', `${yearFilter.value}-12-31`)
+    }
+
+    const { data, count, error } = await build
         .order('departure_date', { ascending: false })
         .range(from, to)
 
@@ -82,10 +164,22 @@ const fetchTrains = async () => {
     const from = (currentTrainPage.value - 1) * trainsPerPage
     const to = from + trainsPerPage - 1
 
-    const { data, count, error } = await client
+    let build = client
         .from('trains')
         .select('*', { count: 'exact' })
         .eq('user_id', user.value.id)
+
+    const q = sanitize(searchQuery.value)
+    if (q) {
+        build = build.or(trainOrFilter(q))
+    }
+    if (yearFilter.value) {
+        build = build
+            .gte('departure_date', `${yearFilter.value}-01-01`)
+            .lte('departure_date', `${yearFilter.value}-12-31`)
+    }
+
+    const { data, count, error } = await build
         .order('departure_date', { ascending: false })
         .range(from, to)
 
@@ -106,8 +200,11 @@ onMounted(async () => {
     }
 })
 
-watch(currentFlightPage, fetchFlights)
-watch(currentTrainPage, fetchTrains)
+// Re-fetch when the page or either filter changes; same-tick updates are
+// batched into a single watcher call, so resetting the page in the filter
+// handlers never causes a double fetch.
+watch([currentFlightPage, searchQuery, yearFilter], fetchFlights)
+watch([currentTrainPage, searchQuery, yearFilter], fetchTrains)
 </script>
 
 <template>
@@ -150,6 +247,10 @@ watch(currentTrainPage, fetchTrains)
                     shadow-xl shadow-brand/10 backdrop-blur-md sm:p-6
                     dark:border-white/10 dark:bg-white/5 dark:shadow-brand/5">
 
+                    <!-- Search & year filters -->
+                    <JourneysFilterBar :active-year="yearFilter" :years="years"
+                        @search="onSearch" @year-change="onYearChange" />
+
                     <!-- Neutral iOS-style segmented control -->
                     <TabsList
                         class="mb-6 flex w-full max-w-xs rounded-xl bg-gray-100 p-1 shadow-inner dark:bg-white/10">
@@ -178,9 +279,14 @@ watch(currentTrainPage, fetchTrains)
                         <div v-else-if="flights.length === 0" class="flex flex-col items-center gap-5 py-14 text-center">
                             <img :src="iconFlight" alt="" class="size-12 opacity-50" />
                             <p class="max-w-sm text-gray-500 dark:text-gray-400">
-                                No flights yet — your story starts with the first takeoff.
+                                <template v-if="hasActiveFilter">
+                                    No flights match your search — try different keywords or clear the filters.
+                                </template>
+                                <template v-else>
+                                    No flights yet — your story starts with the first takeoff.
+                                </template>
                             </p>
-                            <RouterLink to="/add-flight"
+                            <RouterLink v-if="!hasActiveFilter" to="/add-flight"
                                 class="rounded-lg bg-sunset px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-sunset/30
                                 transition-all duration-300 hover:-translate-y-0.5 hover:bg-orange-500 hover:shadow-xl hover:shadow-sunset/40">
                                 Add your first flight
@@ -234,9 +340,14 @@ watch(currentTrainPage, fetchTrains)
                         <div v-else-if="trains.length === 0" class="flex flex-col items-center gap-5 py-14 text-center">
                             <img :src="iconTrain" alt="" class="size-12 opacity-50" />
                             <p class="max-w-sm text-gray-500 dark:text-gray-400">
-                                No train journeys yet — every great route starts at a platform.
+                                <template v-if="hasActiveFilter">
+                                    No trains match your search — try different keywords or clear the filters.
+                                </template>
+                                <template v-else>
+                                    No train journeys yet — every great route starts at a platform.
+                                </template>
                             </p>
-                            <RouterLink to="/add-train"
+                            <RouterLink v-if="!hasActiveFilter" to="/add-train"
                                 class="rounded-lg bg-sunset px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-sunset/30
                                 transition-all duration-300 hover:-translate-y-0.5 hover:bg-orange-500 hover:shadow-xl hover:shadow-sunset/40">
                                 Add your first train journey
