@@ -24,7 +24,7 @@ defineProps<{
         class="absolute -bottom-40 left-1/3 h-96 w-96 animate-blob rounded-full bg-brand/15 blur-3xl [animation-delay:9s] dark:bg-brand/12" />
     </div>
 
-    <!-- Brand link (auth pages render without NavBar, see App.vue) -->
+    <!-- Brand link (auth pages render outside the app shell, see App.vue) -->
     <router-link to="/"
       class="font-display animate-in fade-in relative z-20 px-6 py-5 text-xl font-semibold tracking-tight text-brand transition hover:scale-105 hover:text-violet-700 dark:text-violet-300 dark:hover:text-violet-100">
       vivavia

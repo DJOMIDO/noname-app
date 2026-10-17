@@ -6,7 +6,7 @@ import travelers from '@/assets/images/travelers.svg'
 </script>
 
 <template>
-  <section class="relative min-h-screen overflow-hidden px-4 pb-10 pt-16 transition-colors
+  <section class="relative flex min-h-full flex-col items-center justify-center overflow-hidden px-4 py-10 transition-colors
     bg-gradient-to-b from-lilac/40 via-white to-white
     text-gray-800 dark:from-gray-950 dark:via-gray-900 dark:to-gray-900 dark:text-gray-100">
 
@@ -22,9 +22,9 @@ import travelers from '@/assets/images/travelers.svg'
 
     <!-- Decorative illustrations -->
     <img :src="hiking"
-      class="pointer-events-none absolute bottom-6 left-4 hidden w-72 opacity-60 select-none xl:block dark:opacity-40" />
+      class="pointer-events-none absolute bottom-6 left-4 hidden w-72 opacity-60 select-none border-0 outline-none will-change-transform xl:block dark:opacity-40" />
     <img :src="travelers"
-      class="pointer-events-none absolute bottom-6 right-4 hidden w-72 opacity-60 select-none xl:block dark:opacity-40" />
+      class="pointer-events-none absolute bottom-6 right-4 hidden w-72 opacity-60 select-none border-0 outline-none will-change-transform xl:block dark:opacity-40" />
 
     <div class="relative z-10">
       <TravelIntro />

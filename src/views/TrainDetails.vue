@@ -80,7 +80,7 @@ onMounted(fetchTrain)
 </script>
 
 <template>
-    <section class="min-h-screen bg-white/80 dark:bg-gray-900 px-4 py-10 transition-colors">
+    <section class="min-h-full bg-white/80 dark:bg-gray-900 px-4 pt-10 pb-24 lg:pb-10 transition-colors">
         <div class="flex items-center justify-between max-w-2xl mx-auto mb-6">
             <div class="flex gap-2 items-center text-xl font-semibold text-gray-800 dark:text-white">
                 <img :src="iconTrain" class="w-6 h-6 object-contain" />
