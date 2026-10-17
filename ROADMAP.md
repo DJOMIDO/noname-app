@@ -18,12 +18,12 @@
 
 ### Todo
 
-- [ ] 登录 / 注册页视觉风格与新欢迎页统一（建议分支 `feat/redesign-auth-pages`）
+- [ ] 接入密码重置与 Remember me 功能（当前为占位死链，见 In progress 备注）（建议分支 `feat/password-reset`）
 - [ ] 欢迎页区分登录态：登录后展示最近行程 / 数据摘要（建议分支 `feat/home-logged-in-summary`）
 
 ### In progress
 
-- （无）
+- [ ] 登录 / 注册页视觉风格与新欢迎页统一（分支 `feat/redesign-auth-pages`，抽取共享 AuthShell 组件；本次保留 Remember me / Forgot password 占位，后续单独分支完善；顺带修复：主题初始化从 NavBar 提升到 App 层，解决认证页直接加载丢失深色主题）
 
 ### Done
 
