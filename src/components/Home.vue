@@ -9,7 +9,7 @@ import { useAuthUser } from '@/composables/useAuthUser'
 import { client } from '@/lib/neon'
 import { airportByIata } from '@/lib/geo'
 import { toast } from 'vue-sonner'
-import type { RecentJourney } from '@/types/journeys'
+import type { Flight, RecentJourney, Train } from '@/types/journeys'
 
 const { user, isLoggedIn, ready, fetchUser } = useAuthUser()
 
@@ -29,11 +29,13 @@ const fetchSummary = async () => {
     client.from('flights').select('*', { count: 'exact' })
       .eq('user_id', uid)
       .order('departure_date', { ascending: false })
-      .range(0, 4),
+      .range(0, 4)
+      .returns<Flight[]>(),
     client.from('trains').select('*', { count: 'exact' })
       .eq('user_id', uid)
       .order('departure_date', { ascending: false })
-      .range(0, 4),
+      .range(0, 4)
+      .returns<Train[]>(),
   ])
 
   if (flightRes.error) toast.error(flightRes.error.message)
@@ -42,18 +44,18 @@ const fetchSummary = async () => {
   if (trainRes.error) toast.error(trainRes.error.message)
   else totalTrains.value = trainRes.count ?? 0
 
-  const flights: RecentJourney[] = (flightRes.data ?? []).map((f: any) => ({
-    id: f.id as string,
+  const flights: RecentJourney[] = (flightRes.data ?? []).map(f => ({
+    id: f.id,
     type: 'flight' as const,
     routeLabel: `${airportByIata(f.departure_airport)?.city ?? f.departure_airport} → ${airportByIata(f.arrival_airport)?.city ?? f.arrival_airport}`,
-    date: f.departure_date as string,
+    date: f.departure_date,
   }))
 
-  const trains: RecentJourney[] = (trainRes.data ?? []).map((t: any) => ({
-    id: t.id as string,
+  const trains: RecentJourney[] = (trainRes.data ?? []).map(t => ({
+    id: t.id,
     type: 'train' as const,
     routeLabel: `${t.departure_station} → ${t.arrival_station}`,
-    date: t.departure_date as string,
+    date: t.departure_date,
   }))
 
   recent.value = [...flights, ...trains]

@@ -13,19 +13,20 @@ import iconTrain from '@/assets/images/train.png'
 import airports from '@/assets/data/airports.json'
 import airlines from '@/assets/data/airlines.json'
 import { getFlightDuration } from '@/utils/getFlightDuration.ts'
+import type { Flight, Train } from '@/types/journeys'
 
 const activeTab = ref('flights')
 
 const { user, isLoggedIn, ready, fetchUser } = useAuthUser()
 
-const flights = ref<any[]>([])
+const flights = ref<Flight[]>([])
 const loadingFlights = ref(true)
 const currentFlightPage = ref(1)
 const totalFlightCount = ref(0)
 const flightsPerPage = 6
 const totalFlightPages = computed(() => Math.ceil(totalFlightCount.value / flightsPerPage))
 
-const trains = ref<any[]>([])
+const trains = ref<Train[]>([])
 const loadingTrains = ref(true)
 const currentTrainPage = ref(1)
 const totalTrainCount = ref(0)
@@ -105,7 +106,7 @@ const getCityFromIATA = (iata: string): string | undefined => {
     return match?.city
 }
 
-const getFlightDurationDisplay = (flight: any) => {
+const getFlightDurationDisplay = (flight: Flight) => {
     const duration = getFlightDuration(
         flight.departure_airport,
         flight.departure_date,
@@ -123,7 +124,8 @@ const getFlightDurationDisplay = (flight: any) => {
 }
 
 const fetchFlights = async () => {
-    if (!isLoggedIn.value) return
+    const uid = user.value?.id
+    if (!uid) return
     loadingFlights.value = true
 
     const from = (currentFlightPage.value - 1) * flightsPerPage
@@ -132,7 +134,7 @@ const fetchFlights = async () => {
     let build = client
         .from('flights')
         .select('*', { count: 'exact' })
-        .eq('user_id', user.value.id)
+        .eq('user_id', uid)
 
     const q = sanitize(searchQuery.value)
     if (q) {
@@ -147,18 +149,20 @@ const fetchFlights = async () => {
     const { data, count, error } = await build
         .order('departure_date', { ascending: false })
         .range(from, to)
+        .returns<Flight[]>()
 
     if (error) {
         toast.error(error.message)
     } else {
-        flights.value = data
+        flights.value = data ?? []
         totalFlightCount.value = count || 0
     }
     loadingFlights.value = false
 }
 
 const fetchTrains = async () => {
-    if (!isLoggedIn.value) return
+    const uid = user.value?.id
+    if (!uid) return
     loadingTrains.value = true
 
     const from = (currentTrainPage.value - 1) * trainsPerPage
@@ -167,7 +171,7 @@ const fetchTrains = async () => {
     let build = client
         .from('trains')
         .select('*', { count: 'exact' })
-        .eq('user_id', user.value.id)
+        .eq('user_id', uid)
 
     const q = sanitize(searchQuery.value)
     if (q) {
@@ -182,11 +186,12 @@ const fetchTrains = async () => {
     const { data, count, error } = await build
         .order('departure_date', { ascending: false })
         .range(from, to)
+        .returns<Train[]>()
 
     if (error) {
         toast.error(error.message)
     } else {
-        trains.value = data
+        trains.value = data ?? []
         totalTrainCount.value = count || 0
     }
     loadingTrains.value = false

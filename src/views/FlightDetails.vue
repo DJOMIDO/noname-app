@@ -11,13 +11,14 @@ import { airportByIata, haversineKm, timezoneOffsetDiffHours } from '@/lib/geo'
 import { getFlightDuration } from '@/utils/getFlightDuration'
 import JourneyDetailShell from '@/components/JourneyDetailShell.vue'
 import AddFlightDetailed from '@/components/AddFlightDetailed.vue'
+import type { Flight } from '@/types/journeys'
 
 const route = useRoute()
 const router = useRouter()
 
 const isEditing = ref(false)
 const loading = ref(true)
-const flight = ref<any>(null)
+const flight = ref<Flight | null>(null)
 
 const form = reactive({
     airline_code: '',
@@ -92,17 +93,27 @@ const chips = computed(() => {
     return list
 })
 
-const assign = (src: any) => {
-    Object.keys(form).forEach((key) => {
-        ;(form as any)[key] = src[key] ?? ''
+// Row values arrive as null for optional columns; the form binds strings, so
+// normalise every field on the way in.
+type FlightForm = typeof form
+
+const assign = (src: Flight) => {
+    ;(Object.keys(form) as (keyof FlightForm)[]).forEach((key) => {
+        const value = src[key]
+        form[key] = value === null || value === undefined ? '' : String(value)
     })
 }
 
 const fetchFlight = async () => {
-    const { data, error } = await client.from('flights').select('*').eq('id', route.params.id).single()
+    const { data, error } = await client
+        .from('flights')
+        .select('*')
+        .eq('id', route.params.id)
+        .returns<Flight>()
+        .single()
     if (error) {
         toast.error('Failed to load flight record.')
-    } else {
+    } else if (data) {
         flight.value = data
         assign(data)
     }
@@ -111,7 +122,7 @@ const fetchFlight = async () => {
 
 const startEdit = () => { isEditing.value = true }
 const cancelEdit = () => {
-    assign(flight.value)
+    if (flight.value) assign(flight.value)
     isEditing.value = false
 }
 

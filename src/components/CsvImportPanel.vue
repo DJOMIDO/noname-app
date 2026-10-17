@@ -22,7 +22,7 @@ const emit = defineEmits<{
 }>()
 
 const router = useRouter()
-const { user, isLoggedIn, fetchUser } = useAuthUser()
+const { user, fetchUser } = useAuthUser()
 
 const rows = ref<ImportRow[]>([])
 const fileInput = ref<HTMLInputElement | null>(null)
@@ -101,17 +101,18 @@ const importRows = async () => {
 
   // Importing writes to the account — guide guests to log in instead of erroring.
   await fetchUser()
-  if (!isLoggedIn.value) {
+  if (!user.value) {
     toast.info('Please log in to import your journeys.')
     router.push({ path: '/login', query: { next: props.type === 'flight' ? '/add-flight' : '/add-train' } })
     return
   }
 
+  const userId = user.value.id
   isImporting.value = true
   try {
     const table = props.type === 'flight' ? 'flights' : 'trains'
     const payload = validRows.value.map((row) => ({
-      user_id: user.value.id,
+      user_id: userId,
       ...toDatabaseRow(props.type, row.values),
     }))
     const { error } = await client.from(table).insert(payload)
