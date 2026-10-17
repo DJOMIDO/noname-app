@@ -2,6 +2,8 @@ import { createRouter, createWebHistory } from "vue-router";
 import Home from "@/components/Home.vue";
 import Login from "@/components/Login.vue";
 import Signup from "@/components/Signup.vue";
+import ForgotPassword from "@/components/ForgotPassword.vue";
+import ResetPassword from "@/components/ResetPassword.vue";
 import NotFound from "@/components/NotFound.vue";
 import AddFlight from "@/components/AddFlight.vue";
 import AddTrain from "@/components/AddTrain.vue";
@@ -12,6 +14,8 @@ const routes = [
   { path: "/", redirect: "/home" },
   { path: "/login", component: Login },
   { path: "/signup", component: Signup },
+  { path: "/forgot-password", component: ForgotPassword },
+  { path: "/reset-password", component: ResetPassword },
   { path: "/home", component: Home },
   { path: "/add-flight", component: AddFlight },
   { path: "/add-train", component: AddTrain },

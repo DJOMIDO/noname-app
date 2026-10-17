@@ -31,13 +31,13 @@ const handleLogin = async () => {
 
   submitting.value = true
   try {
-    const { error } = await client.auth.signInWithPassword({
+    const { error } = await client.auth.signIn.email({
       email: email.value,
       password: password.value
     })
 
     if (error) {
-      toast.error(error.message)
+      toast.error(error.message || 'Invalid email or password.')
     } else {
       toast.success('Logged in successfully!')
       // Update the shared session so pages switch to the member view immediately.
@@ -74,12 +74,8 @@ const handleLogin = async () => {
           :class="fieldClass" />
       </div>
 
-      <div class="flex items-center justify-between text-sm">
-        <label class="flex items-center space-x-2 text-gray-700 dark:text-gray-200">
-          <input type="checkbox" class="accent-brand" />
-          <span>Remember me</span>
-        </label>
-        <a href="#" class="text-brand hover:underline dark:text-violet-300">Forgot password?</a>
+      <div class="flex items-center justify-end text-sm">
+        <RouterLink to="/forgot-password" class="text-brand hover:underline dark:text-violet-300">Forgot password?</RouterLink>
       </div>
 
       <Button type="submit" class="mt-2 w-full border-0 bg-sunset font-semibold

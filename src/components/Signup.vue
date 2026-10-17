@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import AuthShell from '@/components/AuthShell.vue'
 import { fieldClass } from '@/lib/formStyles'
-import { authRedirectUrl, client } from '@/lib/neon'
+import { client } from '@/lib/neon'
 import { useAuthUser } from '@/composables/useAuthUser'
 import { toast } from 'vue-sonner'
 
@@ -42,28 +42,19 @@ const handleSignup = async () => {
 
   submitting.value = true
   try {
-    const { data, error } = await client.auth.signUp({
+    const { data, error } = await client.auth.signUp.email({
+      name: username.value,
       email: email.value,
-      password: password.value,
-      options: {
-        data: {
-          displayName: username.value
-        },
-        emailRedirectTo: authRedirectUrl
-      }
+      password: password.value
     })
 
     if (error) {
-      if (error.code === 'user_already_exists' || error.code === 'email_exists') {
+      if (String(error.message ?? '').toLowerCase().includes('already')) {
         toast.error('This email is already registered. Please log in.')
-      } else if (error.code === 'session_not_found') {
-        // Neon Auth creates the account but withholds the session until the
-        // email address is verified.
-        toast.success('Registration successful. Check your email to verify your account.')
       } else {
-        toast.error(error.message)
+        toast.error(error.message || 'Could not create your account. Please try again.')
       }
-    } else if (data.session) {
+    } else if (data?.token) {
       // Email confirmation not required: sign in and enter the app directly.
       toast.success('Registration successful. You are now logged in.')
       await refresh()

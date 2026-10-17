@@ -3,9 +3,10 @@ import { useRouter } from 'vue-router'
 import { client } from '@/lib/neon'
 
 // Session user shape as returned by the Neon Auth client (`User | null`).
-export type AuthUser = Awaited<ReturnType<typeof client.auth.getUser>>['data']['user']
+type AuthSession = Awaited<ReturnType<typeof client.auth.getSession>>['data']['session']
+export type AuthUser = NonNullable<AuthSession>['user']
 
-const user = ref<AuthUser>(null)
+const user = ref<AuthUser | null>(null)
 // Whether the first session read has settled, so pages can tell
 // "still resolving" apart from "resolved, no user" and avoid flashing
 // the guest state on load.
@@ -16,8 +17,8 @@ export function useAuthUser() {
     const router = useRouter()
 
     const resolve = async () => {
-        const { data } = await client.auth.getUser()
-        user.value = data.user ?? null
+        const { data } = await client.auth.getSession()
+        user.value = data?.user ?? null
         ready.value = true
     }
 

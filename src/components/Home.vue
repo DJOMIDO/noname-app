@@ -22,7 +22,7 @@ const totalFlights = ref(0)
 const totalTrains = ref(0)
 const recent = ref<RecentJourney[]>([])
 
-const displayName = computed(() => user.value?.user_metadata?.displayName || 'Traveler')
+const displayName = computed(() => user.value?.name || 'Traveler')
 
 const fetchSummary = async () => {
   if (!isLoggedIn.value || !user.value) return
