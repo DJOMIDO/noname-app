@@ -11,22 +11,22 @@ defineProps<{
 
 <template>
   <div class="relative flex min-h-screen flex-col overflow-hidden transition-colors
-    bg-gradient-to-b from-indigo-50 via-white to-white
+    bg-gradient-to-b from-lilac/40 via-white to-white
     dark:from-gray-950 dark:via-gray-900 dark:to-gray-900">
 
     <!-- Ambient animated gradient blobs -->
     <div aria-hidden="true" class="pointer-events-none absolute inset-0">
       <div
-        class="absolute -left-24 -top-24 h-96 w-96 animate-blob rounded-full bg-indigo-400/30 blur-3xl dark:bg-indigo-500/20" />
+        class="absolute -left-24 -top-24 h-96 w-96 animate-blob rounded-full bg-mint/25 blur-3xl dark:bg-mint/12" />
       <div
-        class="absolute -right-32 top-1/3 h-[28rem] w-[28rem] animate-blob rounded-full bg-violet-400/25 blur-3xl [animation-delay:5s] dark:bg-violet-500/20" />
+        class="absolute -right-32 top-1/3 h-[28rem] w-[28rem] animate-blob rounded-full bg-sunset/20 blur-3xl [animation-delay:5s] dark:bg-sunset/12" />
       <div
-        class="absolute -bottom-40 left-1/3 h-96 w-96 animate-blob rounded-full bg-sky-400/25 blur-3xl [animation-delay:9s] dark:bg-sky-500/15" />
+        class="absolute -bottom-40 left-1/3 h-96 w-96 animate-blob rounded-full bg-brand/15 blur-3xl [animation-delay:9s] dark:bg-brand/12" />
     </div>
 
     <!-- Brand link (auth pages render without NavBar, see App.vue) -->
     <router-link to="/"
-      class="animate-in fade-in relative z-20 px-6 py-5 text-xl font-semibold text-indigo-600 transition hover:scale-105 hover:text-indigo-800 dark:text-indigo-300 dark:hover:text-indigo-100">
+      class="animate-in fade-in relative z-20 px-6 py-5 text-xl font-semibold text-brand transition hover:scale-105 hover:text-violet-700 dark:text-violet-300 dark:hover:text-violet-100">
       NoNameApp
     </router-link>
 
@@ -44,8 +44,8 @@ defineProps<{
         <!-- Form column -->
         <div class="w-full max-w-[400px]">
           <div class="animate-in fade-in slide-in-from-bottom-8 rounded-2xl border border-white/60 bg-white/60
-            p-8 shadow-xl shadow-indigo-500/10 backdrop-blur-md
-            dark:border-white/10 dark:bg-white/5 dark:shadow-indigo-500/5">
+            p-8 shadow-xl shadow-brand/10 backdrop-blur-md
+            dark:border-white/10 dark:bg-white/5 dark:shadow-brand/5">
             <slot />
           </div>
         </div>

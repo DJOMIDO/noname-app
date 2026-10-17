@@ -64,10 +64,10 @@ const handleBlur = () => {
   <div class="relative w-full">
     <Input v-model="input" :placeholder="placeholder" :class="fieldClass" @focus="filter" @blur="handleBlur" />
     <ul v-if="showSuggestions" :class="dropdownClass"
-      class="absolute z-20 mt-1 w-full rounded-xl border border-white/60 bg-white/90 shadow-lg shadow-indigo-500/10 backdrop-blur-md
+      class="absolute z-20 mt-1 w-full rounded-xl border border-white/60 bg-white/90 shadow-lg shadow-brand/10 backdrop-blur-md
         dark:border-white/10 dark:bg-gray-900/90">
       <li v-for="item in suggestions" :key="item" @click="selectSuggestion(item)"
-        class="cursor-pointer px-4 py-2 text-sm text-gray-800 transition-colors hover:bg-indigo-50
+        class="cursor-pointer px-4 py-2 text-sm text-gray-800 transition-colors hover:bg-lilac/60
           dark:text-gray-100 dark:hover:bg-white/10">
         {{ item }}
       </li>

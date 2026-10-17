@@ -8,7 +8,7 @@ import travelImg from '@/assets/images/Travel.svg'
       class="animate-in fade-in slide-in-from-bottom-6 mt-2 max-w-3xl text-4xl font-extrabold tracking-tight sm:text-5xl">
       Every Journey Has a
       <span
-        class="bg-gradient-to-r from-indigo-500 via-violet-500 to-sky-500 bg-clip-text text-transparent">Story</span>
+        class="bg-gradient-to-r from-brand via-violet-400 to-sky-500 bg-clip-text text-transparent">Story</span>
       <span class="mt-2 block text-2xl font-bold text-slate-500 sm:text-3xl dark:text-slate-400">
         Start Recording Yours
       </span>
