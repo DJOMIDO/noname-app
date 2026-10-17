@@ -5,6 +5,7 @@ import FlightRouteChart from '@/views/FlightRouteChart.vue'
 import FlightBarChart from '@/views/FlightBarChart.vue'
 import FlightDurationStats from '@/views/FlightDurationStats.vue'
 import FlightStatsSummary from '@/views/FlightStatsSummary.vue'
+import ChartPanel from '@/components/stats/ChartPanel.vue'
 
 defineProps<{
     flights: Flight[]
@@ -14,21 +15,21 @@ defineProps<{
 
 <template>
     <div class="space-y-4">
-        <div class="mx-auto max-w-6xl">
+        <ChartPanel title="Route Map" body-class="h-[420px]">
             <FlightMapChart :flights="flights" />
-        </div>
+        </ChartPanel>
 
         <FlightStatsSummary :flights="flights" :total-spent-by-currency="totalSpentByCurrency" />
 
         <FlightDurationStats :flights="flights" />
 
-        <div class="mx-auto flex max-w-6xl flex-col gap-6 md:flex-row">
-            <div class="h-[300px] w-full md:w-1/2">
+        <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
+            <ChartPanel title="Flights per Month">
                 <FlightBarChart :flights="flights" />
-            </div>
-            <div class="h-[300px] w-full md:w-1/2">
+            </ChartPanel>
+            <ChartPanel title="Top Flight Routes">
                 <FlightRouteChart :flights="flights" />
-            </div>
+            </ChartPanel>
         </div>
     </div>
 </template>

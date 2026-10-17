@@ -43,11 +43,11 @@ function hint(top: Top): string | undefined {
 </script>
 
 <template>
-    <div class="mx-auto w-full max-w-6xl space-y-4">
+    <div class="space-y-4">
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <StatCard label="Total Flights" :value="flights.length" />
-            <StatCard label="Total Spent">
-                <CurrencyTotalsList :totals="totalSpentByCurrency" />
+            <StatCard label="Total Flights" :value="flights.length" featured />
+            <StatCard label="Total Spent" featured>
+                <CurrencyTotalsList :totals="totalSpentByCurrency" size="lg" />
             </StatCard>
         </div>
 

@@ -128,10 +128,7 @@ onMounted(() => {
 
 <style scoped>
 .map-container {
-    height: 400px;
+    height: 100%;
     width: 100%;
-    border-radius: 0.75rem;
-    overflow: hidden;
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
 }
 </style>
