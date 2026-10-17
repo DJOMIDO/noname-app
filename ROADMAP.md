@@ -19,7 +19,6 @@
 ### Todo
 
 - [ ] 确认部署环境（Netlify）的 `VITE_NEON_URL` 与本地共用同一 endpoint（`ep-floral-sun-b9mm9800`）；若是则 migration 已直接生效（app 实测写入 user_id 正确），无需额外操作；若部署指向另一 Neon 分支，则需对该分支重跑本 migration
-- [ ] 接入密码重置与 Remember me 功能（当前为占位死链）（建议分支 `feat/password-reset`）
 
 ### In progress
 
@@ -27,6 +26,7 @@
 
 ### Done
 
+- [x] 接入密码重置与 Remember me（分支 `feat/password-reset`：根因——原 SupabaseAuthAdapter 不暴露 better-auth 的 OTP 重置方法、`updateUser({password})` 直接抛错，而 Neon 官方推荐且对 SPA/Vue 最干净的是「发 6 位邮箱验证码 + 一步重置」的 Email OTP 路径（无需消费邮件链接 token）。决策：整体切换到 BetterAuthVanillaAdapter，全项目 5 处 auth 调用随之改写（`signInWithPassword→signIn.email`、`signUp→signUp.email`（username 映射顶层 name）、`getUser→getSession`、signOut 不变），并修正 SideNav/BottomTabBar/Home 三处 `user_metadata.displayName→name`（Supabase 档案结构在 better-auth 下不存在）。新增 ForgotPassword（`forgetPassword.emailOtp` 发码，不泄露邮箱是否注册）与 ResetPassword（`emailOtp.resetPassword` 校验码+新密码一步重置）两页，走 AuthShell 全屏无导航壳；Login 移除 Remember me 勾选框（better-auth 会话本就持久化，勾选框无真实语义）、Forgot password 从死链改为指向 /forgot-password；已实测注册/登录/重置全流程通过
 - [x] 引入单元测试（分支 `test/add-vitest`：Vitest 3 + 独立 `vitest.config.ts`（纯逻辑测试跑 Node 环境，不加载 Vue/Tailwind 插件、不装 jsdom，只复用 `@` 别名）；新增 `npm test` / `npm test:watch`；首批 39 个用例覆盖 `lib/stats`（多数值统计 / 按币种汇总 / 合并）、`lib/csvImport`（引号与转义、CRLF、BOM、空行、列名缺失/多余、必填与日期时间价格校验、入库行映射、模板往返）、`lib/geo`（IATA 查找、haversine 距离与时区差含夏令时）；用例文件放在 `src/lib/__tests__/` 下，顺便被 vue-tsc 与 eslint 一并检查；踩坑：`vitest@latest`（v4）会拉 optional peers 触发 npm arborist `edgesOut` 崩溃，`--legacy-peer-deps` 又会重写全树 peer 解析（lockfile -460 行），降级到 `vitest@^3` 后 lockfile 变为纯增量）
 - [x] 行程查询收敛为窄列（分支 `refactor/narrow-journey-queries`：新增 `src/lib/journeyColumns.ts` 集中定义列集与行类型，首页最近行程与行程列表卡片从 21 列降到 11 列（砍掉 notes/booking_ref/gate/aircraft_reg/时间戳/user_id）；行类型用 `as const satisfies readonly (keyof T)[]` 从同一份列清单派生 `Pick`，补上旧 `FLIGHT_STATS_COLUMNS` 配 `Flight` 全类型的谎言——读未拉取字段现在会被 vue-tsc 报错；统计链路（useJourneyStats + 6 个图表/汇总组件）props 同步改为 `FlightStatsRow`/`TrainStatsRow`；决策：详情页保留 `select('*')`，因为它是 17 字段全量编辑表单，显式列出零收益且多一处需与表结构同步的维护点，窄列规范已收敛为「列表/聚合查询必须窄列」）
 - [x] 引入 ESLint 静态检查（分支 `chore/add-eslint`：ESLint 10 + Vue 3/TS 官方预设（`@vue/eslint-config-typescript`）flat config；`scripts/**` 加 Node globals、`src/**/*.vue` 关闭 multi-word-component-names（单字页名与 shadcn 原语为有意命名）；新增 `npm run lint` / `lint:fix`；清掉全部 12 处 `no-explicit-any`——useAuthUser 导出 `AuthUser` 类型、列表与详情页改用 `Flight`/`Train` + `.returns<T>()`、`assign()` 用 `keyof` 索引替代 `form as any`；顺带把写入点的 `!isLoggedIn.value` 守卫改为 `!user.value` 以完成空值收窄；lint 与 build 全绿）
