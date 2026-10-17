@@ -50,7 +50,7 @@ const emit = defineEmits<{
     <div class="space-y-6">
         <!-- Route -->
         <fieldset class="space-y-4">
-            <legend class="mb-1 text-xs font-semibold uppercase tracking-wider text-indigo-500 dark:text-indigo-300">Route</legend>
+            <legend class="mb-1 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Route</legend>
             <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <FormField label="Train Company" required>
                     <Input :model-value="trainCompany"
@@ -95,7 +95,7 @@ const emit = defineEmits<{
 
         <!-- Schedule -->
         <fieldset class="space-y-4">
-            <legend class="mb-1 text-xs font-semibold uppercase tracking-wider text-indigo-500 dark:text-indigo-300">Schedule</legend>
+            <legend class="mb-1 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Schedule</legend>
             <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <FormField label="Departure Date" required>
                     <Input :model-value="departureDate"
@@ -125,7 +125,7 @@ const emit = defineEmits<{
 
         <!-- Seat -->
         <fieldset class="space-y-4">
-            <legend class="mb-1 text-xs font-semibold uppercase tracking-wider text-indigo-500 dark:text-indigo-300">Seat</legend>
+            <legend class="mb-1 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Seat</legend>
             <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <FormField label="Coach">
                     <Input :model-value="coach" @update:model-value="emit('update:coach', String($event))"
@@ -140,7 +140,7 @@ const emit = defineEmits<{
 
         <!-- Booking -->
         <fieldset class="space-y-4">
-            <legend class="mb-1 text-xs font-semibold uppercase tracking-wider text-indigo-500 dark:text-indigo-300">Booking</legend>
+            <legend class="mb-1 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Booking</legend>
             <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <FormField label="Price">
                     <Input :model-value="price" @update:model-value="emit('update:price', String($event))" type="number"

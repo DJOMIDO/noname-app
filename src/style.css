@@ -4,6 +4,12 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme {
+  /* Palette extracted from Travel.svg (welcome hero illustration) */
+  --color-brand: #7b5ff1;   /* illustration violet */
+  --color-sunset: #ff8b37;  /* illustration orange */
+  --color-mint: #55d087;    /* illustration green */
+  --color-lilac: #e3e3ff;   /* illustration pale tint */
+
   --animate-float: float 5s ease-in-out infinite;
   --animate-blob: blob 14s ease-in-out infinite;
 

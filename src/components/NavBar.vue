@@ -42,7 +42,7 @@ const toggleDark = () => {
          bg-white/80 dark:bg-gray-900 backdrop-blur border-b border-slate-200
          dark:border-slate-700">
         <router-link to="/"
-            class="text-xl font-semibold text-indigo-600 dark:text-indigo-300 hover:text-indigo-800 dark:hover:text-indigo-100 hover:scale-105 transition">
+            class="text-xl font-semibold text-brand dark:text-violet-300 hover:text-violet-700 dark:hover:text-violet-200 hover:scale-105 transition">
             NoNameApp
         </router-link>
 
@@ -58,15 +58,15 @@ const toggleDark = () => {
                     Welcome, {{ user.user_metadata?.displayName || 'User' }}
                 </span>
                 <button @click="handleLogout"
-                    class="px-3 py-1 border border-indigo-400 dark:border-indigo-300 text-indigo-600 dark:text-indigo-200 rounded hover:bg-indigo-50 dark:hover:bg-indigo-800 hover:text-indigo-900 dark:hover:text-white">
+                    class="px-3 py-1 border border-brand/50 dark:border-violet-300/50 text-brand dark:text-violet-200 rounded hover:bg-brand/10 dark:hover:bg-brand/25 hover:text-violet-800 dark:hover:text-white">
                     Log Out
                 </button>
             </template>
             <template v-else>
                 <router-link to="/login"
-                    class="px-3 py-1 border border-indigo-400 dark:border-indigo-300 text-indigo-600 dark:text-indigo-200 rounded hover:bg-indigo-50 dark:hover:bg-indigo-800 hover:text-indigo-900 dark:hover:text-white">Login</router-link>
+                    class="px-3 py-1 border border-brand/50 dark:border-violet-300/50 text-brand dark:text-violet-200 rounded hover:bg-brand/10 dark:hover:bg-brand/25 hover:text-violet-800 dark:hover:text-white">Login</router-link>
                 <router-link to="/signup"
-                    class="px-3 py-1 border border-indigo-400 dark:border-indigo-300 text-indigo-600 dark:text-indigo-200 rounded hover:bg-indigo-50 dark:hover:bg-indigo-800 hover:text-indigo-900 dark:hover:text-white">Sign
+                    class="px-3 py-1 border border-brand/50 dark:border-violet-300/50 text-brand dark:text-violet-200 rounded hover:bg-brand/10 dark:hover:bg-brand/25 hover:text-violet-800 dark:hover:text-white">Sign
                     Up</router-link>
             </template>
         </div>

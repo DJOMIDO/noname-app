@@ -3,6 +3,7 @@ import { ref } from 'vue'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import AuthShell from '@/components/AuthShell.vue'
+import { fieldClass } from '@/lib/formStyles'
 import { authRedirectUrl, client } from '@/lib/neon'
 import { toast } from 'vue-sonner'
 
@@ -74,7 +75,7 @@ const handleSignup = async () => {
     <div class="text-center">
       <h1 class="text-3xl font-extrabold tracking-tight text-gray-900 dark:text-white">
         Hello,
-        <span class="bg-gradient-to-r from-indigo-500 via-violet-500 to-sky-500 bg-clip-text text-transparent">there</span>!
+        <span class="bg-gradient-to-r from-brand via-violet-400 to-sky-500 bg-clip-text text-transparent">there</span>!
       </h1>
       <p class="mt-2 text-gray-500 dark:text-gray-300">Create your account and start your story.</p>
     </div>
@@ -83,39 +84,39 @@ const handleSignup = async () => {
       <div class="space-y-1.5">
         <label for="signup-username" class="text-sm font-medium text-gray-700 dark:text-gray-200">Username</label>
         <Input id="signup-username" placeholder="Your name" v-model="username" autocomplete="name"
-          class="border-indigo-200/60 bg-white/70 focus-visible:border-indigo-400 focus-visible:ring-indigo-400/40 dark:border-white/10 dark:bg-white/5" />
+          :class="fieldClass" />
       </div>
 
       <div class="space-y-1.5">
         <label for="signup-email" class="text-sm font-medium text-gray-700 dark:text-gray-200">Email</label>
         <Input id="signup-email" type="email" placeholder="you@example.com" v-model="email" autocomplete="email"
-          class="border-indigo-200/60 bg-white/70 focus-visible:border-indigo-400 focus-visible:ring-indigo-400/40 dark:border-white/10 dark:bg-white/5" />
+          :class="fieldClass" />
       </div>
 
       <div class="space-y-1.5">
         <label for="signup-password" class="text-sm font-medium text-gray-700 dark:text-gray-200">Password</label>
         <Input id="signup-password" type="password" placeholder="••••••••" v-model="password"
           autocomplete="new-password"
-          class="border-indigo-200/60 bg-white/70 focus-visible:border-indigo-400 focus-visible:ring-indigo-400/40 dark:border-white/10 dark:bg-white/5" />
+          :class="fieldClass" />
       </div>
 
       <div class="space-y-1.5">
         <label for="signup-confirm" class="text-sm font-medium text-gray-700 dark:text-gray-200">Confirm Password</label>
         <Input id="signup-confirm" type="password" placeholder="••••••••" v-model="confirmPassword"
           autocomplete="new-password"
-          class="border-indigo-200/60 bg-white/70 focus-visible:border-indigo-400 focus-visible:ring-indigo-400/40 dark:border-white/10 dark:bg-white/5" />
+          :class="fieldClass" />
       </div>
 
-      <Button type="submit" class="mt-2 w-full border-0 bg-gradient-to-r from-indigo-500 to-violet-500 font-semibold
-        text-white shadow-lg shadow-indigo-500/25 transition-all duration-300
-        hover:-translate-y-0.5 hover:shadow-xl hover:shadow-indigo-500/30 disabled:pointer-events-none disabled:opacity-60"
+      <Button type="submit" class="mt-2 w-full border-0 bg-sunset font-semibold
+        text-white shadow-lg shadow-sunset/30 transition-all duration-300
+        hover:-translate-y-0.5 hover:bg-orange-500 hover:shadow-xl hover:shadow-sunset/40 disabled:pointer-events-none disabled:opacity-60"
         :disabled="submitting">
         {{ submitting ? 'Creating account…' : 'Sign Up' }}
       </Button>
 
       <p class="text-sm text-center text-gray-600 dark:text-gray-300">
         Already have an account?
-        <RouterLink to="/login" class="font-medium text-indigo-500 hover:underline">Log In</RouterLink>
+        <RouterLink to="/login" class="font-medium text-brand hover:underline dark:text-violet-300">Log In</RouterLink>
       </p>
     </form>
   </AuthShell>
