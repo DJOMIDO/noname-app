@@ -27,6 +27,7 @@
 
 ### Done
 
+- [x] 引入单元测试（分支 `test/add-vitest`：Vitest 3 + 独立 `vitest.config.ts`（纯逻辑测试跑 Node 环境，不加载 Vue/Tailwind 插件、不装 jsdom，只复用 `@` 别名）；新增 `npm test` / `npm test:watch`；首批 39 个用例覆盖 `lib/stats`（多数值统计 / 按币种汇总 / 合并）、`lib/csvImport`（引号与转义、CRLF、BOM、空行、列名缺失/多余、必填与日期时间价格校验、入库行映射、模板往返）、`lib/geo`（IATA 查找、haversine 距离与时区差含夏令时）；用例文件放在 `src/lib/__tests__/` 下，顺便被 vue-tsc 与 eslint 一并检查；踩坑：`vitest@latest`（v4）会拉 optional peers 触发 npm arborist `edgesOut` 崩溃，`--legacy-peer-deps` 又会重写全树 peer 解析（lockfile -460 行），降级到 `vitest@^3` 后 lockfile 变为纯增量）
 - [x] 行程查询收敛为窄列（分支 `refactor/narrow-journey-queries`：新增 `src/lib/journeyColumns.ts` 集中定义列集与行类型，首页最近行程与行程列表卡片从 21 列降到 11 列（砍掉 notes/booking_ref/gate/aircraft_reg/时间戳/user_id）；行类型用 `as const satisfies readonly (keyof T)[]` 从同一份列清单派生 `Pick`，补上旧 `FLIGHT_STATS_COLUMNS` 配 `Flight` 全类型的谎言——读未拉取字段现在会被 vue-tsc 报错；统计链路（useJourneyStats + 6 个图表/汇总组件）props 同步改为 `FlightStatsRow`/`TrainStatsRow`；决策：详情页保留 `select('*')`，因为它是 17 字段全量编辑表单，显式列出零收益且多一处需与表结构同步的维护点，窄列规范已收敛为「列表/聚合查询必须窄列」）
 - [x] 引入 ESLint 静态检查（分支 `chore/add-eslint`：ESLint 10 + Vue 3/TS 官方预设（`@vue/eslint-config-typescript`）flat config；`scripts/**` 加 Node globals、`src/**/*.vue` 关闭 multi-word-component-names（单字页名与 shadcn 原语为有意命名）；新增 `npm run lint` / `lint:fix`；清掉全部 12 处 `no-explicit-any`——useAuthUser 导出 `AuthUser` 类型、列表与详情页改用 `Flight`/`Train` + `.returns<T>()`、`assign()` 用 `keyof` 索引替代 `form as any`；顺带把写入点的 `!isLoggedIn.value` 守卫改为 `!user.value` 以完成空值收窄；lint 与 build 全绿）
 - [x] 数据层收敛与统计页加载优化（分支 `refactor/journeys-data-layer`：新增 useJourneys composable——统计专用窄列查询（裁掉 notes/booking_ref/gate 等图表不消费字段，全量拉取 payload 大幅减小）+ 按 userId 隔离的 module 级缓存；Stats.vue 改用它，二次进入秒开；7 个写入点（录入/编辑/删除/CSV 导入）全部接入缓存失效，增删改后统计不会显示脏数据；类型出口用客户端官方 .returns<T>() 无强转）
@@ -45,4 +46,5 @@
 
 - [ ] B 方向「效率型首页」实验：弱化插图、突出操作入口与快捷数据
 - [ ] 补建 docs/requirements.md，沉淀详细需求与验收标准
-- [ ] 引入单元测试（Vitest + 核心逻辑 stats/csvImport/geo 首批用例）
+- [ ] 接 CI：目前 lint / test 只能本地手动跑，仓库无 `.github/workflows`
+- [ ] 修复 `normalizeNeonUrl` 注释与行为不一致：注释说接受 Auth URL 形态，但 `https://ep-x.neonauth.../auth`（无数据库名路径）实际返回 `invalid`
