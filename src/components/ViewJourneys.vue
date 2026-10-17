@@ -4,6 +4,8 @@ import { client } from '@/lib/neon'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import BackButton from '@/components/BackButton.vue'
 import Pagination from '@/components/Pagination.vue'
+import GuestState from '@/components/GuestState.vue'
+import { useAuthUser } from '@/composables/useAuthUser'
 import { toast } from 'vue-sonner'
 import iconFlight from '@/assets/images/flight.png'
 import iconTrain from '@/assets/images/train.png'
@@ -12,15 +14,17 @@ import { getFlightDuration } from '@/utils/getFlightDuration.ts'
 
 const activeTab = ref('flights')
 
+const { user, isLoggedIn, ready, fetchUser } = useAuthUser()
+
 const flights = ref<any[]>([])
-const loadingFlights = ref(false)
+const loadingFlights = ref(true)
 const currentFlightPage = ref(1)
 const totalFlightCount = ref(0)
 const flightsPerPage = 6
 const totalFlightPages = computed(() => Math.ceil(totalFlightCount.value / flightsPerPage))
 
 const trains = ref<any[]>([])
-const loadingTrains = ref(false)
+const loadingTrains = ref(true)
 const currentTrainPage = ref(1)
 const totalTrainCount = ref(0)
 const trainsPerPage = 6
@@ -49,13 +53,8 @@ const getFlightDurationDisplay = (flight: any) => {
 }
 
 const fetchFlights = async () => {
+    if (!isLoggedIn.value) return
     loadingFlights.value = true
-    const { data: { user } } = await client.auth.getUser()
-    if (!user) {
-        toast.error('You must be logged in.')
-        loadingFlights.value = false
-        return
-    }
 
     const from = (currentFlightPage.value - 1) * flightsPerPage
     const to = from + flightsPerPage - 1
@@ -63,7 +62,7 @@ const fetchFlights = async () => {
     const { data, count, error } = await client
         .from('flights')
         .select('*', { count: 'exact' })
-        .eq('user_id', user.id)
+        .eq('user_id', user.value.id)
         .order('departure_date', { ascending: false })
         .range(from, to)
 
@@ -77,13 +76,8 @@ const fetchFlights = async () => {
 }
 
 const fetchTrains = async () => {
+    if (!isLoggedIn.value) return
     loadingTrains.value = true
-    const { data: { user } } = await client.auth.getUser()
-    if (!user) {
-        toast.error('You must be logged in.')
-        loadingTrains.value = false
-        return
-    }
 
     const from = (currentTrainPage.value - 1) * trainsPerPage
     const to = from + trainsPerPage - 1
@@ -91,7 +85,7 @@ const fetchTrains = async () => {
     const { data, count, error } = await client
         .from('trains')
         .select('*', { count: 'exact' })
-        .eq('user_id', user.id)
+        .eq('user_id', user.value.id)
         .order('departure_date', { ascending: false })
         .range(from, to)
 
@@ -104,9 +98,12 @@ const fetchTrains = async () => {
     loadingTrains.value = false
 }
 
-onMounted(() => {
-    fetchFlights()
-    fetchTrains()
+onMounted(async () => {
+    await fetchUser()
+    if (isLoggedIn.value) {
+        fetchFlights()
+        fetchTrains()
+    }
 })
 
 watch(currentFlightPage, fetchFlights)
@@ -143,7 +140,12 @@ watch(currentTrainPage, fetchTrains)
                 <p class="mt-3 text-gray-600 dark:text-gray-300">Every trip you've logged, ready to revisit.</p>
             </header>
 
-            <Tabs v-model="activeTab" class="w-full">
+            <!-- Guests can browse here, but the list needs an account session -->
+            <GuestState v-if="ready && !isLoggedIn"
+                title="Your journeys are waiting"
+                text="Log in to see every trip you've logged, or create an account to start recording." />
+
+            <Tabs v-else v-model="activeTab" class="w-full">
                 <div class="animate-in fade-in slide-in-from-bottom-8 rounded-2xl border border-white/60 bg-white/60 p-4
                     shadow-xl shadow-brand/10 backdrop-blur-md sm:p-6
                     dark:border-white/10 dark:bg-white/5 dark:shadow-brand/5">

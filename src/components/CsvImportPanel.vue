@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { computed, onMounted, onBeforeUnmount, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { toast } from 'vue-sonner'
 import { Download, Upload, X } from 'lucide-vue-next'
 import { client } from '@/lib/neon'
+import { useAuthUser } from '@/composables/useAuthUser'
 import { Button } from '@/components/ui/button'
 import CsvImportPreview from '@/components/CsvImportPreview.vue'
 import {
@@ -17,6 +19,9 @@ const props = defineProps<{
 const emit = defineEmits<{
   (event: 'close'): void
 }>()
+
+const router = useRouter()
+const { user, isLoggedIn, fetchUser } = useAuthUser()
 
 const rows = ref<ImportRow[]>([])
 const fileInput = ref<HTMLInputElement | null>(null)
@@ -93,17 +98,19 @@ const importRows = async () => {
     return
   }
 
+  // Importing writes to the account — guide guests to log in instead of erroring.
+  await fetchUser()
+  if (!isLoggedIn.value) {
+    toast.info('Please log in to import your journeys.')
+    router.push({ path: '/login', query: { next: props.type === 'flight' ? '/add-flight' : '/add-train' } })
+    return
+  }
+
   isImporting.value = true
   try {
-    const { data: { user } } = await client.auth.getUser()
-    if (!user) {
-      toast.error('You must be logged in.')
-      return
-    }
-
     const table = props.type === 'flight' ? 'flights' : 'trains'
     const payload = validRows.value.map((row) => ({
-      user_id: user.id,
+      user_id: user.value.id,
       ...toDatabaseRow(props.type, row.values),
     }))
     const { error } = await client.from(table).insert(payload)

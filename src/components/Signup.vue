@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import AuthShell from '@/components/AuthShell.vue'
 import { fieldClass } from '@/lib/formStyles'
 import { authRedirectUrl, client } from '@/lib/neon'
+import { useAuthUser } from '@/composables/useAuthUser'
 import { toast } from 'vue-sonner'
 
 const username = ref('')
@@ -12,6 +14,8 @@ const email = ref('')
 const password = ref('')
 const confirmPassword = ref('')
 const submitting = ref(false)
+const router = useRouter()
+const { refresh } = useAuthUser()
 
 const handleSignup = async () => {
 
@@ -59,9 +63,13 @@ const handleSignup = async () => {
       } else {
         toast.error(error.message)
       }
-    } else {
-      console.log('Registration successful:', data)
+    } else if (data.session) {
+      // Email confirmation not required: sign in and enter the app directly.
       toast.success('Registration successful. You are now logged in.')
+      await refresh()
+      router.push('/home')
+    } else {
+      toast.success('Registration successful. Check your email to verify your account.')
     }
   } finally {
     submitting.value = false

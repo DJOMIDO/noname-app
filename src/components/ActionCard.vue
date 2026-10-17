@@ -1,7 +1,5 @@
 <script setup lang="ts">
-import { client } from '@/lib/neon'
 import { useRouter } from 'vue-router'
-import { toast } from 'vue-sonner'
 
 const props = withDefaults(
   defineProps<{
@@ -15,15 +13,9 @@ const props = withDefaults(
 
 const router = useRouter()
 
-const handleClick = async () => {
-  const { data } = await client.auth.getUser()
-  if (!data.user) {
-    toast.error('Please log in to access this feature.')
-    return
-  }
-
-  router.push(props.to)
-}
+// Navigation-only: auth is resolved inside each page (guests see a friendly
+// sign-in prompt there), so every entry point behaves the same as the nav bar.
+const handleClick = () => router.push(props.to)
 </script>
 
 <template>

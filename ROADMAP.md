@@ -28,6 +28,8 @@
 
 ### Done
 
+- [x] 统一未登录访问逻辑（分支 `feat/guest-browse-auth-states`：消除「首页卡片拦截、导航栏放行」的矛盾——所有入口都可进入页面；Journeys/Stats 与 CSV 导入用可复用的 GuestState 引导登录，取代红色 error toast；useAuthUser 收敛为鉴权单一真源（isLoggedIn/ready/refresh）；录入表单游客可填写，保存时跳 `login?next` 并用 localStorage 草稿保留输入，登录后回原页恢复；登录/注册按 next 回跳并清理调试日志）
+
 - [x] 修复 Neon Data API 下 RLS 读写全面失效（分支 `fix/neon-rls-user-id`：根因——Data API 只写入 `request.jwt.claims`（角色可切换）却未初始化 pg_session_jwt，`auth.user_id()` 恒为 NULL。新增 `public.current_user_id()` 从 `current_setting('request.jwt.claims', true)::jsonb ->> 'sub'` 取用户 id；migration 的 `user_id` 默认值与全部 RLS 策略改用该函数，并对已存在表 `ALTER COLUMN ... SET DEFAULT`。开发库以 authenticated 角色 + claims 模拟验证增/查/改/删全部通过，临时 dev policies 已回滚）
 - [x] 查看记录列表页改版（分支 `feat/redesign-journeys-list`：玻璃卡片 + RouterLink 可访问性修复、中性 iOS 分段控件、骨架屏 / 空态 CTA、胶囊分页；过程中发现数据层 auth 阻塞，已转 Todo 单独修复）
 - [x] 全站配色体系重构（分支 `feat/tune-form-palette`：从 Travel.svg 插画提取 brand/sunset/mint/lilac 四色注册为 @theme 令牌；色彩角色分工——橙=实色 CTA、紫=小面积状态指示、绿=氛围光斑、白=主体；渐变统一紫→天蓝且橙色不入渐变；Tabs 改中性 iOS 分段控件；Login/Signup 输入框样式收敛到共享 fieldClass）
