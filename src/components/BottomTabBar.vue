@@ -18,7 +18,7 @@ onMounted(fetchUser)
 const isActive = (to: string) =>
     route.path === to || (to !== '/home' && route.path.startsWith(`${to}/`))
 
-const displayName = computed(() => user.value?.user_metadata?.displayName || 'User')
+const displayName = computed(() => user.value?.name || 'User')
 
 // Close any open sheet whenever the route changes.
 watch(() => route.fullPath, () => {

@@ -1,4 +1,4 @@
-import { createClient, defaultDeriveNeonUrls, SupabaseAuthAdapter } from '@neondatabase/neon-js'
+import { BetterAuthVanillaAdapter, createClient, defaultDeriveNeonUrls } from '@neondatabase/neon-js'
 import { normalizeNeonUrl, type NeonUrlResult } from './neonUrl'
 
 const normalized = normalizeNeonUrl(String(import.meta.env.VITE_NEON_URL || ''))
@@ -25,14 +25,10 @@ export const neonConfigError = normalized.ok ? (neonUrls ? null : 'invalid') : n
 // those components when configuration is invalid.
 export const client = createClient({
   auth: {
-    adapter: SupabaseAuthAdapter(),
+    adapter: BetterAuthVanillaAdapter(),
     url: neonUrls?.auth ?? 'https://configuration.invalid/auth',
   },
   dataApi: {
     url: neonUrls?.dataApi ?? 'https://configuration.invalid/rest/v1',
   },
 })
-
-export const authRedirectUrl =
-  import.meta.env.VITE_SITE_URL ||
-  (typeof window !== 'undefined' ? window.location.origin : '')

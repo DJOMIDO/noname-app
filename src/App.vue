@@ -10,7 +10,7 @@ const route = useRoute()
 
 // Auth pages render their own brand link and full-screen layout (AuthShell),
 // so they live outside the app shell and show no navigation chrome.
-const isAuthPage = computed(() => /^\/(login|signup)$/.test(route.path))
+const isAuthPage = computed(() => /^\/(login|signup|forgot-password|reset-password)$/.test(route.path))
 
 // Apply the saved theme once at app start (was previously inline here).
 const { init: initTheme } = useTheme()
