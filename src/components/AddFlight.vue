@@ -1,80 +1,96 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { reactive, ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { toast } from 'vue-sonner'
 import { client } from '@/lib/neon'
+import { useAuthUser } from '@/composables/useAuthUser'
+import { saveDraft, loadDraft, clearDraft } from '@/lib/drafts'
 import JourneyFormShell from '@/components/JourneyFormShell.vue'
 import AddFlightBasic from '@/components/AddFlightBasic.vue'
 import AddFlightDetailed from '@/components/AddFlightDetailed.vue'
 
-const airlineCode = ref('')
-const flightNumber = ref('')
-const departureAirport = ref('')
-const stopoverAirport = ref('')
-const arrivalAirport = ref('')
-const departureDate = ref('')
-const departureTime = ref('')
-const arrivalDate = ref('')
-const arrivalTime = ref('')
-const gate = ref('')
-const seatNumber = ref('')
-const aircraftType = ref('')
-const aircraftReg = ref('')
-const price = ref('')
-const currency = ref('')
-const bookingRef = ref('')
-const notes = ref('')
+const DRAFT_KEY = 'flight'
+
+const form = reactive({
+    airlineCode: '',
+    flightNumber: '',
+    departureAirport: '',
+    stopoverAirport: '',
+    arrivalAirport: '',
+    departureDate: '',
+    departureTime: '',
+    arrivalDate: '',
+    arrivalTime: '',
+    gate: '',
+    seatNumber: '',
+    aircraftType: '',
+    aircraftReg: '',
+    price: '',
+    currency: '',
+    bookingRef: '',
+    notes: '',
+})
 
 const saving = ref(false)
+const router = useRouter()
+const { user, isLoggedIn, fetchUser, refresh } = useAuthUser()
 
-const fields = [
-    airlineCode, flightNumber, departureAirport, stopoverAirport, arrivalAirport,
-    departureDate, departureTime, arrivalDate, arrivalTime, gate, seatNumber,
-    aircraftType, aircraftReg, price, currency, bookingRef, notes,
-]
+onMounted(async () => {
+    await fetchUser()
+    // Restore a guest's draft so typed input survives the login round-trip.
+    const draft = loadDraft<typeof form>(DRAFT_KEY)
+    if (draft) Object.assign(form, draft)
+})
+
+const resetForm = () => {
+    ;(Object.keys(form) as (keyof typeof form)[]).forEach((key) => {
+        form[key] = ''
+    })
+}
 
 const handleSubmit = async () => {
-    if (!airlineCode.value || !flightNumber.value || !departureAirport.value || !arrivalAirport.value || !departureDate.value) {
+    if (!form.airlineCode || !form.flightNumber || !form.departureAirport || !form.arrivalAirport || !form.departureDate) {
         toast.error('Please fill in all required fields.')
         return
     }
 
-    const {
-        data: { user },
-    } = await client.auth.getUser()
-
-    if (!user) {
-        toast.error('You must be logged in.')
+    await refresh()
+    if (!isLoggedIn.value) {
+        // Keep what they typed, then send them to log in — returning restores the draft.
+        saveDraft(DRAFT_KEY, form)
+        router.push({ path: '/login', query: { next: '/add-flight' } })
         return
     }
 
     saving.value = true
     try {
         const { error } = await client.from('flights').insert({
-            user_id: user.id,
-            airline_code: airlineCode.value,
-            flight_number: flightNumber.value,
-            departure_airport: departureAirport.value,
-            stopover_airport: stopoverAirport.value || null,
-            arrival_airport: arrivalAirport.value,
-            departure_date: departureDate.value,
-            departure_time: departureTime.value || null,
-            arrival_date: arrivalDate.value || null,
-            arrival_time: arrivalTime.value || null,
-            gate: gate.value || null,
-            seat_number: seatNumber.value || null,
-            aircraft_type: aircraftType.value || null,
-            aircraft_reg: aircraftReg.value || null,
-            price: Number(price.value) || null,
-            currency: currency.value || null,
-            booking_ref: bookingRef.value || null,
-            notes: notes.value || null,
+            user_id: user.value.id,
+            airline_code: form.airlineCode,
+            flight_number: form.flightNumber,
+            departure_airport: form.departureAirport,
+            stopover_airport: form.stopoverAirport || null,
+            arrival_airport: form.arrivalAirport,
+            departure_date: form.departureDate,
+            departure_time: form.departureTime || null,
+            arrival_date: form.arrivalDate || null,
+            arrival_time: form.arrivalTime || null,
+            gate: form.gate || null,
+            seat_number: form.seatNumber || null,
+            aircraft_type: form.aircraftType || null,
+            aircraft_reg: form.aircraftReg || null,
+            price: Number(form.price) || null,
+            currency: form.currency || null,
+            booking_ref: form.bookingRef || null,
+            notes: form.notes || null,
         })
 
         if (error) {
             toast.error(error.message)
         } else {
             toast.success('Flight added successfully!')
-            fields.forEach((field) => (field.value = ''))
+            resetForm()
+            clearDraft(DRAFT_KEY)
         }
     } finally {
         saving.value = false
@@ -85,21 +101,21 @@ const handleSubmit = async () => {
 <template>
     <JourneyFormShell journey-type="flight" title="Log a" highlight="Flight"
         subtitle="Capture the essentials — add finer details anytime." submit-label="Save Flight" :saving="saving"
-        @submit="handleSubmit">
+        :guest="!isLoggedIn" @submit="handleSubmit">
         <template #basic>
-            <AddFlightBasic v-model:airlineCode="airlineCode" v-model:flightNumber="flightNumber"
-                v-model:departureAirport="departureAirport" v-model:arrivalAirport="arrivalAirport"
-                v-model:departureDate="departureDate" />
+            <AddFlightBasic v-model:airlineCode="form.airlineCode" v-model:flightNumber="form.flightNumber"
+                v-model:departureAirport="form.departureAirport" v-model:arrivalAirport="form.arrivalAirport"
+                v-model:departureDate="form.departureDate" />
         </template>
 
         <template #detailed>
-            <AddFlightDetailed v-model:airlineCode="airlineCode" v-model:flightNumber="flightNumber"
-                v-model:departureAirport="departureAirport" v-model:stopoverAirport="stopoverAirport"
-                v-model:arrivalAirport="arrivalAirport" v-model:departureDate="departureDate"
-                v-model:departureTime="departureTime" v-model:arrivalDate="arrivalDate"
-                v-model:arrivalTime="arrivalTime" v-model:gate="gate" v-model:seatNumber="seatNumber"
-                v-model:aircraftType="aircraftType" v-model:aircraftReg="aircraftReg" v-model:price="price"
-                v-model:currency="currency" v-model:bookingRef="bookingRef" v-model:notes="notes" />
+            <AddFlightDetailed v-model:airlineCode="form.airlineCode" v-model:flightNumber="form.flightNumber"
+                v-model:departureAirport="form.departureAirport" v-model:stopoverAirport="form.stopoverAirport"
+                v-model:arrivalAirport="form.arrivalAirport" v-model:departureDate="form.departureDate"
+                v-model:departureTime="form.departureTime" v-model:arrivalDate="form.arrivalDate"
+                v-model:arrivalTime="form.arrivalTime" v-model:gate="form.gate" v-model:seatNumber="form.seatNumber"
+                v-model:aircraftType="form.aircraftType" v-model:aircraftReg="form.aircraftReg" v-model:price="form.price"
+                v-model:currency="form.currency" v-model:bookingRef="form.bookingRef" v-model:notes="form.notes" />
         </template>
     </JourneyFormShell>
 </template>

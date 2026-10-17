@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { Upload } from 'lucide-vue-next'
+import { Upload, Info } from 'lucide-vue-next'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import BackButton from '@/components/BackButton.vue'
@@ -12,16 +12,21 @@ import type { JourneyType } from '@/lib/csvImport'
  * Follows the welcome/auth page style (A+C): gradient background, blobs,
  * glass card, gradient CTA. Domain-specific fields are provided via slots.
  */
-defineProps<{
-  journeyType: JourneyType
-  /** First part of the H1, e.g. "Log a" */
-  title: string
-  /** Gradient-highlighted trailing word, e.g. "Flight" */
-  highlight: string
-  subtitle: string
-  submitLabel: string
-  saving: boolean
-}>()
+const props = withDefaults(
+  defineProps<{
+    journeyType: JourneyType
+    /** First part of the H1, e.g. "Log a" */
+    title: string
+    /** Gradient-highlighted trailing word, e.g. "Flight" */
+    highlight: string
+    subtitle: string
+    submitLabel: string
+    saving: boolean
+    /** Show the guest-mode notice banner (browsing without an account session). */
+    guest?: boolean
+  }>(),
+  { guest: false }
+)
 
 const emit = defineEmits<{
   (e: 'submit'): void
@@ -64,6 +69,14 @@ const showImport = ref(false)
         </h1>
         <p class="mt-3 text-gray-600 dark:text-gray-300">{{ subtitle }}</p>
       </header>
+
+      <!-- Guest-mode notice: the form stays usable, sign-in is only asked at save time -->
+      <div v-if="props.guest"
+        class="animate-in fade-in mb-6 flex items-center justify-center gap-2 rounded-xl border border-brand/20 bg-brand/5 px-4 py-2.5
+        text-center text-sm font-medium text-brand dark:border-violet-300/20 dark:bg-violet-300/5 dark:text-violet-200">
+        <Info class="size-4 shrink-0" aria-hidden="true" />
+        <span>You're in guest mode — fill it in freely, we'll ask you to log in when you save.</span>
+      </div>
 
       <Tabs v-model="currentTab">
         <!-- Mode switch lives inside the card, right above what it controls -->

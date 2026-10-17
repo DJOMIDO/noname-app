@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { client } from '@/lib/neon'
+import { useAuthUser } from '@/composables/useAuthUser'
 import { toast } from 'vue-sonner'
 import type { Flight, Train } from '@/types/journeys'
 import { useJourneyStats } from '@/composables/useJourneyStats'
@@ -8,6 +9,7 @@ import StatOverview from '@/components/StatOverview.vue'
 import FlightStats from '@/components/FlightStats.vue'
 import TrainStats from '@/components/TrainStats.vue'
 import EmptyTab from '@/components/stats/EmptyTab.vue'
+import GuestState from '@/components/GuestState.vue'
 import BackButton from '@/components/BackButton.vue'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import iconJourney from '@/assets/images/journey.png'
@@ -18,6 +20,8 @@ const flights = ref<Flight[]>([])
 const trains = ref<Train[]>([])
 const loading = ref(true)
 const activeTab = ref('overview')
+
+const { user, isLoggedIn, ready, fetchUser } = useAuthUser()
 
 const {
     totalFlightSpentByCurrency,
@@ -34,17 +38,12 @@ const {
 const hasJourneys = computed(() => flights.value.length > 0 || trains.value.length > 0)
 
 const fetchData = async () => {
+    if (!isLoggedIn.value) return
     loading.value = true
-    const { data: { user } } = await client.auth.getUser()
-    if (!user) {
-        toast.error('You must be logged in.')
-        loading.value = false
-        return
-    }
 
     const [flightRes, trainRes] = await Promise.all([
-        client.from('flights').select('*').eq('user_id', user.id),
-        client.from('trains').select('*').eq('user_id', user.id),
+        client.from('flights').select('*').eq('user_id', user.value.id),
+        client.from('trains').select('*').eq('user_id', user.value.id),
     ])
 
     if (flightRes.error) toast.error(flightRes.error.message)
@@ -56,7 +55,11 @@ const fetchData = async () => {
     loading.value = false
 }
 
-onMounted(fetchData)
+onMounted(async () => {
+    await fetchUser()
+    if (isLoggedIn.value) fetchData()
+    else loading.value = false
+})
 </script>
 
 <template>
@@ -89,12 +92,17 @@ onMounted(fetchData)
             </header>
 
             <!-- Loading: pulse skeleton grid -->
-            <div v-if="loading"
+            <div v-if="!ready || loading"
                 class="animate-in fade-in rounded-2xl border border-white/60 bg-white/60 p-4 shadow-xl shadow-brand/10 backdrop-blur-md sm:p-6 dark:border-white/10 dark:bg-white/5">
                 <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                     <div v-for="i in 6" :key="i" class="h-28 animate-pulse rounded-2xl bg-gray-100 dark:bg-white/10" />
                 </div>
             </div>
+
+            <!-- Guest: browsing without an account session -->
+            <GuestState v-else-if="!isLoggedIn"
+                title="Your story, in numbers"
+                text="Log in to see your travel stats, or create an account to turn your trips into charts." />
 
             <!-- Empty: no journeys at all -->
             <div v-else-if="!hasJourneys"

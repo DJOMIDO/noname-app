@@ -1,17 +1,27 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import AuthShell from '@/components/AuthShell.vue'
 import { fieldClass } from '@/lib/formStyles'
 import { client } from '@/lib/neon'
+import { useAuthUser } from '@/composables/useAuthUser'
 import { toast } from 'vue-sonner'
 
 const email = ref('')
 const password = ref('')
 const submitting = ref(false)
 const router = useRouter()
+const route = useRoute()
+const { refresh } = useAuthUser()
+
+// Only allow in-app redirects (single leading slash, no protocol-relative //).
+const safeNext = () => {
+  const next = route.query.next
+  if (typeof next === 'string' && next.startsWith('/') && !next.startsWith('//')) return next
+  return '/home'
+}
 
 const handleLogin = async () => {
   if (!email.value || !password.value) {
@@ -21,7 +31,7 @@ const handleLogin = async () => {
 
   submitting.value = true
   try {
-    const { data, error } = await client.auth.signInWithPassword({
+    const { error } = await client.auth.signInWithPassword({
       email: email.value,
       password: password.value
     })
@@ -30,8 +40,9 @@ const handleLogin = async () => {
       toast.error(error.message)
     } else {
       toast.success('Logged in successfully!')
-      console.log('User session:', data)
-      router.push('/home')
+      // Update the shared session so pages switch to the member view immediately.
+      await refresh()
+      router.push(safeNext())
     }
   } finally {
     submitting.value = false

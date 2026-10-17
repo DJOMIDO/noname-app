@@ -1,88 +1,104 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { reactive, ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { toast } from 'vue-sonner'
 import { client } from '@/lib/neon'
+import { useAuthUser } from '@/composables/useAuthUser'
+import { saveDraft, loadDraft, clearDraft } from '@/lib/drafts'
 import JourneyFormShell from '@/components/JourneyFormShell.vue'
 import AddTrainBasic from '@/components/AddTrainBasic.vue'
 import AddTrainDetailed from '@/components/AddTrainDetailed.vue'
 
-const trainCompany = ref('')
-const trainNumber = ref('')
-const trainType = ref('')
-const departureStation = ref('')
-const arrivalStation = ref('')
-const departureCity = ref('')
-const arrivalCity = ref('')
-const departureDate = ref('')
-const departureTime = ref('')
-const arrivalDate = ref('')
-const arrivalTime = ref('')
-const coach = ref('')
-const seatNumber = ref('')
-const price = ref('')
-const currency = ref('')
-const bookingRef = ref('')
-const notes = ref('')
+const DRAFT_KEY = 'train'
+
+const form = reactive({
+    trainCompany: '',
+    trainNumber: '',
+    trainType: '',
+    departureStation: '',
+    arrivalStation: '',
+    departureCity: '',
+    arrivalCity: '',
+    departureDate: '',
+    departureTime: '',
+    arrivalDate: '',
+    arrivalTime: '',
+    coach: '',
+    seatNumber: '',
+    price: '',
+    currency: '',
+    bookingRef: '',
+    notes: '',
+})
 
 const saving = ref(false)
+const router = useRouter()
+const { user, isLoggedIn, fetchUser, refresh } = useAuthUser()
 
-const fields = [
-    trainCompany, trainNumber, trainType, departureStation, arrivalStation,
-    departureCity, arrivalCity, departureDate, departureTime, arrivalDate,
-    arrivalTime, coach, seatNumber, price, currency, bookingRef, notes,
-]
+onMounted(async () => {
+    await fetchUser()
+    // Restore a guest's draft so typed input survives the login round-trip.
+    const draft = loadDraft<typeof form>(DRAFT_KEY)
+    if (draft) Object.assign(form, draft)
+})
+
+const resetForm = () => {
+    ;(Object.keys(form) as (keyof typeof form)[]).forEach((key) => {
+        form[key] = ''
+    })
+}
 
 const handleSubmit = async () => {
     const isBlank = (val: string) => !val || val.trim() === ''
 
     if (
-        isBlank(trainCompany.value) ||
-        isBlank(trainNumber.value) ||
-        isBlank(departureStation.value) ||
-        isBlank(arrivalStation.value) ||
-        isBlank(departureDate.value)
+        isBlank(form.trainCompany) ||
+        isBlank(form.trainNumber) ||
+        isBlank(form.departureStation) ||
+        isBlank(form.arrivalStation) ||
+        isBlank(form.departureDate)
     ) {
         toast.error('Please fill in all required fields.')
         return
     }
 
-    const {
-        data: { user }
-    } = await client.auth.getUser()
-
-    if (!user) {
-        toast.error('You must be logged in.')
+    await refresh()
+    if (!isLoggedIn.value) {
+        // Keep what they typed, then send them to log in — returning restores the draft.
+        saveDraft(DRAFT_KEY, form)
+        router.push({ path: '/login', query: { next: '/add-train' } })
         return
     }
 
     saving.value = true
     try {
         const { error } = await client.from('trains').insert({
-            user_id: user.id,
-            train_company: trainCompany.value,
-            train_number: trainNumber.value,
-            train_type: trainType.value || null,
-            departure_station: departureStation.value,
-            arrival_station: arrivalStation.value,
-            departure_city: departureCity.value || null,
-            arrival_city: arrivalCity.value || null,
-            departure_date: departureDate.value,
-            departure_time: departureTime.value || null,
-            arrival_date: arrivalDate.value || null,
-            arrival_time: arrivalTime.value || null,
-            coach: coach.value || null,
-            seat_number: seatNumber.value || null,
-            price: Number(price.value) || null,
-            currency: currency.value || null,
-            booking_ref: bookingRef.value || null,
-            notes: notes.value || null
+            user_id: user.value.id,
+            train_company: form.trainCompany,
+            train_number: form.trainNumber,
+            train_type: form.trainType || null,
+            departure_station: form.departureStation,
+            arrival_station: form.arrivalStation,
+            departure_city: form.departureCity || null,
+            arrival_city: form.arrivalCity || null,
+            departure_date: form.departureDate,
+            departure_time: form.departureTime || null,
+            arrival_date: form.arrivalDate || null,
+            arrival_time: form.arrivalTime || null,
+            coach: form.coach || null,
+            seat_number: form.seatNumber || null,
+            price: Number(form.price) || null,
+            currency: form.currency || null,
+            booking_ref: form.bookingRef || null,
+            notes: form.notes || null
         })
 
         if (error) {
             toast.error(error.message)
         } else {
             toast.success('Train added successfully!')
-            fields.forEach((field) => (field.value = ''))
+            resetForm()
+            clearDraft(DRAFT_KEY)
         }
     } finally {
         saving.value = false
@@ -93,22 +109,22 @@ const handleSubmit = async () => {
 <template>
     <JourneyFormShell journey-type="train" title="Log a" highlight="Train Journey"
         subtitle="Record every ride — from regional hops to night trains." submit-label="Save Train Journey"
-        :saving="saving" @submit="handleSubmit">
+        :saving="saving" :guest="!isLoggedIn" @submit="handleSubmit">
         <template #basic>
-            <AddTrainBasic v-model:trainCompany="trainCompany" v-model:trainNumber="trainNumber"
-                v-model:departureStation="departureStation" v-model:arrivalStation="arrivalStation"
-                v-model:departureDate="departureDate" />
+            <AddTrainBasic v-model:trainCompany="form.trainCompany" v-model:trainNumber="form.trainNumber"
+                v-model:departureStation="form.departureStation" v-model:arrivalStation="form.arrivalStation"
+                v-model:departureDate="form.departureDate" />
         </template>
 
         <template #detailed>
-            <AddTrainDetailed v-model:trainCompany="trainCompany" v-model:trainNumber="trainNumber"
-                v-model:trainType="trainType" v-model:departureStation="departureStation"
-                v-model:arrivalStation="arrivalStation" v-model:departureCity="departureCity"
-                v-model:arrivalCity="arrivalCity" v-model:departureDate="departureDate"
-                v-model:departureTime="departureTime" v-model:arrivalDate="arrivalDate"
-                v-model:arrivalTime="arrivalTime" v-model:coach="coach" v-model:seatNumber="seatNumber"
-                v-model:price="price" v-model:currency="currency" v-model:bookingRef="bookingRef"
-                v-model:notes="notes" />
+            <AddTrainDetailed v-model:trainCompany="form.trainCompany" v-model:trainNumber="form.trainNumber"
+                v-model:trainType="form.trainType" v-model:departureStation="form.departureStation"
+                v-model:arrivalStation="form.arrivalStation" v-model:departureCity="form.departureCity"
+                v-model:arrivalCity="form.arrivalCity" v-model:departureDate="form.departureDate"
+                v-model:departureTime="form.departureTime" v-model:arrivalDate="form.arrivalDate"
+                v-model:arrivalTime="form.arrivalTime" v-model:coach="form.coach" v-model:seatNumber="form.seatNumber"
+                v-model:price="form.price" v-model:currency="form.currency" v-model:bookingRef="form.bookingRef"
+                v-model:notes="form.notes" />
         </template>
     </JourneyFormShell>
 </template>
