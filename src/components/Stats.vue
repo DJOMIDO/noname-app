@@ -7,6 +7,7 @@ import { useJourneyStats } from '@/composables/useJourneyStats'
 import StatOverview from '@/components/StatOverview.vue'
 import FlightStats from '@/components/FlightStats.vue'
 import TrainStats from '@/components/TrainStats.vue'
+import EmptyTab from '@/components/stats/EmptyTab.vue'
 import BackButton from '@/components/BackButton.vue'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import iconJourney from '@/assets/images/journey.png'
@@ -116,45 +117,46 @@ onMounted(fetchData)
                 </div>
             </div>
 
-            <!-- Tabs -->
-            <div v-else
-                class="animate-in fade-in slide-in-from-bottom-8 rounded-2xl border border-white/60 bg-white/60 p-4 shadow-xl shadow-brand/10 backdrop-blur-md sm:p-6 dark:border-white/10 dark:bg-white/5">
-                <Tabs v-model="activeTab" class="w-full">
-                    <!-- Neutral iOS-style segmented control -->
-                    <TabsList class="mx-auto mb-6 flex w-full max-w-md rounded-xl bg-gray-100 p-1 shadow-inner dark:bg-white/10">
-                        <TabsTrigger value="overview"
-                            class="flex-1 rounded-lg border-0 px-4 py-1.5 text-sm font-medium text-gray-500 data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow dark:text-gray-400 dark:data-[state=active]:bg-gray-700 dark:data-[state=active]:text-white">
-                            Overview
-                        </TabsTrigger>
-                        <TabsTrigger value="flights"
-                            class="flex flex-1 items-center justify-center gap-2 rounded-lg border-0 px-4 py-1.5 text-sm font-medium text-gray-500 data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow dark:text-gray-400 dark:data-[state=active]:bg-gray-700 dark:data-[state=active]:text-white">
-                            <img :src="iconFlight" alt="" class="h-4 w-4 object-contain" />
-                            <span>Flights</span>
-                        </TabsTrigger>
-                        <TabsTrigger value="trains"
-                            class="flex flex-1 items-center justify-center gap-2 rounded-lg border-0 px-4 py-1.5 text-sm font-medium text-gray-500 data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow dark:text-gray-400 dark:data-[state=active]:bg-gray-700 dark:data-[state=active]:text-white">
-                            <img :src="iconTrain" alt="" class="h-4 w-4 object-contain" />
-                            <span>Trains</span>
-                        </TabsTrigger>
-                    </TabsList>
+            <!-- Tabs: segmented control sits directly on the page background,
+                 content uses its own glass cards (no card-in-card nesting) -->
+            <Tabs v-else v-model="activeTab" class="animate-in fade-in slide-in-from-bottom-8 w-full">
+                <TabsList class="mx-auto mb-8 flex w-full max-w-md rounded-xl bg-gray-100 p-1 shadow-inner dark:bg-white/10">
+                    <TabsTrigger value="overview"
+                        class="flex-1 rounded-lg border-0 px-4 py-1.5 text-sm font-medium text-gray-500 data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow dark:text-gray-400 dark:data-[state=active]:bg-gray-700 dark:data-[state=active]:text-white">
+                        Overview
+                    </TabsTrigger>
+                    <TabsTrigger value="flights"
+                        class="flex flex-1 items-center justify-center gap-2 rounded-lg border-0 px-4 py-1.5 text-sm font-medium text-gray-500 data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow dark:text-gray-400 dark:data-[state=active]:bg-gray-700 dark:data-[state=active]:text-white">
+                        <img :src="iconFlight" alt="" class="h-4 w-4 object-contain" />
+                        <span>Flights</span>
+                    </TabsTrigger>
+                    <TabsTrigger value="trains"
+                        class="flex flex-1 items-center justify-center gap-2 rounded-lg border-0 px-4 py-1.5 text-sm font-medium text-gray-500 data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow dark:text-gray-400 dark:data-[state=active]:bg-gray-700 dark:data-[state=active]:text-white">
+                        <img :src="iconTrain" alt="" class="h-4 w-4 object-contain" />
+                        <span>Trains</span>
+                    </TabsTrigger>
+                </TabsList>
 
-                    <TabsContent value="overview">
-                        <StatOverview :flight-count="flights.length" :train-count="trains.length"
-                            :total-spent-by-currency="totalSpentByCurrency" :first-departure="firstDeparture"
-                            :last-departure="lastDeparture" :top-city="topCity"
-                            :most-used-transport="mostUsedTransport" :most-used-airline="mostUsedAirline"
-                            :most-used-train-company="mostUsedTrainCompany" />
-                    </TabsContent>
+                <TabsContent value="overview">
+                    <StatOverview :flight-count="flights.length" :train-count="trains.length"
+                        :total-spent-by-currency="totalSpentByCurrency" :first-departure="firstDeparture"
+                        :last-departure="lastDeparture" :top-city="topCity"
+                        :most-used-transport="mostUsedTransport" :most-used-airline="mostUsedAirline"
+                        :most-used-train-company="mostUsedTrainCompany" />
+                </TabsContent>
 
-                    <TabsContent value="flights">
-                        <FlightStats :flights="flights" :total-spent-by-currency="totalFlightSpentByCurrency" />
-                    </TabsContent>
+                <TabsContent value="flights">
+                    <FlightStats v-if="flights.length" :flights="flights" :total-spent-by-currency="totalFlightSpentByCurrency" />
+                    <EmptyTab v-else :icon="iconFlight" text="No flights logged yet — they'll show up here once you add some."
+                        to="/add-flight" cta="Add a flight" />
+                </TabsContent>
 
-                    <TabsContent value="trains">
-                        <TrainStats :trains="trains" :total-spent-by-currency="totalTrainSpentByCurrency" />
-                    </TabsContent>
-                </Tabs>
-            </div>
+                <TabsContent value="trains">
+                    <TrainStats v-if="trains.length" :trains="trains" :total-spent-by-currency="totalTrainSpentByCurrency" />
+                    <EmptyTab v-else :icon="iconTrain" text="No train journeys logged yet — they'll show up here once you add some."
+                        to="/add-train" cta="Add a train" />
+                </TabsContent>
+            </Tabs>
         </div>
     </section>
 </template>

@@ -42,7 +42,7 @@ function formatDuration(mins: number): string {
 </script>
 
 <template>
-    <div class="mx-auto grid w-full max-w-6xl grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <StatCard label="Total Flight Time" :value="formatDuration(totalMinutes)" />
 
         <div :class="glassPanel">

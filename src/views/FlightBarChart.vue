@@ -11,10 +11,12 @@ import {
 } from 'chart.js'
 import { computed } from 'vue'
 import type { Flight } from '@/types/journeys'
+import { useTheme } from '@/composables/useTheme'
 
 ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale)
 
 const props = defineProps<{ flights: Flight[] }>()
+const { isDark } = useTheme()
 
 const chartData = computed(() => {
     const counts: Record<string, number> = {}
@@ -41,18 +43,22 @@ const chartData = computed(() => {
     }
 })
 
-const chartOptions = {
-    responsive: true,
-    plugins: {
-        legend: {
-            display: false
+const chartOptions = computed(() => {
+    const text = isDark.value ? '#d1d5db' : '#374151'
+    const grid = isDark.value ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)'
+    return {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: { display: false },
+            title: { display: false },
         },
-        title: {
-            display: true,
-            text: 'Flight Count per Month'
-        }
+        scales: {
+            x: { ticks: { color: text }, grid: { color: grid } },
+            y: { ticks: { color: text }, grid: { color: grid }, beginAtZero: true },
+        },
     }
-}
+})
 </script>
 
 <template>
