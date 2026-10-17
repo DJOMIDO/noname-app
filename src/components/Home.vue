@@ -1,8 +1,72 @@
 <script setup lang="ts">
+import { ref, computed, onMounted } from 'vue'
 import TravelIntro from '@/components/TravelIntro.vue'
+import HomeSummary from '@/components/HomeSummary.vue'
 import ActionGrid from '@/components/ActionGrid.vue'
 import hiking from '@/assets/images/hiking.svg'
 import travelers from '@/assets/images/travelers.svg'
+import { useAuthUser } from '@/composables/useAuthUser'
+import { client } from '@/lib/neon'
+import { airportByIata } from '@/lib/geo'
+import { toast } from 'vue-sonner'
+import type { RecentJourney } from '@/types/journeys'
+
+const { user, isLoggedIn, ready, fetchUser } = useAuthUser()
+
+const summaryLoading = ref(false)
+const totalFlights = ref(0)
+const totalTrains = ref(0)
+const recent = ref<RecentJourney[]>([])
+
+const displayName = computed(() => user.value?.user_metadata?.displayName || 'Traveler')
+
+const fetchSummary = async () => {
+  if (!isLoggedIn.value || !user.value) return
+  summaryLoading.value = true
+  const uid = user.value.id
+
+  const [flightRes, trainRes] = await Promise.all([
+    client.from('flights').select('*', { count: 'exact' })
+      .eq('user_id', uid)
+      .order('departure_date', { ascending: false })
+      .range(0, 4),
+    client.from('trains').select('*', { count: 'exact' })
+      .eq('user_id', uid)
+      .order('departure_date', { ascending: false })
+      .range(0, 4),
+  ])
+
+  if (flightRes.error) toast.error(flightRes.error.message)
+  else totalFlights.value = flightRes.count ?? 0
+
+  if (trainRes.error) toast.error(trainRes.error.message)
+  else totalTrains.value = trainRes.count ?? 0
+
+  const flights: RecentJourney[] = (flightRes.data ?? []).map((f: any) => ({
+    id: f.id as string,
+    type: 'flight' as const,
+    routeLabel: `${airportByIata(f.departure_airport)?.city ?? f.departure_airport} → ${airportByIata(f.arrival_airport)?.city ?? f.arrival_airport}`,
+    date: f.departure_date as string,
+  }))
+
+  const trains: RecentJourney[] = (trainRes.data ?? []).map((t: any) => ({
+    id: t.id as string,
+    type: 'train' as const,
+    routeLabel: `${t.departure_station} → ${t.arrival_station}`,
+    date: t.departure_date as string,
+  }))
+
+  recent.value = [...flights, ...trains]
+    .sort((a, b) => b.date.localeCompare(a.date))
+    .slice(0, 3)
+
+  summaryLoading.value = false
+}
+
+onMounted(async () => {
+  await fetchUser()
+  if (ready.value && isLoggedIn.value) fetchSummary()
+})
 </script>
 
 <template>
@@ -26,8 +90,11 @@ import travelers from '@/assets/images/travelers.svg'
     <img :src="travelers"
       class="pointer-events-none absolute bottom-6 right-4 hidden w-72 opacity-60 select-none border-0 outline-none will-change-transform xl:block dark:opacity-40" />
 
-    <div class="relative z-10">
-      <TravelIntro />
+    <div class="relative z-10 flex w-full flex-col items-center">
+      <HomeSummary v-if="ready && isLoggedIn && !summaryLoading && (totalFlights > 0 || totalTrains > 0)"
+        :display-name="displayName" :total-flights="totalFlights" :total-trains="totalTrains"
+        :recent="recent" />
+      <TravelIntro v-else />
       <ActionGrid />
     </div>
   </section>

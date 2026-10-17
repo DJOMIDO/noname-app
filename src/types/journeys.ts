@@ -51,3 +51,11 @@ export interface Train {
 
 // Amount totals keyed by currency code.
 export type CurrencyTotals = Record<string, number>
+
+// Normalised shape for the home-page "recent journeys" list.
+export interface RecentJourney {
+    id: string
+    type: 'flight' | 'train'
+    routeLabel: string
+    date: string
+}
