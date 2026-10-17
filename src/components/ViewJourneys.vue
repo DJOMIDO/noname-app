@@ -13,20 +13,23 @@ import iconTrain from '@/assets/images/train.png'
 import airports from '@/assets/data/airports.json'
 import airlines from '@/assets/data/airlines.json'
 import { getFlightDuration } from '@/utils/getFlightDuration.ts'
-import type { Flight, Train } from '@/types/journeys'
+import {
+    FLIGHT_CARD_COLUMNS, TRAIN_CARD_COLUMNS,
+    type FlightCardRow, type TrainCardRow,
+} from '@/lib/journeyColumns'
 
 const activeTab = ref('flights')
 
 const { user, isLoggedIn, ready, fetchUser } = useAuthUser()
 
-const flights = ref<Flight[]>([])
+const flights = ref<FlightCardRow[]>([])
 const loadingFlights = ref(true)
 const currentFlightPage = ref(1)
 const totalFlightCount = ref(0)
 const flightsPerPage = 6
 const totalFlightPages = computed(() => Math.ceil(totalFlightCount.value / flightsPerPage))
 
-const trains = ref<Train[]>([])
+const trains = ref<TrainCardRow[]>([])
 const loadingTrains = ref(true)
 const currentTrainPage = ref(1)
 const totalTrainCount = ref(0)
@@ -106,7 +109,7 @@ const getCityFromIATA = (iata: string): string | undefined => {
     return match?.city
 }
 
-const getFlightDurationDisplay = (flight: Flight) => {
+const getFlightDurationDisplay = (flight: FlightCardRow) => {
     const duration = getFlightDuration(
         flight.departure_airport,
         flight.departure_date,
@@ -133,7 +136,7 @@ const fetchFlights = async () => {
 
     let build = client
         .from('flights')
-        .select('*', { count: 'exact' })
+        .select(FLIGHT_CARD_COLUMNS, { count: 'exact' })
         .eq('user_id', uid)
 
     const q = sanitize(searchQuery.value)
@@ -149,7 +152,7 @@ const fetchFlights = async () => {
     const { data, count, error } = await build
         .order('departure_date', { ascending: false })
         .range(from, to)
-        .returns<Flight[]>()
+        .returns<FlightCardRow[]>()
 
     if (error) {
         toast.error(error.message)
@@ -170,7 +173,7 @@ const fetchTrains = async () => {
 
     let build = client
         .from('trains')
-        .select('*', { count: 'exact' })
+        .select(TRAIN_CARD_COLUMNS, { count: 'exact' })
         .eq('user_id', uid)
 
     const q = sanitize(searchQuery.value)
@@ -186,7 +189,7 @@ const fetchTrains = async () => {
     const { data, count, error } = await build
         .order('departure_date', { ascending: false })
         .range(from, to)
-        .returns<Train[]>()
+        .returns<TrainCardRow[]>()
 
     if (error) {
         toast.error(error.message)

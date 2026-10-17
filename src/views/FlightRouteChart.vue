@@ -10,12 +10,12 @@ import {
     LinearScale
 } from 'chart.js'
 import { computed } from 'vue'
-import type { Flight } from '@/types/journeys'
+import type { FlightStatsRow } from '@/lib/journeyColumns'
 import { useTheme } from '@/composables/useTheme'
 
 ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale)
 
-const props = defineProps<{ flights: Flight[] }>()
+const props = defineProps<{ flights: FlightStatsRow[] }>()
 const { isDark } = useTheme()
 
 const chartData = computed(() => {

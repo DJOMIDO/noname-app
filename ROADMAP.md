@@ -27,6 +27,7 @@
 
 ### Done
 
+- [x] 行程查询收敛为窄列（分支 `refactor/narrow-journey-queries`：新增 `src/lib/journeyColumns.ts` 集中定义列集与行类型，首页最近行程与行程列表卡片从 21 列降到 11 列（砍掉 notes/booking_ref/gate/aircraft_reg/时间戳/user_id）；行类型用 `as const satisfies readonly (keyof T)[]` 从同一份列清单派生 `Pick`，补上旧 `FLIGHT_STATS_COLUMNS` 配 `Flight` 全类型的谎言——读未拉取字段现在会被 vue-tsc 报错；统计链路（useJourneyStats + 6 个图表/汇总组件）props 同步改为 `FlightStatsRow`/`TrainStatsRow`；决策：详情页保留 `select('*')`，因为它是 17 字段全量编辑表单，显式列出零收益且多一处需与表结构同步的维护点，窄列规范已收敛为「列表/聚合查询必须窄列」）
 - [x] 引入 ESLint 静态检查（分支 `chore/add-eslint`：ESLint 10 + Vue 3/TS 官方预设（`@vue/eslint-config-typescript`）flat config；`scripts/**` 加 Node globals、`src/**/*.vue` 关闭 multi-word-component-names（单字页名与 shadcn 原语为有意命名）；新增 `npm run lint` / `lint:fix`；清掉全部 12 处 `no-explicit-any`——useAuthUser 导出 `AuthUser` 类型、列表与详情页改用 `Flight`/`Train` + `.returns<T>()`、`assign()` 用 `keyof` 索引替代 `form as any`；顺带把写入点的 `!isLoggedIn.value` 守卫改为 `!user.value` 以完成空值收窄；lint 与 build 全绿）
 - [x] 数据层收敛与统计页加载优化（分支 `refactor/journeys-data-layer`：新增 useJourneys composable——统计专用窄列查询（裁掉 notes/booking_ref/gate 等图表不消费字段，全量拉取 payload 大幅减小）+ 按 userId 隔离的 module 级缓存；Stats.vue 改用它，二次进入秒开；7 个写入点（录入/编辑/删除/CSV 导入）全部接入缓存失效，增删改后统计不会显示脏数据；类型出口用客户端官方 .returns<T>() 无强转）
 - [x] 欢迎页区分登录态（分支 `feat/home-logged-in-summary`，PR #28 已合并：新增 HomeSummary 个性化卡片——问候语 + 航班/火车计数 chips + 最近 3 条行程快捷入口；零行程的登录用户仍看 TravelIntro 激励页，与游客一致；数据加载完成后才切换展示，避免闪现）

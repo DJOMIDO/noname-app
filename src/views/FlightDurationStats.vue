@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { Flight } from '@/types/journeys'
+import type { FlightStatsRow } from '@/lib/journeyColumns'
 import { getFlightDuration } from '@/utils/getFlightDuration'
 import StatCard from '@/components/stats/StatCard.vue'
 
-const props = defineProps<{ flights: Flight[] }>()
+const props = defineProps<{ flights: FlightStatsRow[] }>()
 
-type FlightWithDuration = Flight & { duration: number }
+type FlightWithDuration = FlightStatsRow & { duration: number }
 
 const glassPanel =
     'rounded-2xl border border-white/60 bg-white/70 p-6 text-center shadow-sm backdrop-blur-md ' +

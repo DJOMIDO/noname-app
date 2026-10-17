@@ -1,5 +1,6 @@
 import { computed, type Ref } from 'vue'
-import type { Flight, Train, CurrencyTotals } from '@/types/journeys'
+import type { CurrencyTotals } from '@/types/journeys'
+import type { FlightStatsRow, TrainStatsRow } from '@/lib/journeyColumns'
 import { mostFrequent, sumByCurrency, mergeCurrencyTotals } from '@/lib/stats'
 import airlines from '@/assets/data/airlines.json'
 import airports from '@/assets/data/airports.json'
@@ -8,15 +9,15 @@ const NA = 'N/A'
 
 // Resolves an arrival "city" label for a journey. Flights store an IATA code,
 // trains store a city name directly (falling back to the arrival station).
-function arrivalCity(flight: Flight): string | undefined {
+function arrivalCity(flight: FlightStatsRow): string | undefined {
     const match = airports.find(a => a.iata === flight.arrival_airport)
     return match?.city ?? flight.arrival_airport ?? undefined
 }
 
 // Centralises every aggregate shown on the stats dashboard so the page
 // component only handles fetching and layout.
-export function useJourneyStats(flights: Ref<Flight[]>, trains: Ref<Train[]>) {
-    const allJourneys = computed<(Flight | Train)[]>(() => [...flights.value, ...trains.value])
+export function useJourneyStats(flights: Ref<FlightStatsRow[]>, trains: Ref<TrainStatsRow[]>) {
+    const allJourneys = computed<(FlightStatsRow | TrainStatsRow)[]>(() => [...flights.value, ...trains.value])
 
     const totalFlightSpentByCurrency = computed<CurrencyTotals>(() =>
         sumByCurrency(flights.value, f => f.price, f => f.currency),

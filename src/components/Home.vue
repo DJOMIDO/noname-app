@@ -9,7 +9,11 @@ import { useAuthUser } from '@/composables/useAuthUser'
 import { client } from '@/lib/neon'
 import { airportByIata } from '@/lib/geo'
 import { toast } from 'vue-sonner'
-import type { Flight, RecentJourney, Train } from '@/types/journeys'
+import type { RecentJourney } from '@/types/journeys'
+import {
+    FLIGHT_CARD_COLUMNS, TRAIN_CARD_COLUMNS,
+    type FlightCardRow, type TrainCardRow,
+} from '@/lib/journeyColumns'
 
 const { user, isLoggedIn, ready, fetchUser } = useAuthUser()
 
@@ -26,16 +30,16 @@ const fetchSummary = async () => {
   const uid = user.value.id
 
   const [flightRes, trainRes] = await Promise.all([
-    client.from('flights').select('*', { count: 'exact' })
+    client.from('flights').select(FLIGHT_CARD_COLUMNS, { count: 'exact' })
       .eq('user_id', uid)
       .order('departure_date', { ascending: false })
       .range(0, 4)
-      .returns<Flight[]>(),
-    client.from('trains').select('*', { count: 'exact' })
+      .returns<FlightCardRow[]>(),
+    client.from('trains').select(TRAIN_CARD_COLUMNS, { count: 'exact' })
       .eq('user_id', uid)
       .order('departure_date', { ascending: false })
       .range(0, 4)
-      .returns<Train[]>(),
+      .returns<TrainCardRow[]>(),
   ])
 
   if (flightRes.error) toast.error(flightRes.error.message)
