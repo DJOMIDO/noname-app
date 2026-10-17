@@ -10,10 +10,11 @@ import {
     LinearScale
 } from 'chart.js'
 import { computed } from 'vue'
+import type { Flight } from '@/types/journeys'
 
 ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale)
 
-const props = defineProps<{ flights: any[] }>()
+const props = defineProps<{ flights: Flight[] }>()
 
 const chartData = computed(() => {
     const routeMap: Record<string, number> = {}
@@ -36,7 +37,7 @@ const chartData = computed(() => {
             {
                 label: 'Route Count',
                 data,
-                backgroundColor: '#16a34a'
+                backgroundColor: '#55d087'
             }
         ]
     }

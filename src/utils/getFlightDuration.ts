@@ -8,11 +8,11 @@ function getZone(iata: string): string {
 
 export function getFlightDuration(
   depIATA: string,
-  depDate: string,
-  depTime: string,
+  depDate: string | null | undefined,
+  depTime: string | null | undefined,
   arrIATA: string,
-  arrDate: string,
-  arrTime: string
+  arrDate: string | null | undefined,
+  arrTime: string | null | undefined
 ): number | null {
   if (!depDate || !depTime || !arrDate || !arrTime) return null
 

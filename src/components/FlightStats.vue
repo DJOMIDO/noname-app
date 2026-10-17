@@ -1,20 +1,20 @@
 <script setup lang="ts">
-import FlightBarChart from '@/views/FlightBarChart.vue';
-import FlightRouteChart from '@/views/FlightRouteChart.vue';
-import FlightMapChart from '@/views/FlightMapChart.vue';
-import FlightDurationStats from '@/views/FlightDurationStats.vue';
-import FlightStatsSummary from '@/views/FlightStatsSummary.vue';
+import type { Flight, CurrencyTotals } from '@/types/journeys'
+import FlightMapChart from '@/views/FlightMapChart.vue'
+import FlightRouteChart from '@/views/FlightRouteChart.vue'
+import FlightBarChart from '@/views/FlightBarChart.vue'
+import FlightDurationStats from '@/views/FlightDurationStats.vue'
+import FlightStatsSummary from '@/views/FlightStatsSummary.vue'
 
 defineProps<{
-    flights: any[]
-    totalSpentByCurrency: Record<string, number>
+    flights: Flight[]
+    totalSpentByCurrency: CurrencyTotals
 }>()
 </script>
 
 <template>
     <div class="space-y-4">
-
-        <div class="max-w-6xl mx-auto">
+        <div class="mx-auto max-w-6xl">
             <FlightMapChart :flights="flights" />
         </div>
 
@@ -22,15 +22,13 @@ defineProps<{
 
         <FlightDurationStats :flights="flights" />
 
-        <div class="max-w-6xl mx-auto flex flex-col md:flex-row gap-6">
-            <div class="w-full md:w-1/2 h-[300px]">
+        <div class="mx-auto flex max-w-6xl flex-col gap-6 md:flex-row">
+            <div class="h-[300px] w-full md:w-1/2">
                 <FlightBarChart :flights="flights" />
             </div>
-            <div class="w-full md:w-1/2 h-[300px]">
+            <div class="h-[300px] w-full md:w-1/2">
                 <FlightRouteChart :flights="flights" />
             </div>
         </div>
-
-        <div class="mt-8 text-center text-gray-400 italic">More charts or stats coming soon...</div>
     </div>
 </template>

@@ -7,6 +7,7 @@ import airportIcon from '@/assets/images/airport.png'
 import airportIconLight from '@/assets/images/airport_white.png'
 import L from 'leaflet'
 import * as turf from '@turf/turf'
+import type { Flight } from '@/types/journeys'
 
 const isDark = ref(false)
 const cartoApiKey = import.meta.env.VITE_CARTO_API_KEY
@@ -35,7 +36,7 @@ const customIcon = computed(() =>
     })
 )
 
-const props = defineProps<{ flights: any[] }>()
+const props = defineProps<{ flights: Flight[] }>()
 
 const center = ref<[number, number]>([30, 10])
 const zoom = ref(2)
