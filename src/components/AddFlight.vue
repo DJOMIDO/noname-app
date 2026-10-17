@@ -56,7 +56,7 @@ const handleSubmit = async () => {
     }
 
     await refresh()
-    if (!isLoggedIn.value) {
+    if (!user.value) {
         // Keep what they typed, then send them to log in — returning restores the draft.
         saveDraft(DRAFT_KEY, form)
         router.push({ path: '/login', query: { next: '/add-flight' } })

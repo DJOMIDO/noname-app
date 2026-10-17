@@ -8,13 +8,15 @@ import { invalidateJourneysCache } from '@/composables/useJourneys'
 import { toast } from 'vue-sonner'
 import JourneyDetailShell from '@/components/JourneyDetailShell.vue'
 import AddTrainDetailed from '@/components/AddTrainDetailed.vue'
+// Aliased: `Train` is already taken by the lucide icon above.
+import type { Train as TrainRow } from '@/types/journeys'
 
 const route = useRoute()
 const router = useRouter()
 
 const isEditing = ref(false)
 const loading = ref(true)
-const train = ref<any>(null)
+const train = ref<TrainRow | null>(null)
 
 const form = reactive({
     train_company: '',
@@ -79,17 +81,27 @@ const chips = computed(() => {
     return list
 })
 
-const assign = (src: any) => {
-    Object.keys(form).forEach((key) => {
-        ;(form as any)[key] = src[key] ?? ''
+// Row values arrive as null for optional columns; the form binds strings, so
+// normalise every field on the way in.
+type TrainForm = typeof form
+
+const assign = (src: TrainRow) => {
+    ;(Object.keys(form) as (keyof TrainForm)[]).forEach((key) => {
+        const value = src[key]
+        form[key] = value === null || value === undefined ? '' : String(value)
     })
 }
 
 const fetchTrain = async () => {
-    const { data, error } = await client.from('trains').select('*').eq('id', route.params.id).single()
+    const { data, error } = await client
+        .from('trains')
+        .select('*')
+        .eq('id', route.params.id)
+        .returns<TrainRow>()
+        .single()
     if (error) {
         toast.error('Failed to load train record.')
-    } else {
+    } else if (data) {
         train.value = data
         assign(data)
     }
@@ -98,7 +110,7 @@ const fetchTrain = async () => {
 
 const startEdit = () => { isEditing.value = true }
 const cancelEdit = () => {
-    assign(train.value)
+    if (train.value) assign(train.value)
     isEditing.value = false
 }
 

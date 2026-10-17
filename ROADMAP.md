@@ -27,6 +27,7 @@
 
 ### Done
 
+- [x] 引入 ESLint 静态检查（分支 `chore/add-eslint`：ESLint 10 + Vue 3/TS 官方预设（`@vue/eslint-config-typescript`）flat config；`scripts/**` 加 Node globals、`src/**/*.vue` 关闭 multi-word-component-names（单字页名与 shadcn 原语为有意命名）；新增 `npm run lint` / `lint:fix`；清掉全部 12 处 `no-explicit-any`——useAuthUser 导出 `AuthUser` 类型、列表与详情页改用 `Flight`/`Train` + `.returns<T>()`、`assign()` 用 `keyof` 索引替代 `form as any`；顺带把写入点的 `!isLoggedIn.value` 守卫改为 `!user.value` 以完成空值收窄；lint 与 build 全绿）
 - [x] 数据层收敛与统计页加载优化（分支 `refactor/journeys-data-layer`：新增 useJourneys composable——统计专用窄列查询（裁掉 notes/booking_ref/gate 等图表不消费字段，全量拉取 payload 大幅减小）+ 按 userId 隔离的 module 级缓存；Stats.vue 改用它，二次进入秒开；7 个写入点（录入/编辑/删除/CSV 导入）全部接入缓存失效，增删改后统计不会显示脏数据；类型出口用客户端官方 .returns<T>() 无强转）
 - [x] 欢迎页区分登录态（分支 `feat/home-logged-in-summary`，PR #28 已合并：新增 HomeSummary 个性化卡片——问候语 + 航班/火车计数 chips + 最近 3 条行程快捷入口；零行程的登录用户仍看 TravelIntro 激励页，与游客一致；数据加载完成后才切换展示，避免闪现）
 - [x] 行程列表搜索与年份筛选（分支 `feat/journey-search-filter`：新增 JourneysFilterBar（防抖搜索框 + 年份 chips，同时作用于两个 Tab）；PostgREST or/ilike 多字段匹配，城市名自动扩展为 IATA 码集合（airports.json 本地查表），MU5101 式连写航班号识别航司前缀拆分匹配；过滤变化页码归 1（合并 watcher 防重复请求）；空态区分「无数据」与「无匹配」；踩坑：date 列不能 ILIKE，or=() 语法不支持 cast(text)，日期收窄由年份 chips 的 gte/lte 承担）
@@ -43,4 +44,4 @@
 
 - [ ] B 方向「效率型首页」实验：弱化插图、突出操作入口与快捷数据
 - [ ] 补建 docs/requirements.md，沉淀详细需求与验收标准
-- [ ] 引入 lint / 测试脚本（当前仅 `npm run build` 作为基础验证）
+- [ ] 引入单元测试（Vitest + 核心逻辑 stats/csvImport/geo 首批用例）
