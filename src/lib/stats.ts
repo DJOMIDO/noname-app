@@ -52,3 +52,18 @@ export function mergeCurrencyTotals(...maps: CurrencyTotals[]): CurrencyTotals {
     }
     return merged
 }
+
+export interface CurrencyTotalEntry {
+    currency: string
+    amount: number
+}
+
+// Totals as an array ordered by descending amount, falling back to the currency
+// code on ties. Object key order follows the fetched rows, so anything that
+// shows only a leading slice of the currencies needs this to stay meaningful
+// (biggest spenders first) and stable between loads.
+export function sortedCurrencyTotals(totals: CurrencyTotals): CurrencyTotalEntry[] {
+    return Object.entries(totals)
+        .map(([currency, amount]) => ({ currency, amount }))
+        .sort((a, b) => b.amount - a.amount || a.currency.localeCompare(b.currency))
+}
