@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { mergeCurrencyTotals, mostFrequent, sumByCurrency } from '../stats'
+import { mergeCurrencyTotals, mostFrequent, sortedCurrencyTotals, sumByCurrency } from '../stats'
 
 type Row = { code: string | null; price?: number | string | null; currency?: string | null }
 
@@ -62,5 +62,23 @@ describe('mergeCurrencyTotals', () => {
 
     it('returns an empty object when given no maps', () => {
         expect(mergeCurrencyTotals()).toEqual({})
+    })
+})
+
+describe('sortedCurrencyTotals', () => {
+    it('orders entries by descending amount', () => {
+        expect(sortedCurrencyTotals({ USD: 40, JPY: 300, CNY: 120.5 })).toEqual([
+            { currency: 'JPY', amount: 300 },
+            { currency: 'CNY', amount: 120.5 },
+            { currency: 'USD', amount: 40 },
+        ])
+    })
+
+    it('breaks amount ties by currency code so the order stays stable', () => {
+        expect(sortedCurrencyTotals({ EUR: 50, CNY: 50 }).map(e => e.currency)).toEqual(['CNY', 'EUR'])
+    })
+
+    it('returns an empty array for no totals', () => {
+        expect(sortedCurrencyTotals({})).toEqual([])
     })
 })
