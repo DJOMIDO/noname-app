@@ -8,6 +8,7 @@ import { invalidateJourneysCache } from '@/composables/useJourneys'
 import { toast } from 'vue-sonner'
 import airlines from '@/assets/data/airlines.json'
 import { airportByIata, haversineKm, timezoneOffsetDiffHours } from '@/lib/geo'
+import { buildUpdatePayload } from '@/lib/journeyPayload'
 import { getFlightDuration } from '@/utils/getFlightDuration'
 import JourneyDetailShell from '@/components/JourneyDetailShell.vue'
 import AddFlightDetailed from '@/components/AddFlightDetailed.vue'
@@ -127,7 +128,10 @@ const cancelEdit = () => {
 }
 
 const handleSave = async () => {
-    const payload = { ...form, price: form.price === '' ? null : Number(form.price) }
+    const payload = buildUpdatePayload(form, {
+        requiredKeys: ['airline_code', 'flight_number', 'departure_airport', 'arrival_airport', 'departure_date'],
+        numericKeys: ['price'],
+    })
     const { error } = await client.from('flights').update(payload).eq('id', route.params.id)
     if (error) {
         toast.error('Update failed: ' + error.message)

@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { DateTime } from 'luxon'
 import { Train } from 'lucide-vue-next'
 import { client } from '@/lib/neon'
+import { buildUpdatePayload } from '@/lib/journeyPayload'
 import { invalidateJourneysCache } from '@/composables/useJourneys'
 import { toast } from 'vue-sonner'
 import JourneyDetailShell from '@/components/JourneyDetailShell.vue'
@@ -115,7 +116,10 @@ const cancelEdit = () => {
 }
 
 const handleSave = async () => {
-    const payload = { ...form, price: form.price === '' ? null : Number(form.price) }
+    const payload = buildUpdatePayload(form, {
+        requiredKeys: ['train_company', 'train_number', 'departure_station', 'arrival_station', 'departure_date'],
+        numericKeys: ['price'],
+    })
     const { error } = await client.from('trains').update(payload).eq('id', route.params.id)
     if (error) {
         toast.error('Update failed: ' + error.message)
