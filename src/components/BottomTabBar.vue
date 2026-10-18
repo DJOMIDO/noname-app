@@ -40,7 +40,7 @@ const closeSheets = () => {
 
         <!-- Add sheet -->
         <div v-if="showAdd"
-            class="fixed inset-x-0 bottom-20 z-50 mx-auto w-[calc(100%-2rem)] max-w-sm animate-in fade-in slide-in-from-bottom-4
+            class="fixed inset-x-0 bottom-[calc(5rem_+_env(safe-area-inset-bottom,0px))] z-50 mx-auto w-[calc(100%-2rem)] max-w-sm animate-in fade-in slide-in-from-bottom-4
             rounded-2xl border border-white/60 bg-white/90 p-3 shadow-xl shadow-brand/10 backdrop-blur-md dark:border-white/10 dark:bg-gray-900/90">
             <div class="mb-1 flex items-center justify-between px-2">
                 <span class="text-sm font-semibold text-gray-500 dark:text-gray-400">Add a journey</span>
@@ -58,7 +58,7 @@ const closeSheets = () => {
 
         <!-- Menu sheet -->
         <div v-if="showMenu"
-            class="fixed inset-x-0 bottom-20 z-50 mx-auto w-[calc(100%-2rem)] max-w-sm animate-in fade-in slide-in-from-bottom-4
+            class="fixed inset-x-0 bottom-[calc(5rem_+_env(safe-area-inset-bottom,0px))] z-50 mx-auto w-[calc(100%-2rem)] max-w-sm animate-in fade-in slide-in-from-bottom-4
             rounded-2xl border border-white/60 bg-white/90 p-3 shadow-xl shadow-brand/10 backdrop-blur-md dark:border-white/10 dark:bg-gray-900/90">
             <div class="mb-1 flex items-center justify-between px-2">
                 <span class="text-sm font-semibold text-gray-500 dark:text-gray-400">
@@ -100,7 +100,7 @@ const closeSheets = () => {
         <!-- The bar -->
         <nav class="fixed inset-x-0 bottom-0 z-50 border-t border-slate-200/70 bg-white/85 backdrop-blur-xl
             dark:border-white/10 dark:bg-gray-950/80">
-            <div class="mx-auto grid max-w-md grid-cols-5 items-center px-2 pb-[env(safe-area-inset-bottom)] pt-2">
+            <div class="mx-auto grid max-w-md grid-cols-5 items-center px-2 pb-[env(safe-area-inset-bottom,0px)] pt-2">
                 <RouterLink v-for="item in [mobileTabItems[0], mobileTabItems[1]]" :key="item.to" :to="item.to"
                     :class="[
                         'flex flex-col items-center gap-0.5 rounded-xl py-1.5 text-[11px] font-medium transition-colors',

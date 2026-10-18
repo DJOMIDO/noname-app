@@ -12,7 +12,7 @@ const props = defineProps<ToasterProps>()
       '--normal-bg': 'var(--popover)',
       '--normal-text': 'var(--popover-foreground)',
       '--normal-border': 'var(--border)',
-
+      '--offset-top': 'calc(1rem + env(safe-area-inset-top, 0px))',
     }"
   />
 </template>

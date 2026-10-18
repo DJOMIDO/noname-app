@@ -22,7 +22,7 @@
 
 ### In progress
 
-- （暂无）
+- [ ] iPhone 安全区适配（分支 `fix/iphone-safe-area`：根因——`index.html` viewport 缺 `viewport-fit=cover`，导致 BottomTabBar 上已有的 `pb-[env(safe-area-inset-bottom)]` 在 iOS 恒为 0、内容被 home indicator 压住；Pixel 无此安全区故正常。改：viewport 补 `viewport-fit=cover`；各页 section 的 `pb-24`→`pb-[calc(6rem+env(safe-area-inset-bottom))]`、`pt-10/pt-6`→加 `env(safe-area-inset-top)`（逐页避让，遵守不集中到 main 的规范）；Add/Menu 弹层 `bottom-20`→`bottom-[calc(5rem+env(...))]`；AuthShell 品牌链接与底部内容、Sonner toast `--offset-top` 同步避让。桌面/无安全区 env=0，等价原值不回归。lint/build 通过，待真机验证 + PR）
 
 ### Done
 
