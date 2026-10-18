@@ -1,4 +1,4 @@
-# ✈️🚆 Travel Tracker App
+# ✈️🚆 vivavia
 
 A modern travel journaling web app for logging flights and train journeys.  
 Built with **Vue 3**, **TypeScript**, **Shadcn-Vue**, **Neon** (Postgres, Auth and Data API), and **Leaflet** for real-time stats and visualizations.
@@ -31,13 +31,13 @@ See [PROJECT_REQUIREMENTS.md](./PROJECT_REQUIREMENTS.md).
 ### 🌐 Live Demo
 
 You can try the app online here:  
-👉 [https://nonameapp.netlify.app](https://nonameapp.netlify.app)
+👉 [https://vivavia.netlify.app](https://vivavia.netlify.app)
 
 ### 1. Clone the project
 
 ```bash
-git clone https://github.com/DJOMIDO/noname-app
-cd noname-app
+git clone https://github.com/DJOMIDO/vivavia
+cd vivavia
 ```
 
 ### 2. Install dependencies
@@ -107,47 +107,6 @@ Optional columns are included in each downloaded template. Dates must use
 `YYYY-MM-DD`; times use `HH:mm` (or `HH:mm:ss`), and prices must be
 non-negative numbers. Rows with validation errors are shown in the preview and
 are skipped when valid rows are imported.
-
----
-
-## 📸 Screenshots
-
-### Authentication
-- **Signup**
-  ![Signup](./screenshots/signup.png)
-- **Login**
-  ![Login](./screenshots/login.png)
-
-### Home
-- **Light Mode**
-  ![Home](./screenshots/home.png)
-- **Dark Mode**
-  ![Home Dark](./screenshots/home_dark.png)
-
-### Add Flight / Train
-- **Add Flight (Light)**
-  ![Add Flight](./screenshots/add-flight.png)
-- **Add Flight (Dark)**
-  ![Add Flight Dark](./screenshots/add-flight_dark.png)
-- **Add Train (Dark)**
-  ![Add Train Dark](./screenshots/add-train_dark.png)
-
-### View Journeys
-- **Flights Tab**
-  ![Journeys Flight](./screenshots/journeys_flight.png)
-- **Trains Tab (Dark)**
-  ![Journeys Train Dark](./screenshots/journeys_train_dark.png)
-
-### Dashboard
-- **Overview**
-  ![Stats Overview](./screenshots/stats_overview.png)
-- **Flight Stats (Dark)**
-  ![Stats Flight Dark](./screenshots/stats_flight_dark.png)
-- **Train Stats (Dark)**
-  ![Stats Train Dark](./screenshots/stats_train.png)
-
-### 404 Page
-- ![Not Found](./screenshots/not_found.png)
 
 ---
 
