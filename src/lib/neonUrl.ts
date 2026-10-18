@@ -3,15 +3,20 @@
 
 export type NeonUrlResult =
   | { ok: true; baseUrl: string }
-  | { ok: false; reason: 'missing' | 'connection-string' | 'invalid' }
+  | { ok: false; reason: 'missing' | 'connection-string' | 'missing-database' | 'invalid' }
 
 const isPlaceholder = (value: string) =>
   !value || value.includes('your-') || value.includes('your_')
 
-// Accepts the database base URL as well as the forms the Neon Console shows:
-// the Data API URL (`ep-xxx.apirest...`/rest/v1), the Auth URL
-// (`ep-xxx.neonauth...`/auth) and pooled hosts (`ep-xxx-pooler...`).
-// Returns the base URL that @neondatabase/neon-js derives its endpoints from.
+// Accepts every URL shape the Neon Console shows, provided it carries the
+// database name — that name is what the Auth and Data API endpoints are
+// derived from, so it cannot be recovered from the host alone:
+//   base        https://ep-xxx.<region>.aws.neon.tech/dbname
+//   Data API    https://ep-xxx.apirest.<region>.aws.neon.tech/dbname/rest/v1
+//   Auth        https://ep-xxx.neonauth.<region>.aws.neon.tech/dbname/auth
+//   pooled host https://ep-xxx-pooler.<region>.aws.neon.tech/dbname
+// Returns the database base URL that @neondatabase/neon-js derives its
+// endpoints from.
 // Postgres connection strings are rejected: they carry the database password,
 // and every VITE_ variable is inlined into the public JavaScript bundle.
 export const normalizeNeonUrl = (raw: string): NeonUrlResult => {
@@ -36,7 +41,7 @@ export const normalizeNeonUrl = (raw: string): NeonUrlResult => {
   const host = labels.join('.') + (url.port ? `:${url.port}` : '')
 
   const path = url.pathname.replace(/\/+$/, '').replace(/\/(rest\/v1|auth)$/, '')
-  if (!path) return { ok: false, reason: 'invalid' }
+  if (!path) return { ok: false, reason: 'missing-database' }
 
   return { ok: true, baseUrl: `${url.protocol}//${host}${path}` }
 }

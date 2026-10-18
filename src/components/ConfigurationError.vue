@@ -5,6 +5,8 @@ const reasons = {
   missing: 'The VITE_NEON_URL environment variable is missing or still uses an example value.',
   'connection-string':
     'VITE_NEON_URL is a Postgres connection string. It contains your database password and must not be used in the browser.',
+  'missing-database':
+    'VITE_NEON_URL has no database name in its path, so the Auth and Data API endpoints cannot be derived from it.',
   invalid: 'VITE_NEON_URL is not a valid Neon Data API URL.',
 }
 </script>
