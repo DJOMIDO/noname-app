@@ -10,7 +10,7 @@
   - CSV 批量导入行程
   - 用户鉴权与数据隔离（Neon Auth + Neon Postgres）
   - 响应式布局，浅色 / 深色主题一致体验
-- **技术栈 / 关键决策**：Vue 3 + TypeScript + Vite；Tailwind CSS + shadcn-vue；Neon Data API / Neon Auth；Vue Router；Leaflet + CARTO 地图
+- **技术栈 / 关键决策**：Vue 3 + TypeScript + Vite；Tailwind CSS + shadcn-vue；Neon Data API / Neon Auth；Vue Router；MapLibre GL + OpenFreeMap 矢量底图
 - **当前阶段**：MVP 功能已基本齐备，进入 UI 体验优化迭代
 - **详细需求**：见 docs/requirements.md（待补建）
 
@@ -26,6 +26,7 @@
 
 ### Done
 
+- [x] 航线地图重做为 MapLibre + OpenFreeMap（分支 `feat/flight-map-maplibre`：原 Leaflet + CARTO 用的是 `*_nolabels` 栅格瓦片——无任何地名、无 @2x 在 Retina 发糊；航线是单色 `weight:1.5 opacity:0.5` 平铺线；机场标记 12px PNG；center/zoom 写死 `[30,10]`/2 不做 fitBounds；且依赖 `VITE_CARTO_API_KEY`。改：换 MapLibre GL 6 矢量底图 + OpenFreeMap（MIT，公共实例免费无限量、无需 API key、可自托管），positron/dark 双 style 随主题 `setStyle()` 切换；航线走原生 `line-gradient`（source 开 `lineMetrics`）做 brand `#7b5ff1` → sunset `#ff8b37` 渐变，叠一层 `line-blur` 宽线当光晕；机场标记改矢量 circle + IATA symbol（`Noto Sans Bold` 走 OpenFreeMap glyphs，`minzoom 2.5` 避免世界视图标签海），删掉两张 PNG；新增 fitBounds（按机场点算而非弧线，经度以首个机场为锚解缠，跨太平洋航线得到连续框而非全球视图；单点撑成城市级框；数据清空时回世界视图）。几何抽到 `src/lib/flightRoutes.ts` 纯函数（复用 `lib/geo` 的 `airportByIata`/`haversineKm`，不另建索引）+ 18 个单测。**顺带修存量 bug**：`turf.greatCircle` 跨反子午线时返回 MultiLineString，旧代码按 LineString 直接取 `coord[1]`，LAX→PEK 一类航线画出来是坏线，现按段拆成多个 LineString。**经停站入图**：`journeyColumns` 的 `FLIGHT_STATS` 补 `stopover_airport`（遵守窄列规范，migration 里本就是真实列），一条航班拆成 出发→经停→到达 每段一条弧、共享同一 properties，气泡标题始终是两端点城市、副行 `via Singapore · 10,784 km`，里程为各段 haversine 之和；经停码查不到时降级为直飞弧而非丢掉整条航班。**底图国界线**按 `boundary` 前缀在 `style.load` 里设 `visibility:none`（positron 与 dark 命名不同，故按前缀不按硬清单；地名标注保留），该时机早于矢量瓦片到达所以无闪现。性能：路由是 eager import，故 FlightMapChart 用 `defineAsyncComponent` 拆独立 chunk（gzip 298KB 不进主包）；同一理由在 PWA `workbox.globIgnores` 里排除该 chunk——地图瓦片不缓存所以离线根本渲染不出来，precache 它等于每次安装白下载 1MB（precache 从 2306KiB/20 项降到 1181KiB/18 项，改为首次打开统计页时按需拉）；删掉 `main.ts` 的 Leaflet 默认图标 workaround 与 `.env.example` 的 `VITE_CARTO_API_KEY`。踩坑：**Vite 依赖预构建会破坏 MapLibre 的 worker 路径**——预构建产物用 `import.meta.url` 去 `node_modules/.vite/deps/` 找 `maplibre-gl-worker.mjs`（404），worker 池死亡导致零 `.pbf` 请求、画面只剩背景清屏色，需在 `vite.config.ts` 加 `optimizeDeps.exclude: ['maplibre-gl']` 让其以原生 ESM 加载（仅影响 dev，build 不受影响）。浏览器实测：亮/暗双主题底图与渐变弧线均在、`style.load` 图层重建正常、fitBounds 生效、跨太平洋航线贴太平洋、经停折点与 hover 毛玻璃气泡正确、控制台零 error/warning。lint/test(71)/build 全绿）
 - [x] 修复编辑行程保存报 `invalid input syntax for type time: ""`（分支 `fix/journey-edit-empty-values`：根因——FlightDetails/TrainDetails 编辑表单把所有列按字符串绑定、加载时 `null→''`，而 `handleSave` 只把 `price` 还原成 null，其余空字段原样以 `''` 提交；`departure_time`/`arrival_time` 是 `time`、`arrival_date` 是 `date` 列，Postgres 无法把 `''` 转成 time/date。因保存是整表提交，只要记录里存在一个空时间/日期字段，改任何无关字段都会被拦。新增路径 AddFlight/AddTrain 早已用 `|| null` 规避，唯独编辑路径遗漏。改：新增 `src/lib/journeyPayload.ts` 的 `buildUpdatePayload`——非必填字段 `''→null`、`numericKeys` 数值化、`requiredKeys`（NOT NULL 列）保留原值以让清空必填项暴露真实约束错误；Flight/TrainDetails 的 `handleSave` 统一改用，两处同源 bug 一并修复。lint/build 全绿）
 - [x] 年份筛选动态化 + 首页最近行程日期加年份（分支 `feat/dynamic-year-filter`：Journeys 页年份 chips 原写死「近 5 年」，改为按当前用户 flights/trains 数据里**实际存在**的出发年份动态生成——`journeyColumns.ts` 新增 `DEPARTURE_DATE_COLUMNS`/`DepartureDateRow` 窄列集（只取 `departure_date`，遵守窄列查询规范），两表并行查询后取年、去重、倒序，换数据即换年份，无数据时仅剩「All time」；年份查询失败静默降级，不与列表查询重复弹 toast。首页 HomeSummary 最近 3 条行程的 `fmtDate` 补上 `year: 'numeric'`（如 `Oct 18, 2026`）。lint/build 全绿）
 - [x] 接 CI（分支 `chore/add-ci-workflow`：新增 `.github/workflows/ci.yml`（GitHub Actions），push/PR 到 master 时依次跑 `npm ci` → `npm run lint` → `npm test` → `npm run build`；Node 22 对齐本地、`cache: npm`、`concurrency` 取消同分支被取代的在飞运行；无需任何 secret（build 缺 `VITE_NEON_URL` 走兜底 URL，测试为纯逻辑）；补上 Netlify 只跑 build、不含 lint/test 的缺口。待手动：在 GitHub 仓开 branch protection 将 `checks` 设为 master 必过检查）
@@ -51,6 +52,9 @@
 
 ### Nice to have
 
+- [ ] 航线地图 3D 拱形弧线与流光动画（deck.gl `ArcLayer` 叠在 MapLibre 上）——统计面板 420px 卡片里 3D 透视不利于读图，更适合将来做独立的「飞行足迹」展示页
+- [ ] OpenFreeMap 公共实例由捐赠支撑、无 SLA；若需可用性保障，可自托管（每周提供 planet 全量下载）或把 style JSON 与瓦片本地化
+- [ ] 机场 IATA 标签 `minzoom: 2.5`，单航线视图（zoom≈1.6）下看不到三字码；若希望常显需下调 minzoom 或提高 fitBounds 的 zoom 下限
 - [ ] PWA 只读数据离线缓存（NetworkFirst 短期缓存行程/统计 GET，需处理 JWT 请求的缓存隔离与失效）——当前仅做到可安装 + 应用壳离线
 - [ ] B 方向「效率型首页」实验：弱化插图、突出操作入口与快捷数据
 - [ ] 补建 docs/requirements.md，沉淀详细需求与验收标准

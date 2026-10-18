@@ -1,12 +1,16 @@
 <script setup lang="ts">
+import { defineAsyncComponent } from 'vue'
 import type { CurrencyTotals } from '@/types/journeys'
 import type { FlightStatsRow } from '@/lib/journeyColumns'
-import FlightMapChart from '@/views/FlightMapChart.vue'
 import FlightRouteChart from '@/views/FlightRouteChart.vue'
 import FlightBarChart from '@/views/FlightBarChart.vue'
 import FlightDurationStats from '@/views/FlightDurationStats.vue'
 import FlightStatsSummary from '@/views/FlightStatsSummary.vue'
 import ChartPanel from '@/components/stats/ChartPanel.vue'
+
+// Routes are eagerly imported, so a static import here would pull maplibre-gl
+// (~280 KB gzipped) into the main bundle. Only this panel needs it.
+const FlightMapChart = defineAsyncComponent(() => import('@/views/FlightMapChart.vue'))
 
 defineProps<{
     flights: FlightStatsRow[]
