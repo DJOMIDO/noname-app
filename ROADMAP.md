@@ -42,6 +42,7 @@
 - [x] 添加航班 / 添加火车页改版（分支 `feat/redesign-add-journey-pages`：抽取 JourneyFormShell / FormField / AutocompleteInput 共享件消除两页重复；全字段补 label、Detailed 分组、移动端单列；模式切换移入卡片内与表单贴近；CSV 导入面板重做：玻璃模态 + 拖拽上传 + Esc/遮罩关闭；修复选择器保存后不重置的存量 bug）
 - [x] 登录 / 注册页视觉风格与新欢迎页统一（分支 `feat/redesign-auth-pages`，PR #17 已合并：抽取共享 AuthShell；主题初始化从 NavBar 提升到 App 层，修复认证页直接加载丢失深色主题；Remember me / Forgot password 保留占位，后续 `feat/password-reset` 完善）
 - [x] 欢迎页重新设计：风格 A+C 融合——渐变 Hero 大标题、玻璃拟态操作卡片、入场动效、氛围光斑与插画融入背景；同步补齐卡片键盘可访问性与 reduced-motion 降级（分支 `feat/redesign-welcome-page`）
+- [x] 统计页总消费卡片高度收敛（分支 `feat/stats-currency-totals-collapse`：CurrencyTotalsList 原先一个币种一行直出，币种越多卡片越高，并把同一 grid row 的兄弟卡（grid 默认 `align-items: stretch`）一起撑高。新增 `lib/stats` 的 `sortedCurrencyTotals` 按金额降序（同额以币种码兜底，修此前依赖后端返回行序的不稳定排序）；展示改为一行固定高度的横向 chip 滑动条（`overflow-x-auto` + `snap-x` + 隐滚动条 + 右缘渐隐提示可滑），高度与币种数量彻底解耦；选横向而非纵向内部滚动是因为内层纵滚会和页面纵滚抢手势（移动端 scroll trap）；未溢出时回到居中排版；useResizeObserver 监听容器尺寸，侧栏折叠时边缘态不会失真。决策：不按汇率折算成单一货币（需引入外部汇率源，MVP 阶段属过度设计），长尾只做展示收敛不给跨币种合计）
 
 ### Nice to have
 
