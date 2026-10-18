@@ -7,6 +7,15 @@
 // because their form is bound to every editable column.
 import type { Flight, Train } from '@/types/journeys'
 
+// --- Shared ----------------------------------------------------------------
+
+// Year-filter chips only need the departure year, so pull the single date
+// column shared by both tables rather than a full card/stats row.
+const DEPARTURE_DATE = ['departure_date'] as const satisfies readonly (keyof Flight)[]
+
+export const DEPARTURE_DATE_COLUMNS = DEPARTURE_DATE.join(',')
+export type DepartureDateRow = Pick<Flight, typeof DEPARTURE_DATE[number]>
+
 // --- Flights ---------------------------------------------------------------
 
 // Stats dashboard: chart inputs only (no seat/gate/notes/timestamps).

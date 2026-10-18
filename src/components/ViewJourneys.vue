@@ -14,8 +14,8 @@ import airports from '@/assets/data/airports.json'
 import airlines from '@/assets/data/airlines.json'
 import { getFlightDuration } from '@/utils/getFlightDuration.ts'
 import {
-    FLIGHT_CARD_COLUMNS, TRAIN_CARD_COLUMNS,
-    type FlightCardRow, type TrainCardRow,
+    FLIGHT_CARD_COLUMNS, TRAIN_CARD_COLUMNS, DEPARTURE_DATE_COLUMNS,
+    type FlightCardRow, type TrainCardRow, type DepartureDateRow,
 } from '@/lib/journeyColumns'
 
 const activeTab = ref('flights')
@@ -39,7 +39,9 @@ const totalTrainPages = computed(() => Math.ceil(totalTrainCount.value / trainsP
 // --- Search & year filters (applied to both tabs) ---
 const searchQuery = ref('')
 const yearFilter = ref<number | null>(null)
-const years = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i)
+// Years present in the user's data, newest first — derived on load so the chips
+// always match reality instead of a hardcoded recent-year window.
+const years = ref<number[]>([])
 const hasActiveFilter = computed(() => searchQuery.value !== '' || yearFilter.value !== null)
 
 // Commas/parens/% would break the PostgREST `or(...)` syntax, so strip them.
@@ -200,11 +202,32 @@ const fetchTrains = async () => {
     loadingTrains.value = false
 }
 
+// Distinct departure years across both tables, newest first. Only the date
+// column is fetched; failures stay quiet so they don't double up with the
+// list-fetch toasts (the chips simply fall back to "All time" only).
+const fetchYears = async () => {
+    const uid = user.value?.id
+    if (!uid) return
+
+    const [flightRes, trainRes] = await Promise.all([
+        client.from('flights').select(DEPARTURE_DATE_COLUMNS).eq('user_id', uid).returns<DepartureDateRow[]>(),
+        client.from('trains').select(DEPARTURE_DATE_COLUMNS).eq('user_id', uid).returns<DepartureDateRow[]>(),
+    ])
+
+    const dates = [...(flightRes.data ?? []), ...(trainRes.data ?? [])]
+    years.value = [...new Set(
+        dates
+            .map(r => Number(r.departure_date?.slice(0, 4)))
+            .filter(y => Number.isInteger(y) && y > 0),
+    )].sort((a, b) => b - a)
+}
+
 onMounted(async () => {
     await fetchUser()
     if (isLoggedIn.value) {
         fetchFlights()
         fetchTrains()
+        fetchYears()
     }
 })
 
