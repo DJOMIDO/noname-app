@@ -16,7 +16,7 @@ const fmtDate = (iso: string) => {
   const d = new Date(iso + 'T00:00:00')
   return Number.isNaN(d.getTime())
     ? iso
-    : d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
+    : d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })
 }
 </script>
 
