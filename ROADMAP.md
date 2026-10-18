@@ -45,9 +45,11 @@
 - [x] 统计页总消费卡片高度收敛（分支 `feat/stats-currency-totals-collapse`：CurrencyTotalsList 原先一个币种一行直出，币种越多卡片越高，并把同一 grid row 的兄弟卡（grid 默认 `align-items: stretch`）一起撑高。新增 `lib/stats` 的 `sortedCurrencyTotals` 按金额降序（同额以币种码兜底，修此前依赖后端返回行序的不稳定排序）；展示改为一行固定高度的横向 chip 滑动条（`overflow-x-auto` + `snap-x` + 隐滚动条 + 右缘渐隐提示可滑），高度与币种数量彻底解耦；选横向而非纵向内部滚动是因为内层纵滚会和页面纵滚抢手势（移动端 scroll trap）；未溢出时回到居中排版；useResizeObserver 监听容器尺寸，侧栏折叠时边缘态不会失真。决策：不按汇率折算成单一货币（需引入外部汇率源，MVP 阶段属过度设计），长尾只做展示收敛不给跨币种合计）
 - [x] 登录用户欢迎页卡片改两列（分支 `feat/home-summary-two-column`：HomeSummary 在宽卡上单列堆导致右上大片留白，改为 `lg` 两列——左 2fr（问候语 + 航班/火车计数 chips，chips 靠 `lg:justify-between` 沉底与右列底边对齐）、右 3fr（最近行程改竖列，每行“图标 + 类型 + 航线 + 日期”单行读完，航线名不再折行），两列间用 `lg:border-l` + `lg:pl-8` 分隔；窄屏仍单列堆叠但 recents 也改竖列（更好扫读且 1–2 条时不塌）。宽度保持 `max-w-4xl` 与下方 ActionGrid 对齐）
 - [x] 修正并加固 `normalizeNeonUrl`（分支 `fix/neon-url-comment-and-reason`：先核对官方 README，原「注释与行为不一致」的描述有误——带库名的 Auth URL（`.../<dbname>/auth`）本就正常工作，Neon Console 也不会展示无库名的 Auth URL。真正的缺口：注释没写明「所有形态都必须含数据库名」（库名正是推导 Auth / Data API endpoint 的依据），且剥掉 `/auth`、`/rest/v1` 后路径为空时返回笼统的 `invalid`，配置页会说“不是有效的 Neon Data API URL”，对「URL 合法但缺库名」的场景误导开发者。改：注释列出四种可接受形态（base / apirest / neonauth / pooler）；新增 `missing-database` reason 与对应文案（ConfigurationError 的 reasons 映射由 TS 索引类型强制补齐）；补 11 个单测覆盖四种形态、端口、尾斜杠、query 剥离、placeholder、连接串与内嵌凭据拒绝、无库名与非法 URL 的区分（该模块同时被运行时 neon.ts 与构建期 vite guard 共用，此前零覆盖）
+- [x] 接入 PWA（分支 `feat/pwa-support`：`vite-plugin-pwa`（generateSW + autoUpdate），最小档范围——可安装 manifest + 应用壳离线 precache，**不缓存任何 API 响应**（Neon Data API 按用户身份返回，SW 缓存会带来跨用户脏数据风险，与 useJourneys 的内存缓存失效模型冲突）。图标复用网页端 vivavia 字标（Outfit 700 + `#7b5ff1→violet-400→sky-500` 渐变）渲染出 192/512/maskable/apple-touch 一套；`index.html` 补 `theme-color` 与 `apple-touch-icon`、favicon 从 `vite.svg` 换成字标（删 `public/vite.svg`）；新增 Netlify `public/_headers` 对 `/sw.js`、`/manifest.webmanifest` 设 `no-cache`，保证 autoUpdate 每次拉到最新 SW 而不被 CDN 缓存拖住。lint/test(53)/build 全绿，产物含 sw.js + manifest + 22 项 precache）
 
 ### Nice to have
 
+- [ ] PWA 只读数据离线缓存（NetworkFirst 短期缓存行程/统计 GET，需处理 JWT 请求的缓存隔离与失效）——当前仅做到可安装 + 应用壳离线
 - [ ] B 方向「效率型首页」实验：弱化插图、突出操作入口与快捷数据
 - [ ] 补建 docs/requirements.md，沉淀详细需求与验收标准
 - [ ] `normalizeNeonUrl` 不校验主机名是否为 Neon 域名（任意 `https://some-host/db` 都会被判为合法 base URL），可考虑收紧为 `.neon.tech` / `.neon.build` 结尾
