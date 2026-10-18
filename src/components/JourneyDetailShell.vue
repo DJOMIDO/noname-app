@@ -35,7 +35,7 @@ const outlineBtn =
 </script>
 
 <template>
-  <section class="relative flex h-full flex-col overflow-hidden px-4 pt-6 pb-24 transition-colors lg:pb-6
+  <section class="relative flex h-full flex-col overflow-hidden px-4 pt-[calc(1.5rem_+_env(safe-area-inset-top,0px))] pb-[calc(6rem_+_env(safe-area-inset-bottom,0px))] transition-colors lg:pb-6
     bg-gradient-to-b from-lilac/40 via-white to-white text-gray-800
     dark:from-gray-950 dark:via-gray-900 dark:to-gray-900 dark:text-gray-100">
 

@@ -26,11 +26,11 @@ defineProps<{
 
     <!-- Brand link (auth pages render outside the app shell, see App.vue) -->
     <router-link to="/"
-      class="font-display animate-in fade-in relative z-20 px-6 py-5 text-xl font-semibold tracking-tight text-brand transition hover:scale-105 hover:text-violet-700 dark:text-violet-300 dark:hover:text-violet-100">
+      class="font-display animate-in fade-in relative z-20 px-6 pt-[calc(1.25rem_+_env(safe-area-inset-top,0px))] pb-5 text-xl font-semibold tracking-tight text-brand transition hover:scale-105 hover:text-violet-700 dark:text-violet-300 dark:hover:text-violet-100">
       vivavia
     </router-link>
 
-    <div class="relative z-10 flex flex-1 items-center justify-center px-4 pb-10 lg:px-16">
+    <div class="relative z-10 flex flex-1 items-center justify-center px-4 pb-[calc(2.5rem_+_env(safe-area-inset-bottom,0px))] lg:px-16">
       <div class="flex w-full max-w-5xl items-center justify-center gap-16">
 
         <!-- Illustration: desktop only, floating like the welcome hero -->
