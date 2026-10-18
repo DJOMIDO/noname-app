@@ -4,19 +4,6 @@ import App from "./App.vue";
 import ConfigurationError from "./components/ConfigurationError.vue";
 import router from "./router";
 import { isNeonConfigured } from "./lib/neon";
-import "leaflet/dist/leaflet.css";
-
-import L from "leaflet";
-
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: new URL(
-    "leaflet/dist/images/marker-icon-2x.png",
-    import.meta.url
-  ).href,
-  iconUrl: new URL("leaflet/dist/images/marker-icon.png", import.meta.url).href,
-  shadowUrl: new URL("leaflet/dist/images/marker-shadow.png", import.meta.url)
-    .href,
-});
 
 const app = createApp(isNeonConfigured ? App : ConfigurationError);
 if (isNeonConfigured) app.use(router);

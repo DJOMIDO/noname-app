@@ -49,6 +49,12 @@ export default defineConfig(({ mode }) => {
         workbox: {
           // Precache the built shell only; runtime responses are not cached.
           globPatterns: ['index.html', 'assets/**/*.{js,css,svg,png,woff2}'],
+          // The route-map chunk carries maplibre-gl (~1 MB) but can never render
+          // offline: its vector tiles come from OpenFreeMap and are deliberately
+          // not cached. Precaching it would charge every install 1 MB for a
+          // feature that cannot work without a network, so leave it to load on
+          // demand the first time the stats tab is opened.
+          globIgnores: ['assets/FlightMapChart-*.js', 'assets/FlightMapChart-*.css'],
           navigateFallback: 'index.html',
           maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
         },
@@ -58,6 +64,15 @@ export default defineConfig(({ mode }) => {
       alias: {
         '@': path.resolve(__dirname, 'src'),
       },
+    },
+    optimizeDeps: {
+      // MapLibre resolves its web worker relative to `import.meta.url`. Vite's
+      // pre-bundling rewrites that to node_modules/.vite/deps/, where the
+      // worker file does not exist — the worker pool dies and the map renders
+      // as an empty background. Serving it as native ESM keeps the worker next
+      // to the real dist/ bundle. Only affects dev; the production build is
+      // unaffected.
+      exclude: ['maplibre-gl'],
     },
   }
 })

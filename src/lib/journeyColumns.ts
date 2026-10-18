@@ -19,9 +19,11 @@ export type DepartureDateRow = Pick<Flight, typeof DEPARTURE_DATE[number]>
 // --- Flights ---------------------------------------------------------------
 
 // Stats dashboard: chart inputs only (no seat/gate/notes/timestamps).
+// `stopover_airport` is here because the route map draws each leg of a
+// connecting flight instead of a single direct arc.
 const FLIGHT_STATS = [
     'id', 'airline_code', 'flight_number',
-    'departure_airport', 'arrival_airport',
+    'departure_airport', 'stopover_airport', 'arrival_airport',
     'departure_date', 'arrival_date', 'departure_time', 'arrival_time',
     'aircraft_type', 'price', 'currency',
 ] as const satisfies readonly (keyof Flight)[]

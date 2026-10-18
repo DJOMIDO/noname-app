@@ -168,3 +168,104 @@
     }
   }
 }
+
+/* --- Route map (MapLibre GL) -------------------------------------------- */
+/* MapLibre builds its chrome imperatively, so these overrides have to be
+   global rather than scoped. They are deliberately unlayered: Tailwind v4 puts
+   utilities in @layer, and unlayered rules win the cascade against them.
+   The goal is to make the stock controls and popup match the glass ChartPanel
+   the map sits inside. */
+
+.route-map-popup .maplibregl-popup-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  padding: 0.4375rem 0.6875rem;
+  border: 1px solid rgb(255 255 255 / 0.6);
+  border-radius: 0.75rem;
+  background: rgb(255 255 255 / 0.82);
+  box-shadow: 0 4px 16px rgb(15 23 42 / 0.1);
+  backdrop-filter: blur(10px);
+  font-size: 0.75rem;
+  line-height: 1.4;
+}
+
+.route-map-popup .maplibregl-popup-content strong {
+  font-weight: 600;
+  color: rgb(31 41 55);
+}
+
+.route-map-popup .maplibregl-popup-content span {
+  color: rgb(107 114 128);
+  font-variant-numeric: tabular-nums;
+}
+
+/* The tip is a CSS border triangle; which side it uses depends on the anchor,
+   so tint both to keep it attached to the bubble in every position. */
+.route-map-popup .maplibregl-popup-tip {
+  border-top-color: rgb(255 255 255 / 0.82);
+  border-bottom-color: rgb(255 255 255 / 0.82);
+}
+
+.dark .route-map-popup .maplibregl-popup-content {
+  border-color: rgb(255 255 255 / 0.12);
+  background: rgb(24 24 27 / 0.82);
+  box-shadow: 0 4px 16px rgb(0 0 0 / 0.4);
+}
+
+.dark .route-map-popup .maplibregl-popup-content strong {
+  color: rgb(243 244 246);
+}
+
+.dark .route-map-popup .maplibregl-popup-content span {
+  color: rgb(156 163 175);
+}
+
+.dark .route-map-popup .maplibregl-popup-tip {
+  border-top-color: rgb(24 24 27 / 0.82);
+  border-bottom-color: rgb(24 24 27 / 0.82);
+}
+
+.maplibregl-ctrl-group {
+  overflow: hidden;
+  border: 1px solid rgb(255 255 255 / 0.6);
+  border-radius: 0.625rem;
+  background: rgb(255 255 255 / 0.72);
+  box-shadow: 0 2px 8px rgb(15 23 42 / 0.08);
+  backdrop-filter: blur(10px);
+}
+
+.dark .maplibregl-ctrl-group {
+  border-color: rgb(255 255 255 / 0.12);
+  background: rgb(24 24 27 / 0.72);
+}
+
+.dark .maplibregl-ctrl-group button + button {
+  border-top-color: rgb(255 255 255 / 0.12);
+}
+
+/* The zoom glyphs are fixed-colour SVG masks, so invert them in dark mode. */
+.dark .maplibregl-ctrl-group button .maplibregl-ctrl-icon {
+  filter: invert(1);
+}
+
+.maplibregl-ctrl-attrib.maplibregl-compact {
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.6);
+  backdrop-filter: blur(8px);
+}
+
+.dark .maplibregl-ctrl-attrib.maplibregl-compact {
+  background: rgb(24 24 27 / 0.6);
+}
+
+.maplibregl-ctrl-attrib,
+.maplibregl-ctrl-attrib a {
+  color: rgb(107 114 128);
+  font-size: 0.625rem;
+}
+
+.dark .maplibregl-ctrl-attrib,
+.dark .maplibregl-ctrl-attrib a {
+  color: rgb(156 163 175);
+}
