@@ -12,22 +12,26 @@ import {
     LinearScale
 } from 'chart.js'
 import { computed } from 'vue'
-import type { FlightStatsRow } from '@/lib/journeyColumns'
-import { countByYear } from '@/lib/stats'
+import { countByYear, type DatedRow } from '@/lib/stats'
 import { useTheme } from '@/composables/useTheme'
 
 ChartJS.register(Title, Tooltip, Legend, LineElement, PointElement, Filler, CategoryScale, LinearScale)
 
-const props = defineProps<{ flights: FlightStatsRow[] }>()
+/**
+ * JourneyYearChart — year-over-year line for any dated rows (flights, trains,
+ * or a pooled "all journeys" array). Brand line with a vertical gradient fill,
+ * gap years zero-filled by countByYear so the line stays continuous.
+ */
+const props = withDefaults(defineProps<{ rows: DatedRow[]; label?: string }>(), { label: 'Journeys' })
 const { isDark } = useTheme()
 
 const chartData = computed(() => {
-    const buckets = countByYear(props.flights)
+    const buckets = countByYear(props.rows)
     return {
         labels: buckets.map(b => String(b.year)),
         datasets: [
             {
-                label: 'Flights',
+                label: props.label,
                 data: buckets.map(b => b.count),
                 borderColor: '#7b5ff1',
                 borderWidth: 2,

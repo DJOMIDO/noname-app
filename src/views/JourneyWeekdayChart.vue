@@ -10,13 +10,16 @@ import {
     LinearScale
 } from 'chart.js'
 import { computed } from 'vue'
-import type { FlightStatsRow } from '@/lib/journeyColumns'
-import { countByWeekday } from '@/lib/stats'
+import { countByWeekday, type DatedRow } from '@/lib/stats'
 import { useTheme } from '@/composables/useTheme'
 
 ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale)
 
-const props = defineProps<{ flights: FlightStatsRow[] }>()
+/**
+ * JourneyWeekdayChart — sunset bars per departure weekday for any dated rows.
+ * Always seven buckets so the shape stays stable.
+ */
+const props = withDefaults(defineProps<{ rows: DatedRow[]; label?: string }>(), { label: 'Journeys' })
 const { isDark } = useTheme()
 
 // countByWeekday returns Sunday-first buckets (Date#getDay order); the chart
@@ -24,13 +27,13 @@ const { isDark } = useTheme()
 const WEEKDAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 
 const chartData = computed(() => {
-    const buckets = countByWeekday(props.flights)
+    const buckets = countByWeekday(props.rows)
     const rotated = [...buckets.slice(1), buckets[0]]
     return {
         labels: WEEKDAY_LABELS,
         datasets: [
             {
-                label: 'Flights',
+                label: props.label,
                 data: rotated.map(b => b.count),
                 backgroundColor: '#ff8b37',
                 borderRadius: 6,
