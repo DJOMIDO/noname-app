@@ -1,0 +1,212 @@
+[
+  {
+    "name": "Gare de Toulouse-Matabiau",
+    "city": "Toulouse",
+    "country": "France",
+    "lat": 43.611,
+    "lng": 1.4528
+  },
+  {
+    "name": "Gare de Carcassonne",
+    "city": "Carcassonne",
+    "country": "France",
+    "lat": 43.2098,
+    "lng": 2.3463
+  },
+  {
+    "name": "Gare de Narbonne",
+    "city": "Narbonne",
+    "country": "France",
+    "lat": 43.176,
+    "lng": 3.003
+  },
+  {
+    "name": "Gare de Caen",
+    "city": "Caen",
+    "country": "France",
+    "lat": 49.1946,
+    "lng": -0.3606
+  },
+  {
+    "name": "Gare d'Annecy",
+    "city": "Annecy",
+    "country": "France",
+    "lat": 45.9,
+    "lng": 6.127
+  },
+  {
+    "name": "Gare de Dijon-Ville",
+    "city": "Dijon",
+    "country": "France",
+    "lat": 47.317,
+    "lng": 5.039
+  },
+  {
+    "name": "Gare de Paris-Gare-de-Lyon",
+    "city": "Paris",
+    "country": "France",
+    "lat": 48.8444,
+    "lng": 2.3736
+  },
+  {
+    "name": "Gare de Paris-Nord",
+    "city": "Paris",
+    "country": "France",
+    "lat": 48.8809,
+    "lng": 2.3553
+  },
+  {
+    "name": "Gare de Lyon-Perrache",
+    "city": "Lyon",
+    "country": "France",
+    "lat": 45.749,
+    "lng": 4.826
+  },
+  {
+    "name": "Gare de Marseille-Saint-Charles",
+    "city": "Marseille",
+    "country": "France",
+    "lat": 43.3025,
+    "lng": 5.381
+  },
+  {
+    "name": "Gare de Bordeaux-Saint-Jean",
+    "city": "Bordeaux",
+    "country": "France",
+    "lat": 44.826,
+    "lng": -0.556
+  },
+  {
+    "name": "Gare de Lille-Flandres",
+    "city": "Lille",
+    "country": "France",
+    "lat": 50.636,
+    "lng": 3.071
+  },
+  {
+    "name": "Gare de Strasbourg-Ville",
+    "city": "Strasbourg",
+    "country": "France",
+    "lat": 48.585,
+    "lng": 7.734
+  },
+  {
+    "name": "Gare de Nantes",
+    "city": "Nantes",
+    "country": "France",
+    "lat": 47.217,
+    "lng": -1.542
+  },
+  {
+    "name": "Gare de Montpellier-Saint-Roch",
+    "city": "Montpellier",
+    "country": "France",
+    "lat": 43.604,
+    "lng": 3.88
+  },
+  {
+    "name": "Gare de Rennes",
+    "city": "Rennes",
+    "country": "France",
+    "lat": 48.103,
+    "lng": -1.672
+  },
+  {
+    "name": "London St Pancras",
+    "city": "London",
+    "country": "United Kingdom",
+    "lat": 51.532,
+    "lng": -0.126
+  },
+  {
+    "name": "London King's Cross",
+    "city": "London",
+    "country": "United Kingdom",
+    "lat": 51.531,
+    "lng": -0.123
+  },
+  {
+    "name": "Bruxelles-Midi",
+    "city": "Brussels",
+    "country": "Belgium",
+    "lat": 50.836,
+    "lng": 4.337
+  },
+  {
+    "name": "Amsterdam Centraal",
+    "city": "Amsterdam",
+    "country": "Netherlands",
+    "lat": 52.379,
+    "lng": 4.9
+  },
+  {
+    "name": "Milano Centrale",
+    "city": "Milan",
+    "country": "Italy",
+    "lat": 45.486,
+    "lng": 9.205
+  },
+  {
+    "name": "Barcelona Sants",
+    "city": "Barcelona",
+    "country": "Spain",
+    "lat": 41.379,
+    "lng": 2.14
+  },
+  {
+    "name": "Zürich HB",
+    "city": "Zurich",
+    "country": "Switzerland",
+    "lat": 47.378,
+    "lng": 8.54
+  },
+  {
+    "name": "Berlin Hauptbahnhof",
+    "city": "Berlin",
+    "country": "Germany",
+    "lat": 52.525,
+    "lng": 13.369
+  },
+  {
+    "name": "Frankfurt (Main) Hbf",
+    "city": "Frankfurt",
+    "country": "Germany",
+    "lat": 50.107,
+    "lng": 8.663
+  },
+  {
+    "name": "München Hbf",
+    "city": "Munich",
+    "country": "Germany",
+    "lat": 48.14,
+    "lng": 11.558
+  },
+  {
+    "name": "Wien Hbf",
+    "city": "Vienna",
+    "country": "Austria",
+    "lat": 48.185,
+    "lng": 16.378
+  },
+  {
+    "name": "北京南站",
+    "city": "Beijing",
+    "country": "China",
+    "lat": 39.865,
+    "lng": 116.378
+  },
+  {
+    "name": "上海虹桥站",
+    "city": "Shanghai",
+    "country": "China",
+    "lat": 31.194,
+    "lng": 121.32
+  },
+  {
+    "name": "广州南站",
+    "city": "Guangzhou",
+    "country": "China",
+    "lat": 22.989,
+    "lng": 113.269
+  }
+]

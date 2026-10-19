@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, defineAsyncComponent } from 'vue'
 import type { CurrencyTotals } from '@/types/journeys'
 import type { TrainStatsRow } from '@/lib/journeyColumns'
 import { topList, trainLegMinutes } from '@/lib/stats'
@@ -11,14 +11,19 @@ import JourneyMonthChart from '@/views/JourneyMonthChart.vue'
 import JourneyYearChart from '@/views/JourneyYearChart.vue'
 import JourneyWeekdayChart from '@/views/JourneyWeekdayChart.vue'
 
+// Routes are eagerly imported, so a static import here would pull maplibre-gl
+// (~280 KB gzipped) into the main bundle. Only the map panel needs it.
+const TrainMapChart = defineAsyncComponent(() => import('@/views/TrainMapChart.vue'))
+
 const props = defineProps<{
     trains: TrainStatsRow[]
     totalSpentByCurrency: CurrencyTotals
 }>()
 
-// Stations carry no coordinates, so there is no route map or distance here —
-// the tab mirrors the flights layout minus those, and duration is the only
-// "longest" ranking a train can offer.
+// Stations carry no bundled coordinates, so the route map geocodes each
+// endpoint on demand (see TrainMapChart) and draws straight-line city arcs;
+// real rail mileage runs higher, so there is still no distance metric here and
+// duration remains the only "longest" ranking a train can offer.
 const fromLabel = (t: TrainStatsRow) => t.departure_city || t.departure_station
 const toLabel = (t: TrainStatsRow) => t.arrival_city || t.arrival_station
 const fmtDuration = (minutes: number) => `${Math.floor(minutes / 60)}h ${minutes % 60}m`
@@ -78,6 +83,10 @@ const longestJourneys = computed<TopListItem[]>(() =>
 
 <template>
     <div class="space-y-4">
+        <ChartPanel title="Route Map" body-class="h-[420px]">
+            <TrainMapChart :trains="trains" />
+        </ChartPanel>
+
         <!-- relative: the row is the positioning context TopListCard expands against -->
         <div class="relative grid grid-cols-1 gap-4 lg:grid-cols-3">
             <TopListCard title="Top Stations" :items="topStations" />

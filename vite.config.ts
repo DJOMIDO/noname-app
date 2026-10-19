@@ -49,12 +49,19 @@ export default defineConfig(({ mode }) => {
         workbox: {
           // Precache the built shell only; runtime responses are not cached.
           globPatterns: ['index.html', 'assets/**/*.{js,css,svg,png,woff2}'],
-          // The route-map chunk carries maplibre-gl (~1 MB) but can never render
-          // offline: its vector tiles come from OpenFreeMap and are deliberately
-          // not cached. Precaching it would charge every install 1 MB for a
-          // feature that cannot work without a network, so leave it to load on
-          // demand the first time the stats tab is opened.
-          globIgnores: ['assets/FlightMapChart-*.js', 'assets/FlightMapChart-*.css'],
+          // The route-map chunks carry maplibre-gl + turf (~1 MB) and the lazy
+          // station gazetteer, but can never render offline: their vector tiles
+          // come from OpenFreeMap and are deliberately not cached. Precaching
+          // them would charge every install ~1 MB for a feature that cannot work
+          // without a network, so leave them to load on demand the first time the
+          // stats tab is opened. Match every lazy chunk in that graph.
+          globIgnores: [
+            'assets/routeGeometry-*.js',
+            'assets/routeGeometry-*.css',
+            'assets/*MapChart-*.js',
+            'assets/*MapChart-*.css',
+            'assets/stations-*.js',
+          ],
           navigateFallback: 'index.html',
           maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
         },
