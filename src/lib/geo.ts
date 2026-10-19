@@ -22,8 +22,10 @@ export function airportByIata(iata?: string | null): Airport | undefined {
     return iata ? byIata.get(iata.toUpperCase()) : undefined
 }
 
-/** Great-circle distance in kilometres between two airports. */
-export function haversineKm(a: Airport, b: Airport): number {
+/** Great-circle distance in kilometres between two coordinates. Accepts any
+ *  `{ lat, lng }` (an Airport, a geocoded train station, …) so the route
+ *  geometry can reuse it without an airport-specific type. */
+export function haversineKm(a: { lat: number; lng: number }, b: { lat: number; lng: number }): number {
     const R = 6371
     const toRad = (deg: number) => (deg * Math.PI) / 180
     const dLat = toRad(b.lat - a.lat)
