@@ -19,14 +19,14 @@ import { basemapLabelLayerIds } from '@/lib/mapLabels'
 import { cn } from '@/lib/utils'
 
 /**
- * Route map — MapLibre GL over OpenFreeMap vector tiles, with brand-gradient
- * great-circle arcs.
+ * Route map — MapLibre GL over OpenFreeMap vector tiles, with great-circle
+ * arcs coloured by a four-step heat scale (times flown).
  *
  * Replaces the former Leaflet + CARTO raster setup: vector tiles stay crisp on
- * retina displays, the basemap carries place labels, arcs get a two-tone
- * gradient plus a soft glow pass, and no third-party API key is needed.
- * OpenFreeMap is MIT-licensed with an unlimited free public instance, and can be
- * self-hosted from its weekly planet dumps if that ever changes.
+ * retina displays, the basemap carries place labels, and no third-party API
+ * key is needed. OpenFreeMap is MIT-licensed with an unlimited free public
+ * instance, and can be self-hosted from its weekly planet dumps if that ever
+ * changes.
  */
 
 // MapLibre locates its web worker relative to `import.meta.url`. In dev that
@@ -79,21 +79,35 @@ const controlsClass = computed(() =>
         : 'absolute left-3 top-3 z-10 flex gap-1.5',
 )
 
+// Without a legend the heat colours are just arbitrary colours; the chip sits
+// bottom-left, clear of MapLibre's attribution in the bottom-right corner.
+const legendClass = computed(() => cn(
+    'absolute z-10 flex items-center gap-2.5 rounded-lg border border-white/60 bg-white/85 px-2.5 py-1.5 text-[10px] font-medium text-gray-600 shadow-sm backdrop-blur-md dark:border-white/10 dark:bg-gray-900/70 dark:text-gray-300',
+    expanded.value
+        ? 'left-[calc(0.75rem_+_env(safe-area-inset-left,0px))] bottom-[calc(0.75rem_+_env(safe-area-inset-bottom,0px))]'
+        : 'bottom-3 left-3',
+))
+
 // Imperative MapLibre handles — deliberately non-reactive, the map owns its state.
 let map: MapLibreMap | null = null
 let popup: Popup | null = null
 let hasFitted = false
 
 /**
- * Arc and marker colours per theme. Dark mode uses lighter tints of the same
- * brand violet / sunset orange so the arcs still read against a near-black
- * basemap. Mirrors --color-brand and --color-sunset in style.css.
+ * Arc and marker colours per theme. The heat ramp runs cool→warm by times
+ * flown (1 / 2–3 / 4–6 / 7+); dark mode lifts the same hues a step so they
+ * still read against a near-black basemap. Dot and label colours mirror
+ * --color-brand and --color-sunset in style.css.
  */
+type HeatRamp = readonly [string, string, string, string]
+
+/** Legend labels, index-aligned with the ramp and the step stops below. */
+const HEAT_BINS = ['1', '2–3', '4–6', '7+'] as const
+
 const palette = computed(() =>
     isDark.value
         ? {
-            arcFrom: '#a78bfa',
-            arcTo: '#fdba74',
+            heat: ['#cbd5e1', '#7dd3fc', '#fcd34d', '#fda4af'] as HeatRamp,
             glowOpacity: 0.3,
             dot: '#141414',
             dotStroke: '#e3e3ff',
@@ -101,8 +115,7 @@ const palette = computed(() =>
             halo: '#0c0c0c',
         }
         : {
-            arcFrom: '#7b5ff1',
-            arcTo: '#ff8b37',
+            heat: ['#94a3b8', '#0ea5e9', '#f59e0b', '#f43f5e'] as HeatRamp,
             glowOpacity: 0.22,
             dot: '#ffffff',
             dotStroke: '#7b5ff1',
@@ -114,13 +127,15 @@ const palette = computed(() =>
 const geo = computed(() => flightRouteGeoJSON(props.flights))
 
 /**
- * Both arc layers share one gradient so the glow sits directly under the line.
- * `line-progress` requires `lineMetrics: true` on the source and runs 0→1 per
- * feature, so every route gets its own full violet→orange ramp.
+ * Four-step heat colour: how many times the city pair was flown, in either
+ * direction. A `step` expression reads `times` off each route feature, so
+ * every leg of the same route paints identically. Replaces the old
+ * line-progress brand gradient — a ramp along the line would read as
+ * direction and fight the heat semantics.
  */
-function arcGradient(): ExpressionSpecification {
-    const { arcFrom, arcTo } = palette.value
-    return ['interpolate', ['linear'], ['line-progress'], 0, arcFrom, 1, arcTo]
+function heatColor(): ExpressionSpecification {
+    const [once, few, often, many] = palette.value.heat
+    return ['step', ['get', 'times'], once, 2, few, 4, often, 7, many]
 }
 
 /**
@@ -178,7 +193,7 @@ function addRouteLayers() {
     if (!map || map.getLayer('route-line')) return
     const colors = palette.value
 
-    map.addSource('routes', { type: 'geojson', data: geo.value.routes, lineMetrics: true })
+    map.addSource('routes', { type: 'geojson', data: geo.value.routes })
     map.addSource('airports', { type: 'geojson', data: geo.value.airports })
 
     map.addLayer({
@@ -187,7 +202,7 @@ function addRouteLayers() {
         source: 'routes',
         layout: { 'line-cap': 'round', 'line-join': 'round' },
         paint: {
-            'line-gradient': arcGradient(),
+            'line-color': heatColor(),
             'line-width': ['interpolate', ['linear'], ['zoom'], 0, 4, 6, 8, 12, 14],
             'line-opacity': colors.glowOpacity,
             'line-blur': 3,
@@ -200,7 +215,7 @@ function addRouteLayers() {
         source: 'routes',
         layout: { 'line-cap': 'round', 'line-join': 'round' },
         paint: {
-            'line-gradient': arcGradient(),
+            'line-color': heatColor(),
             'line-width': ['interpolate', ['linear'], ['zoom'], 0, 1, 6, 2, 12, 3],
             'line-opacity': 0.9,
         },
@@ -289,9 +304,14 @@ function attachHover(target: MapLibreMap) {
         }
 
         target.getCanvas().style.cursor = 'pointer'
-        // "via Dubai · 10,036 km" for a connecting flight, "10,036 km" otherwise.
+        // "via Dubai · 10,036 km · flown 3×" for a repeated connecting flight,
+        // "10,036 km" for a one-off direct one.
         const detail = route
-            ? [route.via ? `via ${route.via}` : '', `${Math.round(Number(route.distanceKm)).toLocaleString()} km`]
+            ? [
+                route.via ? `via ${route.via}` : '',
+                `${Math.round(Number(route.distanceKm)).toLocaleString()} km`,
+                Number(route.times) > 1 ? `flown ${route.times}×` : '',
+            ]
                 .filter(Boolean)
                 .join(' · ')
             : ''
@@ -395,6 +415,13 @@ useEventListener(window, 'keydown', (event: KeyboardEvent) => {
                     <Minimize2 v-if="expanded" class="size-4" />
                     <Maximize2 v-else class="size-4" />
                 </button>
+            </div>
+            <div :class="legendClass" role="img"
+                aria-label="Route heat legend: slate flown once, sky 2 to 3 times, amber 4 to 6 times, rose 7 or more">
+                <span v-for="(bin, index) in HEAT_BINS" :key="bin" class="flex items-center gap-1">
+                    <span class="h-1.5 w-4 rounded-full" :style="{ backgroundColor: palette.heat[index] }" />
+                    <span>{{ bin }}</span>
+                </span>
             </div>
         </div>
     </Teleport>

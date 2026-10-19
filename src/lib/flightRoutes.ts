@@ -16,6 +16,9 @@ export interface RouteProperties {
     via: string | null
     /** Total great-circle distance in km across every leg. */
     distanceKm: number
+    /** How many flights in the current dataset fly this city pair, in either
+     *  direction — the map's four-step heat colour reads this. */
+    times: number
 }
 
 export interface AirportProperties {
@@ -115,6 +118,14 @@ function placeOf(airport: Airport): string {
 const cityOf = (airport: Airport): string => airport.city ?? airport.iata
 
 /**
+ * Unordered endpoint-pair key: PEK→SHA and SHA→PEK are the same route for
+ * heat purposes, so a round trip warms one colour instead of splitting it.
+ */
+export function routeHeatKey(departure: string | null, arrival: string | null): string {
+    return [departure ?? '', arrival ?? ''].sort().join('-')
+}
+
+/**
  * Airports a flight touches in order: departure, optional stopover, arrival.
  *
  * Both endpoints must resolve in airports.json — a flight with an unknown
@@ -141,10 +152,19 @@ export function flightRouteGeoJSON(flights: readonly FlightStatsRow[]): FlightRo
     // Keyed by IATA so a hub visited by many flights yields a single dot.
     const uniqueAirports = new Map<string, Airport>()
 
-    for (const flight of flights) {
-        const legs = flightLegs(flight)
-        if (!legs) continue
+    // Resolve legs once: the heat pass and the geometry pass need the same
+    // legs, and flights with unknown endpoints must not dilute the counts.
+    const resolved = flights
+        .map(flight => ({ flight, legs: flightLegs(flight) }))
+        .filter((entry): entry is { flight: FlightStatsRow; legs: Airport[] } => entry.legs !== null)
 
+    const pairCounts = new Map<string, number>()
+    for (const { flight } of resolved) {
+        const key = routeHeatKey(flight.departure_airport, flight.arrival_airport)
+        pairCounts.set(key, (pairCounts.get(key) ?? 0) + 1)
+    }
+
+    for (const { flight, legs } of resolved) {
         for (const airport of legs) uniqueAirports.set(airport.iata, airport)
 
         const properties: RouteProperties = {
@@ -153,6 +173,7 @@ export function flightRouteGeoJSON(flights: readonly FlightStatsRow[]): FlightRo
             distanceKm: legs
                 .slice(1)
                 .reduce((total, arr, index) => total + haversineKm(legs[index], arr), 0),
+            times: pairCounts.get(routeHeatKey(flight.departure_airport, flight.arrival_airport)) ?? 1,
         }
 
         for (let index = 0; index < legs.length - 1; index += 1) {

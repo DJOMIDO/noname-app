@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { flightRouteGeoJSON } from '../flightRoutes'
+import { flightRouteGeoJSON, routeHeatKey } from '../flightRoutes'
 import type { FlightStatsRow } from '../journeyColumns'
 
 let seq = 0
@@ -151,6 +151,59 @@ describe('flightRouteGeoJSON stopovers', () => {
         const { routes } = flightRouteGeoJSON([flight('LHR', 'SHA')])
         expect(routes.features).toHaveLength(1)
         expect(routes.features[0].properties.via).toBeNull()
+    })
+})
+
+describe('flightRouteGeoJSON heat', () => {
+    it('counts a one-off route as flown once', () => {
+        const { routes } = flightRouteGeoJSON([flight('LHR', 'SHA')])
+        expect(routes.features[0].properties.times).toBe(1)
+    })
+
+    it('pools outbound and return legs into one unordered route', () => {
+        const { routes } = flightRouteGeoJSON([
+            flight('SHA', 'PEK'),
+            flight('PEK', 'SHA'),
+            flight('SHA', 'PEK'),
+        ])
+        for (const arc of routes.features) expect(arc.properties.times).toBe(3)
+    })
+
+    it('keeps distinct city pairs on separate counts', () => {
+        const { routes } = flightRouteGeoJSON([
+            flight('SHA', 'PEK'),
+            flight('SHA', 'PEK'),
+            flight('PEK', 'LAX'),
+        ])
+        const shaPek = routes.features.find(f => f.properties.label === 'Shanghai → Beijing')
+        const pekLax = routes.features.find(f => f.properties.label === 'Beijing → Los Angeles')
+        expect(shaPek?.properties.times).toBe(2)
+        expect(pekLax?.properties.times).toBe(1)
+    })
+
+    it('gives every leg of a connecting flight the parent route heat', () => {
+        const { routes } = flightRouteGeoJSON([flight('PEK', 'SYD', 'SIN'), flight('SYD', 'PEK')])
+        expect(routes.features).toHaveLength(3)
+        for (const arc of routes.features) expect(arc.properties.times).toBe(2)
+    })
+
+    it('does not let unresolvable flights dilute the counts', () => {
+        const { routes } = flightRouteGeoJSON([flight('SHA', 'PEK'), flight('ZZZ', 'PEK')])
+        expect(routes.features[0].properties.times).toBe(1)
+    })
+})
+
+describe('routeHeatKey', () => {
+    it('is direction-agnostic', () => {
+        expect(routeHeatKey('PEK', 'SHA')).toBe(routeHeatKey('SHA', 'PEK'))
+    })
+
+    it('separates different city pairs', () => {
+        expect(routeHeatKey('PEK', 'SHA')).not.toBe(routeHeatKey('PEK', 'LAX'))
+    })
+
+    it('tolerates missing codes', () => {
+        expect(routeHeatKey(null, 'PEK')).toBe(routeHeatKey('PEK', null))
     })
 })
 
