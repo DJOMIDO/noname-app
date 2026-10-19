@@ -41,8 +41,11 @@ const display = (item: TopListItem) => item.display ?? String(item.value)
 </script>
 
 <template>
+    <!-- backdrop-blur gives every card its own stacking context, so the panel's
+         z-30 only wins inside this card — while expanded, lift the card itself
+         above its siblings or later rows paint over the floating panel. -->
     <div ref="cardRef" class="relative rounded-2xl border border-white/60 bg-white/70 p-5 shadow-sm backdrop-blur-md
-        dark:border-white/10 dark:bg-white/5">
+        dark:border-white/10 dark:bg-white/5" :class="expanded && 'z-30'">
         <div class="mb-4 flex items-center justify-between gap-2">
             <h3 class="text-sm font-semibold text-gray-600 dark:text-gray-300">{{ title }}</h3>
             <slot name="actions" />
