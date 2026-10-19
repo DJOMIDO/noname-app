@@ -240,11 +240,44 @@ describe('flightRouteGeoJSON round-trip pairing', () => {
         for (const arc of routes.features) expect(arc.properties.paired).toBe(true)
     })
 
-    it('keeps a paired leg on the true great circle — separation is a render offset', () => {
+    it('draws a paired round trip as two arcs mirror-symmetric about the chord', () => {
         const { routes } = flightRouteGeoJSON([flight('SHA', 'PEK'), flight('PEK', 'SHA')])
         const [outbound, homeward] = routes.features
-        expect(outbound.geometry.coordinates).toEqual(greatCircleCoords('SHA', 'PEK'))
-        expect(homeward.geometry.coordinates).toEqual(greatCircleCoords('PEK', 'SHA'))
+        const out = outbound.geometry.coordinates
+        const home = homeward.geometry.coordinates
+        const last = out.length - 1
+        expect(home).toHaveLength(out.length)
+
+        // Endpoints stay pinned to the airports.
+        expect(out[0][0]).toBeCloseTo(COORDS.SHA.lng, 6)
+        expect(out[0][1]).toBeCloseTo(COORDS.SHA.lat, 6)
+        expect(home[0][0]).toBeCloseTo(COORDS.PEK.lng, 6)
+        expect(home[last][0]).toBeCloseTo(COORDS.SHA.lng, 6)
+
+        // Mirror symmetry: paired points average onto the straight chord.
+        for (const i of [25, 50, 74]) {
+            const t = i / last
+            expect((out[i][0] + home[last - i][0]) / 2)
+                .toBeCloseTo(COORDS.SHA.lng + t * (COORDS.PEK.lng - COORDS.SHA.lng), 6)
+            expect((out[i][1] + home[last - i][1]) / 2)
+                .toBeCloseTo(COORDS.SHA.lat + t * (COORDS.PEK.lat - COORDS.SHA.lat), 6)
+        }
+
+        // And the lens is actually open in the middle.
+        expect(Math.hypot(out[50][0] - home[last - 50][0], out[50][1] - home[last - 50][1])).toBeGreaterThan(2)
+    })
+
+    it('overlaps an extra same-direction flight onto its side of the lens', () => {
+        // A one-way that matches a paired direction rides the very same arc:
+        // the lens shape depends only on endpoints and travel direction, so
+        // repeat flights thicken the heat colour, not the arc count.
+        const { routes } = flightRouteGeoJSON([flight('SHA', 'PEK'), flight('PEK', 'SHA'), flight('SHA', 'PEK')])
+        expect(routes.features).toHaveLength(3)
+        const [first, , third] = routes.features
+        expect(first.properties.paired).toBe(true)
+        expect(third.properties.paired).toBe(true)
+        expect(third.geometry.coordinates).toEqual(first.geometry.coordinates)
+        expect(third.properties.times).toBe(3)
     })
 
     it('flags only the legs with traffic in both directions', () => {
@@ -266,10 +299,23 @@ describe('flightRouteGeoJSON round-trip pairing', () => {
         expect(homeward.properties.paired).toBe(true)
     })
 
-    it('flags every piece of a dateline-split paired leg', () => {
+    it('splits a dateline-crossing paired lens into continuous in-range pieces', () => {
         const { routes } = flightRouteGeoJSON([flight('LAX', 'PEK'), flight('PEK', 'LAX')])
         expect(routes.features.length).toBeGreaterThan(2)
-        for (const arc of routes.features) expect(arc.properties.paired).toBe(true)
+        for (const arc of routes.features) {
+            expect(arc.properties.paired).toBe(true)
+            const points = arc.geometry.coordinates
+            for (const [lng, lat] of points) {
+                expect(lng).toBeGreaterThanOrEqual(-180)
+                expect(lng).toBeLessThanOrEqual(180)
+                expect(lat).toBeGreaterThanOrEqual(-90)
+                expect(lat).toBeLessThanOrEqual(90)
+            }
+            for (let index = 1; index < points.length; index += 1) {
+                // A dateline streak would jump ~360° between two vertices.
+                expect(Math.abs(points[index][0] - points[index - 1][0])).toBeLessThan(180)
+            }
+        }
     })
 })
 

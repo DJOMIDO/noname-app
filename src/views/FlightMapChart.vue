@@ -20,8 +20,8 @@ import { cn } from '@/lib/utils'
 
 /**
  * Route map — MapLibre GL over OpenFreeMap vector tiles, with great-circle
- * arcs coloured by a four-step heat scale (times flown); round-trip pairs are
- * offset to opposite sides of their shared great circle at render time.
+ * arcs coloured by a four-step heat scale (times flown); round-trip pairs
+ * arrive pre-separated from the geometry layer as mirror-symmetric lens arcs.
  *
  * Replaces the former Leaflet + CARTO raster setup: vector tiles stay crisp on
  * retina displays, the basemap carries place labels, and no third-party API
@@ -140,20 +140,6 @@ function heatColor(): ExpressionSpecification {
 }
 
 /**
- * Screen-space separation for the two arcs of a round-trip pair.
- *
- * `line-offset` shifts a line perpendicular to its own travel direction, so
- * the same positive offset lands on opposite sides of the great circle for
- * outbound and return — two mirror-symmetric arcs with a constant pixel gap,
- * independent of route length and zoom. Arcs stay true great circles.
- */
-const PAIR_OFFSET_PX = 2
-
-function pairOffset(): ExpressionSpecification {
-    return ['case', ['get', 'paired'], PAIR_OFFSET_PX, 0]
-}
-
-/**
  * Hides the basemap's administrative borders so the arcs are the only lines
  * competing for attention.
  *
@@ -219,7 +205,6 @@ function addRouteLayers() {
         paint: {
             'line-color': heatColor(),
             'line-width': ['interpolate', ['linear'], ['zoom'], 0, 4, 6, 8, 12, 14],
-            'line-offset': pairOffset(),
             'line-opacity': colors.glowOpacity,
             'line-blur': 3,
         },
@@ -233,7 +218,6 @@ function addRouteLayers() {
         paint: {
             'line-color': heatColor(),
             'line-width': ['interpolate', ['linear'], ['zoom'], 0, 1, 6, 2, 12, 3],
-            'line-offset': pairOffset(),
             'line-opacity': 0.9,
         },
     })
