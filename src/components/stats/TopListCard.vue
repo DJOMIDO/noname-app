@@ -19,12 +19,11 @@ import { Maximize2, X } from 'lucide-vue-next'
  * the glass styling and the bar transitions are easier to control in the
  * DOM). Collapsed it shows the first `visibleN` rows as horizontal bars.
  * Expanding (flightradar24-style) switches to the full ranking as vertical
- * columns. On `lg` (a 3-column grid) the card lifts out of flow in place —
- * `absolute inset-x-0` against its grid row, which must be `relative` — so it
- * spans the whole row and overlays its siblings, who keep their tracks instead
- * of reflowing. Below `lg` the grid is single-column, so there are no siblings
- * to span or cover: the card simply stays in flow and grows, pushing what
- * follows down. Collapsing restores the top-N bars.
+ * columns that scroll horizontally. On `lg` the expanded card spans the full
+ * row width in place (`absolute inset-x-0` against the relative row), overlaying
+ * siblings who keep their tracks. The body area has a fixed height, so the
+ * expanded panel is exactly as tall as its row: nothing overflows vertically,
+ * siblings never wrap, and the rows below never move or get covered.
  */
 const props = withDefaults(defineProps<{
     title: string
@@ -47,13 +46,17 @@ const percent = (item: TopListItem) =>
 </script>
 
 <template>
-    <!-- Expanded on `lg`: absolute against the (relative) grid row, so the card
-         spans the row at its own flow position and overlays siblings in place.
-         Below `lg` (single column) it stays in flow and simply grows. -->
+    <!-- Expanded on `lg`: absolute against the (relative) row so the card spans
+         the full row width in place, overlaying siblings who keep their tracks
+         (never wrapped). The fixed body height keeps the panel exactly as tall
+         as the row, so it never spills onto the rows below. -->
     <div class="rounded-2xl border border-white/60 bg-white/70 p-5 shadow-sm backdrop-blur-md
         dark:border-white/10 dark:bg-white/5"
-        :class="expanded && 'shadow-xl shadow-brand/10 lg:absolute lg:inset-x-0 lg:z-10 lg:min-h-full'">
-        <div class="mb-4 flex items-center justify-between gap-2">
+        :class="expanded && 'shadow-xl shadow-brand/10 lg:absolute lg:inset-x-0 lg:z-10'">
+        <!-- Fixed header height (fits the tallest #actions content, e.g. the
+             Time/Distance segmented capsule) so every card is the same height
+             whether or not it renders an actions slot. -->
+        <div class="mb-4 flex h-7 items-center justify-between gap-2">
             <h3 class="text-sm font-semibold text-gray-600 dark:text-gray-300">{{ title }}</h3>
             <div class="flex items-center gap-2">
                 <slot name="actions" />
@@ -70,8 +73,9 @@ const percent = (item: TopListItem) =>
             </div>
         </div>
 
-        <!-- Collapsed: horizontal bars, top-N -->
-        <ul v-if="items.length && !expanded" class="space-y-2.5">
+        <!-- Collapsed: horizontal bars, top-N. Fixed body height keeps every
+             card (and its expanded state) the same size. -->
+        <ul v-if="items.length && !expanded" class="h-64 space-y-2.5 overflow-hidden">
             <!-- Rows are display-only and never reordered, and labels may repeat
                  (a route flown twice), so the index keeps keys unique. -->
             <li v-for="(item, index) in visibleItems" :key="`${item.label}-${index}`" class="flex items-center gap-3">
@@ -89,8 +93,10 @@ const percent = (item: TopListItem) =>
             </li>
         </ul>
 
-        <!-- Expanded: every item as a vertical column, side by side -->
-        <div v-if="items.length && expanded" class="overflow-x-auto pb-1">
+        <!-- Expanded: every item as a vertical column, side by side, scrolling
+             horizontally inside the same fixed body height. -->
+        <div v-if="items.length && expanded" class="h-64 overflow-x-auto overflow-y-hidden pb-1
+            [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             <div class="flex min-w-max items-end gap-2 sm:gap-3">
                 <div v-for="(item, index) in items" :key="`${item.label}-${index}`"
                     class="flex w-12 flex-col items-center gap-1 sm:w-14">
@@ -109,6 +115,6 @@ const percent = (item: TopListItem) =>
             </div>
         </div>
 
-        <p v-if="!items.length" class="text-sm text-gray-400 italic">No data yet</p>
+        <p v-if="!items.length" class="flex h-64 items-center text-sm text-gray-400 italic">No data yet</p>
     </div>
 </template>
