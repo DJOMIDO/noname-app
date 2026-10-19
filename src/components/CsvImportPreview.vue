@@ -5,10 +5,32 @@ import type { ImportRow } from '@/lib/csvImport'
 const props = defineProps<{
   rows: ImportRow[]
   headers: readonly string[]
+  statuses?: Record<number, string>
 }>()
 
 const validCount = computed(() => props.rows.filter((row) => row.valid).length)
 const invalidCount = computed(() => props.rows.length - validCount.value)
+
+const statusOf = (row: ImportRow): string =>
+  props.statuses?.[row.rowNumber] ?? (row.valid ? 'new' : 'invalid')
+
+const badgeLabel = (row: ImportRow): string => {
+  const labels: Record<string, string> = {
+    new: 'New', update: 'Will update', duplicate: 'Duplicate in file',
+  }
+  return labels[statusOf(row)] ?? 'Ready'
+}
+
+const badgeClass = (row: ImportRow): string => {
+  const status = statusOf(row)
+  if (status === 'update') {
+    return 'rounded-full bg-amber-50 px-2.5 py-0.5 text-xs font-medium text-amber-600 dark:bg-amber-500/10 dark:text-amber-300'
+  }
+  if (status === 'duplicate') {
+    return 'rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-500 dark:bg-white/5 dark:text-gray-400'
+  }
+  return 'rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-medium text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-300'
+}
 </script>
 
 <template>
@@ -47,9 +69,8 @@ const invalidCount = computed(() => props.rows.length - validCount.value)
               {{ row.values[header] || '—' }}
             </td>
             <td class="min-w-56 p-2.5">
-              <span v-if="row.valid"
-                class="rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-medium text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-300">
-                Ready
+              <span v-if="row.valid" :class="badgeClass(row)">
+                {{ badgeLabel(row) }}
               </span>
               <ul v-else class="list-disc space-y-0.5 pl-4 text-xs text-rose-600 dark:text-rose-300">
                 <li v-for="error in row.errors" :key="error">{{ error }}</li>

@@ -66,6 +66,14 @@ const requiredFields: Record<JourneyType, readonly string[]> = {
   train: ['train_company', 'train_number', 'departure_station', 'arrival_station', 'departure_date'],
 }
 
+// Fields that identify "the same journey" when re-importing. There is no DB
+// unique constraint and the CSV carries no id, so a completed second import is
+// matched onto the record the first partial one created via this natural key.
+const identityFields: Record<JourneyType, readonly string[]> = {
+  flight: ['airline_code', 'flight_number', 'departure_date', 'departure_airport', 'arrival_airport'],
+  train: ['train_company', 'train_number', 'departure_date', 'departure_station', 'arrival_station'],
+}
+
 const parseCsvLine = (line: string): string[] => {
   const values: string[] = []
   let value = ''
@@ -223,6 +231,45 @@ export const toDatabaseRow = (type: JourneyType, values: Record<string, string>)
     booking_ref: nullable(values.booking_ref),
     notes: nullable(values.notes),
   } satisfies Omit<TrainImportRow, 'user_id'>
+}
+
+export type ExistingJourneyRow = { id: string } & Record<string, string | null>
+
+// Narrow column list (id + natural key) for scanning a user's stored records
+// when classifying each imported row as new vs. update.
+export const importIdentityColumns = (type: JourneyType): string =>
+  ['id', ...identityFields[type]].join(',')
+
+// Full editable column list, used to read a matched record before merging.
+export const importMergeColumns = (type: JourneyType): string =>
+  ['id', ...(type === 'flight' ? flightHeaders : trainHeaders)].join(',')
+
+const normalizeKeyPart = (value: unknown): string =>
+  (value === null || value === undefined ? '' : String(value)).trim().toUpperCase()
+
+// Case- and space-insensitive natural key. A CSV row and a stored record are
+// keyed the same way, so `mu5101` matches `MU5101` and `PVG ` matches `PVG`.
+export const journeyIdentity = (type: JourneyType, values: Record<string, unknown>): string =>
+  identityFields[type].map((field) => normalizeKeyPart(values[field])).join('|')
+
+const existingToText = (value: unknown): string =>
+  value === null || value === undefined ? '' : String(value)
+
+// Merge semantics for a matched record: a non-empty CSV cell overrides the
+// stored value, a blank CSV cell keeps it. Lets a user complete a partial
+// import without wiping fields they happened to leave empty this time.
+export const mergeImportRow = (
+  type: JourneyType,
+  existing: Record<string, unknown>,
+  values: Record<string, string>,
+) => {
+  const headers = type === 'flight' ? flightHeaders : trainHeaders
+  const merged: Record<string, string> = {}
+  for (const field of headers) {
+    const csvValue = values[field] ?? ''
+    merged[field] = csvValue !== '' ? csvValue : existingToText(existing[field])
+  }
+  return toDatabaseRow(type, merged)
 }
 
 export const csvTemplate = (type: JourneyType) => {
