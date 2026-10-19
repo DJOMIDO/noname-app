@@ -6,6 +6,8 @@ import { airportByIata } from '@/lib/geo'
 import { topList } from '@/lib/stats'
 import airlines from '@/assets/data/airlines.json'
 import FlightBarChart from '@/views/FlightBarChart.vue'
+import FlightYearChart from '@/views/FlightYearChart.vue'
+import FlightWeekdayChart from '@/views/FlightWeekdayChart.vue'
 import FlightDurationStats from '@/views/FlightDurationStats.vue'
 import FlightStatsSummary from '@/views/FlightStatsSummary.vue'
 import ChartPanel from '@/components/stats/ChartPanel.vue'
@@ -60,9 +62,16 @@ const topRoutes = computed<TopListItem[]>(() =>
 
         <FlightDurationStats :flights="flights" />
 
+        <ChartPanel title="Flights per Year">
+            <FlightYearChart :flights="flights" />
+        </ChartPanel>
+
         <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
             <ChartPanel title="Flights per Month">
                 <FlightBarChart :flights="flights" />
+            </ChartPanel>
+            <ChartPanel title="Flights per Weekday">
+                <FlightWeekdayChart :flights="flights" />
             </ChartPanel>
         </div>
     </div>
