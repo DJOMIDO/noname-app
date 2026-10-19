@@ -7,7 +7,7 @@ import type { FlightStatsRow } from '../journeyColumns'
 let seq = 0
 
 /** Minimal stats row — only the airport columns feed the route geometry. */
-function flight(from: string, to: string, via?: string): FlightStatsRow {
+function flight(from: string, to: string, via?: string, date = '2026-05-01'): FlightStatsRow {
     seq += 1
     return {
         id: `flight-${seq}`,
@@ -16,7 +16,7 @@ function flight(from: string, to: string, via?: string): FlightStatsRow {
         departure_airport: from,
         stopover_airport: via ?? null,
         arrival_airport: to,
-        departure_date: '2026-05-01',
+        departure_date: date,
     }
 }
 
@@ -267,17 +267,49 @@ describe('flightRouteGeoJSON round-trip pairing', () => {
         expect(Math.hypot(out[50][0] - home[last - 50][0], out[50][1] - home[last - 50][1])).toBeGreaterThan(2)
     })
 
-    it('overlaps an extra same-direction flight onto its side of the lens', () => {
-        // A one-way that matches a paired direction rides the very same arc:
-        // the lens shape depends only on endpoints and travel direction, so
-        // repeat flights thicken the heat colour, not the arc count.
-        const { routes } = flightRouteGeoJSON([flight('SHA', 'PEK'), flight('PEK', 'SHA'), flight('SHA', 'PEK')])
+    it('draws a surplus one-way on an already-paired route separately', () => {
+        // Two SHA→PEK flights against one PEK→SHA: the earliest outbound
+        // matches the return into the lens, the later one stays open and rides
+        // the true great circle so the unclosed itinerary stays visible.
+        const { routes } = flightRouteGeoJSON([
+            flight('SHA', 'PEK', undefined, '2026-05-01'),
+            flight('PEK', 'SHA', undefined, '2026-05-08'),
+            flight('SHA', 'PEK', undefined, '2026-06-01'),
+        ])
         expect(routes.features).toHaveLength(3)
-        const [first, , third] = routes.features
-        expect(first.properties.paired).toBe(true)
-        expect(third.properties.paired).toBe(true)
-        expect(third.geometry.coordinates).toEqual(first.geometry.coordinates)
-        expect(third.properties.times).toBe(3)
+        const [matchedOut, matchedHome, surplus] = routes.features
+        expect(matchedOut.properties.paired).toBe(true)
+        expect(matchedHome.properties.paired).toBe(true)
+        expect(surplus.properties.paired).toBe(false)
+        expect(surplus.geometry.coordinates).toEqual(greatCircleCoords('SHA', 'PEK'))
+        // Heat still pools every flight of the city pair.
+        expect(surplus.properties.times).toBe(3)
+    })
+
+    it('folds a surplus one-way into the lens once its return ticket exists', () => {
+        // The return for the June outbound arrives: every leg now matches, and
+        // the second lens lands exactly on the first — shape depends only on
+        // endpoints and travel direction, so repeat pairs thicken the heat.
+        const { routes } = flightRouteGeoJSON([
+            flight('SHA', 'PEK', undefined, '2026-05-01'),
+            flight('PEK', 'SHA', undefined, '2026-05-08'),
+            flight('SHA', 'PEK', undefined, '2026-06-01'),
+            flight('PEK', 'SHA', undefined, '2026-06-08'),
+        ])
+        expect(routes.features).toHaveLength(4)
+        for (const arc of routes.features) expect(arc.properties.paired).toBe(true)
+        expect(routes.features[2].geometry.coordinates).toEqual(routes.features[0].geometry.coordinates)
+        expect(routes.features[3].geometry.coordinates).toEqual(routes.features[1].geometry.coordinates)
+    })
+
+    it('keeps a twice-flown one-way direction entirely on the great circle', () => {
+        const { routes } = flightRouteGeoJSON([flight('SHA', 'PEK'), flight('SHA', 'PEK')])
+        expect(routes.features).toHaveLength(2)
+        for (const arc of routes.features) {
+            expect(arc.properties.paired).toBe(false)
+            expect(arc.geometry.coordinates).toEqual(greatCircleCoords('SHA', 'PEK'))
+        }
+        expect(routes.features[0].properties.times).toBe(2)
     })
 
     it('flags only the legs with traffic in both directions', () => {

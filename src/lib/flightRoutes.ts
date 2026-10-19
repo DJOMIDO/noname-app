@@ -19,9 +19,11 @@ export interface RouteProperties {
     /** How many flights in the current dataset fly this city pair, in either
      *  direction — the map's four-step heat colour reads this. */
     times: number
-    /** True when this leg's city pair carries traffic in both directions —
-     *  the two directions then render as mirror-symmetric arcs around their
-     *  shared chord (UMETrip-style lens) instead of overlapping. */
+    /** True when this leg's direction is matched against an opposite-direction
+     *  flight (earliest departures first) — matched legs render as the two
+     *  mirror-symmetric halves of a lens around their shared chord (UMETrip
+     *  style). Leftover one-way flights stay on the true great circle, even on
+     *  an already-paired route, until a return ticket folds them in. */
     paired: boolean
 }
 
@@ -241,9 +243,10 @@ export function flightRouteGeoJSON(flights: readonly FlightStatsRow[]): FlightRo
 
     // Resolve legs once: the heat pass and the geometry pass need the same
     // legs, and flights with unknown endpoints must not dilute the counts.
+    // The departure date comes along for chronological round-trip matching.
     const resolved = flights
-        .map(flight => flightLegs(flight))
-        .filter((legs): legs is Airport[] => legs !== null)
+        .map(flight => ({ date: flight.departure_date, legs: flightLegs(flight) }))
+        .filter((entry): entry is { date: string; legs: Airport[] } => entry.legs !== null)
 
     // Heat per unordered endpoint CITY pair: both directions of a round trip
     // pool into one count, and same-city airport changes (CTU/TFU, ISL/IST)
@@ -251,24 +254,49 @@ export function flightRouteGeoJSON(flights: readonly FlightStatsRow[]): FlightRo
     const heatKeyOf = (legs: readonly Airport[]) =>
         routeHeatKey(cityOf(legs[0]), cityOf(legs[legs.length - 1]))
     const pairCounts = new Map<string, number>()
-    for (const legs of resolved) {
+    for (const { legs } of resolved) {
         const key = heatKeyOf(legs)
         pairCounts.set(key, (pairCounts.get(key) ?? 0) + 1)
     }
 
-    // Directed city-level leg traffic: a leg is only flagged as paired when
-    // the opposite direction also exists — the map then offsets the two
-    // directions to opposite sides of their shared great circle.
-    const legKeys = new Set<string>()
-    for (const legs of resolved) {
+    // Round-trip matching per directed city-level leg: each direction can only
+    // pair up min(there, back) times. Matched legs share the lens; leftover
+    // one-ways stay visibly separate on their true great circle until a return
+    // ticket for them shows up and folds them into the existing lens.
+    const legKeyOf = (a: Airport, b: Airport) => `${cityOf(a)}>${cityOf(b)}`
+    const legCounts = new Map<string, number>()
+    for (const { legs } of resolved) {
         for (let index = 0; index < legs.length - 1; index += 1) {
-            legKeys.add(`${cityOf(legs[index])}>${cityOf(legs[index + 1])}`)
+            const key = legKeyOf(legs[index], legs[index + 1])
+            legCounts.set(key, (legCounts.get(key) ?? 0) + 1)
         }
     }
-    const bothDirections = (a: Airport, b: Airport) =>
-        legKeys.has(`${cityOf(a)}>${cityOf(b)}`) && legKeys.has(`${cityOf(b)}>${cityOf(a)}`)
+    const quota = new Map<string, number>()
+    for (const [key, count] of legCounts) {
+        const [from, to] = key.split('>')
+        quota.set(key, Math.min(count, legCounts.get(`${to}>${from}`) ?? 0))
+    }
 
-    for (const legs of resolved) {
+    // Consume each direction's quota in departure-date order (ISO dates sort
+    // lexicographically; ties keep dataset order), so the chronologically
+    // earliest flights form the lens pairs — a later return ticket closes the
+    // oldest still-open one-way.
+    const pairedFlags: boolean[][] = resolved.map(() => [])
+    const chronological = resolved
+        .map((_, index) => index)
+        .sort((a, b) =>
+            resolved[a].date === resolved[b].date ? a - b : resolved[a].date < resolved[b].date ? -1 : 1)
+    for (const entryIndex of chronological) {
+        const { legs } = resolved[entryIndex]
+        for (let index = 0; index < legs.length - 1; index += 1) {
+            const key = legKeyOf(legs[index], legs[index + 1])
+            const left = quota.get(key) ?? 0
+            pairedFlags[entryIndex].push(left > 0)
+            if (left > 0) quota.set(key, left - 1)
+        }
+    }
+
+    for (const [entryIndex, { legs }] of resolved.entries()) {
         for (const airport of legs) uniqueAirports.set(airport.iata, airport)
 
         const base: Omit<RouteProperties, 'paired'> = {
@@ -283,9 +311,8 @@ export function flightRouteGeoJSON(flights: readonly FlightStatsRow[]): FlightRo
         for (let index = 0; index < legs.length - 1; index += 1) {
             // paired is per leg: one leg of a journey can run both ways while
             // its sibling leg is one-way.
-            const paired = bothDirections(legs[index], legs[index + 1])
-            const properties: RouteProperties = { ...base, paired }
-            for (const coordinates of arcSegments(legs[index], legs[index + 1], paired)) {
+            const properties: RouteProperties = { ...base, paired: pairedFlags[entryIndex][index] }
+            for (const coordinates of arcSegments(legs[index], legs[index + 1], properties.paired)) {
                 routeFeatures.push({
                     type: 'Feature',
                     properties,
