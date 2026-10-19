@@ -93,21 +93,23 @@ export function topList<R, T>(
     return limit === undefined ? ranked : ranked.slice(0, limit)
 }
 
-// Total great-circle distance across every flight, splitting legs at a
-// resolvable stopover so the number matches the route map's per-leg mileage.
-// Flights (or legs) with unknown airports are skipped rather than guessed.
+// Great-circle distance of a single flight, splitting at a resolvable
+// stopover so the number matches the route map's per-leg mileage. Zero when
+// either endpoint is unknown.
+export function flightLegDistanceKm(flight: FlightStatsRow): number {
+    const dep = airportByIata(flight.departure_airport)
+    const arr = airportByIata(flight.arrival_airport)
+    if (!dep || !arr) return 0
+    const stopover = airportByIata(flight.stopover_airport)
+    return Math.round(stopover
+        ? haversineKm(dep, stopover) + haversineKm(stopover, arr)
+        : haversineKm(dep, arr))
+}
+
+// Total great-circle distance across every flight; flights (or legs) with
+// unknown airports are skipped rather than guessed.
 export function totalDistanceKm(flights: readonly FlightStatsRow[]): number {
-    let total = 0
-    for (const flight of flights) {
-        const dep = airportByIata(flight.departure_airport)
-        const arr = airportByIata(flight.arrival_airport)
-        if (!dep || !arr) continue
-        const stopover = airportByIata(flight.stopover_airport)
-        total += stopover
-            ? haversineKm(dep, stopover) + haversineKm(stopover, arr)
-            : haversineKm(dep, arr)
-    }
-    return Math.round(total)
+    return flights.reduce((total, flight) => total + flightLegDistanceKm(flight), 0)
 }
 
 // Total minutes in the air, skipping flights whose dates/times cannot produce
@@ -124,6 +126,23 @@ export function totalFlightMinutes(flights: readonly FlightStatsRow[]): number {
             flight.arrival_time,
         )
         if (minutes != null) total += minutes
+    }
+    return total
+}
+
+// Total minutes on rails: naive departure→arrival timestamp diff. Trains
+// carry no IATA codes to resolve timezones from, so cross-border services
+// are off by the border delta — accepted for the hero strip. Rows missing
+// an arrival date/time are skipped.
+export function totalTrainMinutes(trains: readonly TrainStatsRow[]): number {
+    let total = 0
+    for (const train of trains) {
+        if (!train.departure_date || !train.departure_time) continue
+        if (!train.arrival_date || !train.arrival_time) continue
+        const from = new Date(`${train.departure_date}T${train.departure_time}`)
+        const to = new Date(`${train.arrival_date}T${train.arrival_time}`)
+        if (Number.isNaN(from.getTime()) || Number.isNaN(to.getTime())) continue
+        total += Math.round((to.getTime() - from.getTime()) / 60000)
     }
     return total
 }
@@ -191,4 +210,19 @@ export function visitedCityCount(
         if (city) cities.add(city.toLowerCase())
     }
     return cities.size
+}
+
+// Years covered by the logged journeys (flights and trains pooled), newest
+// first — the year-filter chips derive from real data instead of a hardcoded
+// window, same as the journeys page.
+export function yearsOf(
+    flights: readonly FlightStatsRow[],
+    trains: readonly TrainStatsRow[],
+): number[] {
+    const years = new Set<number>()
+    for (const row of [...flights, ...trains]) {
+        const year = Number(row.departure_date?.slice(0, 4))
+        if (Number.isInteger(year) && year > 0) years.add(year)
+    }
+    return [...years].sort((a, b) => b - a)
 }

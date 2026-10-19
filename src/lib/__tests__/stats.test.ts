@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
     countByWeekday,
     countByYear,
+    flightLegDistanceKm,
     mergeCurrencyTotals,
     mostFrequent,
     sortedCurrencyTotals,
@@ -9,7 +10,9 @@ import {
     topList,
     totalDistanceKm,
     totalFlightMinutes,
+    totalTrainMinutes,
     visitedCityCount,
+    yearsOf,
 } from '../stats'
 import type { FlightStatsRow, TrainStatsRow } from '../journeyColumns'
 
@@ -273,5 +276,76 @@ describe('visitedCityCount', () => {
 
     it('returns zero without journeys', () => {
         expect(visitedCityCount([], [])).toBe(0)
+    })
+})
+
+describe('flightLegDistanceKm', () => {
+    it('measures a direct flight', () => {
+        // Shanghai → Beijing is roughly 1,080 km on the great circle.
+        expect(flightLegDistanceKm(flightRow())).toBeGreaterThan(1000)
+        expect(flightLegDistanceKm(flightRow())).toBeLessThan(1200)
+    })
+
+    it('sums both legs of a stopover flight', () => {
+        const viaPek = flightLegDistanceKm(flightRow({ arrival_airport: 'SIN', stopover_airport: 'PEK' }))
+        expect(viaPek).toBeGreaterThan(flightLegDistanceKm(flightRow()) + 4000)
+    })
+
+    it('returns zero when an endpoint is unknown', () => {
+        expect(flightLegDistanceKm(flightRow({ departure_airport: 'ZZZ' }))).toBe(0)
+    })
+})
+
+describe('totalTrainMinutes', () => {
+    it('diffs departure and arrival timestamps', () => {
+        const total = totalTrainMinutes([
+            trainRow({
+                departure_time: '08:00', arrival_date: '2026-05-01', arrival_time: '10:30',
+            }),
+        ])
+        expect(total).toBe(150)
+    })
+
+    it('handles overnight arrivals across midnight', () => {
+        const total = totalTrainMinutes([
+            trainRow({
+                departure_date: '2026-05-01', departure_time: '22:00',
+                arrival_date: '2026-05-02', arrival_time: '06:30',
+            }),
+        ])
+        expect(total).toBe(510)
+    })
+
+    it('skips rows without a complete arrival', () => {
+        const total = totalTrainMinutes([
+            trainRow({ departure_time: '08:00', arrival_date: '2026-05-01', arrival_time: '10:30' }),
+            trainRow({ departure_time: '08:00' }),
+            trainRow({ departure_time: null, arrival_date: '2026-05-01', arrival_time: '10:30' }),
+        ])
+        expect(total).toBe(150)
+    })
+
+    it('returns zero without trains', () => {
+        expect(totalTrainMinutes([])).toBe(0)
+    })
+})
+
+describe('yearsOf', () => {
+    it('pools flight and train years, newest first, deduped', () => {
+        const years = yearsOf(
+            [
+                flightRow({ departure_date: '2024-03-01' }),
+                flightRow({ departure_date: '2026-05-01' }),
+            ],
+            [
+                trainRow({ departure_date: '2025-06-01' }),
+                trainRow({ departure_date: '2026-07-01' }),
+            ],
+        )
+        expect(years).toEqual([2026, 2025, 2024])
+    })
+
+    it('returns an empty list without journeys', () => {
+        expect(yearsOf([], [])).toEqual([])
     })
 })
