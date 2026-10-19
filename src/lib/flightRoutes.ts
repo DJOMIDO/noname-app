@@ -19,6 +19,10 @@ export interface RouteProperties {
     /** How many flights in the current dataset fly this city pair, in either
      *  direction — the map's four-step heat colour reads this. */
     times: number
+    /** True when this leg's city pair carries traffic in both directions —
+     *  the map offsets paired legs to opposite sides of the shared great
+     *  circle, so a round trip reads as two mirror-symmetric arcs. */
+    paired: boolean
 }
 
 export interface AirportProperties {
@@ -46,10 +50,6 @@ export interface FlightRouteGeoJSON {
 
 /** Vertex count per arc — enough for a smooth curve, cheap at world zoom. */
 const ARC_POINTS = 100
-/** Bow strength for a forward/reverse arc pair, as a fraction of leg length. */
-const CURVE_RATIO = 0.12
-/** Bulge cap, matched to BOUNDS_PADDING_DEG so a bowed arc stays in frame. */
-const MAX_BOW_DEG = 3
 /** Slack around the airport extent so arcs never touch the panel edge. */
 const BOUNDS_PADDING_DEG = 3
 /** Half-width of the frame used when a single airport is on the map. */
@@ -57,82 +57,16 @@ const SINGLE_POINT_SPAN_DEG = 6
 /** Web Mercator cannot represent the poles. */
 const MAX_LAT = 85
 
-/** Cosine-corrected segment length in degrees, so bulges look isotropic. */
-function segLen(a: Position, b: Position): number {
-    const midLat = ((a[1] + b[1]) / 2) * (Math.PI / 180)
-    return Math.hypot((b[0] - a[0]) * Math.cos(midLat), b[1] - a[1])
-}
-
-/**
- * Bows great-circle pieces perpendicular to themselves so an outbound and a
- * return leg render as two distinct arcs (forward/reverse arc, as in UMETrip)
- * instead of overlapping exactly.
- *
- * The offset follows sin(π t) over the whole path — pieces included, so a
- * dateline split does not pinch — which pins the endpoints to their airports.
- * It is measured in a cosine-corrected space so the bulge looks the same at
- * any latitude, and longitudes are unwrapped point-to-point so a bowed arc
- * crossing the antimeridian stays one continuous stroke. The sign is always
- * the same rotation of the local heading, and that is what separates the two
- * directions: the return leg traverses the circle in reverse, so its
- * perpendicular flips and it bulges to the other side.
- */
-function bowPieces(pieces: Position[][]): Position[][] {
-    const total = pieces.reduce((count, piece) => count + piece.length, 0)
-    if (total < 3) return pieces
-
-    const length = pieces.reduce(
-        (sum, piece) => piece.slice(1).reduce((inner, point, index) => inner + segLen(piece[index], point), sum),
-        0,
-    )
-    const peak = Math.min(length * CURVE_RATIO, MAX_BOW_DEG)
-
-    const bowed: Position[][] = []
-    let running = 0
-    let prevLng: number | null = null
-
-    for (const piece of pieces) {
-        const out: Position[] = []
-        for (let index = 0; index < piece.length; index += 1) {
-            const [lng, lat] = piece[index]
-            const t = running / (total - 1)
-            running += 1
-            const offset = peak * Math.sin(Math.PI * t)
-
-            const [pLng, pLat] = piece[Math.max(0, index - 1)]
-            const [nLng, nLat] = piece[Math.min(piece.length - 1, index + 1)]
-            const cosLat = Math.max(Math.cos((lat * Math.PI) / 180), 0.08)
-            const dx = (nLng - pLng) * cosLat
-            const dy = nLat - pLat
-            const norm = Math.hypot(dx, dy) || 1
-
-            let outLng = lng + (-dy / norm * offset) / cosLat
-            const outLat = lat + (dx / norm) * offset
-            if (prevLng !== null) {
-                while (outLng - prevLng > 180) outLng -= 360
-                while (outLng - prevLng < -180) outLng += 360
-            }
-            prevLng = outLng
-            out.push([outLng, outLat])
-        }
-        bowed.push(out)
-    }
-
-    return bowed
-}
-
 /**
  * Great-circle segments between two airports as GeoJSON positions ([lng, lat]).
  * turf returns a MultiLineString when the path crosses the antimeridian; each
  * piece becomes its own LineString so the arc renders on both sides instead of
- * streaking across the whole map. With `bowed`, the pieces are bent into a
- * forward/reverse arc pair so opposite directions do not overlap.
+ * streaking across the whole map.
  */
-function arcSegments(dep: Airport, arr: Airport, bowed: boolean): Position[][] {
+function arcSegments(dep: Airport, arr: Airport): Position[][] {
     const arc = turf.greatCircle([dep.lng, dep.lat], [arr.lng, arr.lat], { npoints: ARC_POINTS })
     const geometry = arc.geometry
-    const pieces = geometry.type === 'MultiLineString' ? geometry.coordinates : [geometry.coordinates]
-    return bowed ? bowPieces(pieces) : pieces
+    return geometry.type === 'MultiLineString' ? geometry.coordinates : [geometry.coordinates]
 }
 
 const clampLat = (lat: number) => Math.max(-MAX_LAT, Math.min(MAX_LAT, lat))
@@ -187,8 +121,9 @@ function placeOf(airport: Airport): string {
 const cityOf = (airport: Airport): string => airport.city ?? airport.iata
 
 /**
- * Unordered endpoint-pair key: PEK→SHA and SHA→PEK are the same route for
- * heat purposes, so a round trip warms one colour instead of splitting it.
+ * Unordered endpoint-pair key for CITY labels: PVG→ADD and ADD→SHA are the
+ * same route for heat purposes (Shanghai is one market), so a round trip warms
+ * one colour instead of splitting it.
  */
 export function routeHeatKey(departure: string | null, arrival: string | null): string {
     return [departure ?? '', arrival ?? ''].sort().join('-')
@@ -224,42 +159,52 @@ export function flightRouteGeoJSON(flights: readonly FlightStatsRow[]): FlightRo
     // Resolve legs once: the heat pass and the geometry pass need the same
     // legs, and flights with unknown endpoints must not dilute the counts.
     const resolved = flights
-        .map(flight => ({ flight, legs: flightLegs(flight) }))
-        .filter((entry): entry is { flight: FlightStatsRow; legs: Airport[] } => entry.legs !== null)
+        .map(flight => flightLegs(flight))
+        .filter((legs): legs is Airport[] => legs !== null)
 
+    // Heat per unordered endpoint CITY pair: both directions of a round trip
+    // pool into one count, and same-city airport changes (CTU/TFU, ISL/IST)
+    // count together instead of splitting.
+    const heatKeyOf = (legs: readonly Airport[]) =>
+        routeHeatKey(cityOf(legs[0]), cityOf(legs[legs.length - 1]))
     const pairCounts = new Map<string, number>()
-    for (const { flight } of resolved) {
-        const key = routeHeatKey(flight.departure_airport, flight.arrival_airport)
+    for (const legs of resolved) {
+        const key = heatKeyOf(legs)
         pairCounts.set(key, (pairCounts.get(key) ?? 0) + 1)
     }
 
-    // Ordered leg traffic: a leg only bows into a forward/reverse pair when
-    // the opposite direction also exists — one-way legs stay true great circles.
-    const legCounts = new Map<string, number>()
-    for (const { legs } of resolved) {
+    // Directed city-level leg traffic: a leg is only flagged as paired when
+    // the opposite direction also exists — the map then offsets the two
+    // directions to opposite sides of their shared great circle.
+    const legKeys = new Set<string>()
+    for (const legs of resolved) {
         for (let index = 0; index < legs.length - 1; index += 1) {
-            const key = `${legs[index].iata}>${legs[index + 1].iata}`
-            legCounts.set(key, (legCounts.get(key) ?? 0) + 1)
+            legKeys.add(`${cityOf(legs[index])}>${cityOf(legs[index + 1])}`)
         }
     }
     const bothDirections = (a: Airport, b: Airport) =>
-        (legCounts.get(`${a.iata}>${b.iata}`) ?? 0) > 0 && (legCounts.get(`${b.iata}>${a.iata}`) ?? 0) > 0
+        legKeys.has(`${cityOf(a)}>${cityOf(b)}`) && legKeys.has(`${cityOf(b)}>${cityOf(a)}`)
 
-    for (const { flight, legs } of resolved) {
+    for (const legs of resolved) {
         for (const airport of legs) uniqueAirports.set(airport.iata, airport)
 
-        const properties: RouteProperties = {
+        const base: Omit<RouteProperties, 'paired'> = {
             label: `${cityOf(legs[0])} → ${cityOf(legs[legs.length - 1])}`,
             via: legs.length > 2 ? cityOf(legs[1]) : null,
             distanceKm: legs
                 .slice(1)
                 .reduce((total, arr, index) => total + haversineKm(legs[index], arr), 0),
-            times: pairCounts.get(routeHeatKey(flight.departure_airport, flight.arrival_airport)) ?? 1,
+            times: pairCounts.get(heatKeyOf(legs)) ?? 1,
         }
 
         for (let index = 0; index < legs.length - 1; index += 1) {
-            const bowed = bothDirections(legs[index], legs[index + 1])
-            for (const coordinates of arcSegments(legs[index], legs[index + 1], bowed)) {
+            // paired is per leg: one leg of a journey can run both ways while
+            // its sibling leg is one-way.
+            const properties: RouteProperties = {
+                ...base,
+                paired: bothDirections(legs[index], legs[index + 1]),
+            }
+            for (const coordinates of arcSegments(legs[index], legs[index + 1])) {
                 routeFeatures.push({
                     type: 'Feature',
                     properties,
