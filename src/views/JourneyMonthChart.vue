@@ -10,36 +10,32 @@ import {
     LinearScale
 } from 'chart.js'
 import { computed } from 'vue'
-import type { FlightStatsRow } from '@/lib/journeyColumns'
+import { countByMonth, type DatedRow } from '@/lib/stats'
 import { useTheme } from '@/composables/useTheme'
 
 ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale)
 
-const props = defineProps<{ flights: FlightStatsRow[] }>()
+/**
+ * JourneyMonthChart — brand bars per calendar month (oldest first) for any
+ * dated rows. Only months that actually occur are shown; countByMonth parses
+ * dates as local midnight so a bare `YYYY-MM-DD` cannot drift a month.
+ */
+const props = withDefaults(defineProps<{ rows: DatedRow[]; label?: string }>(), { label: 'Journeys' })
 const { isDark } = useTheme()
 
 const chartData = computed(() => {
-    const counts: Record<string, number> = {}
-    props.flights.forEach(flight => {
-        const date = new Date(flight.departure_date)
-        const month = date.toLocaleString('default', { month: 'short', year: 'numeric' })
-        counts[month] = (counts[month] || 0) + 1
-    })
-
-    const labels = Object.keys(counts).sort((a, b) =>
-        new Date(a).getTime() - new Date(b).getTime()
-    )
-    const data = labels.map(label => counts[label])
-
+    const buckets = countByMonth(props.rows)
     return {
-        labels,
+        labels: buckets.map(b => b.label),
         datasets: [
             {
-                label: 'Flights per Month',
-                data,
-                backgroundColor: '#7b5ff1'
-            }
-        ]
+                label: props.label,
+                data: buckets.map(b => b.count),
+                backgroundColor: '#7b5ff1',
+                borderRadius: 6,
+                maxBarThickness: 42,
+            },
+        ],
     }
 })
 
@@ -55,7 +51,11 @@ const chartOptions = computed(() => {
         },
         scales: {
             x: { ticks: { color: text }, grid: { color: grid } },
-            y: { ticks: { color: text }, grid: { color: grid }, beginAtZero: true },
+            y: {
+                ticks: { color: text, precision: 0 },
+                grid: { color: grid },
+                beginAtZero: true,
+            },
         },
     }
 })

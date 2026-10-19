@@ -1,16 +1,17 @@
 import { describe, expect, it } from 'vitest'
 import {
+    countByMonth,
     countByWeekday,
     countByYear,
     flightLegDistanceKm,
     mergeCurrencyTotals,
-    mostFrequent,
     sortedCurrencyTotals,
     sumByCurrency,
     topList,
     totalDistanceKm,
     totalFlightMinutes,
     totalTrainMinutes,
+    trainLegMinutes,
     visitedCityCount,
     yearsOf,
 } from '../stats'
@@ -47,31 +48,6 @@ function trainRow(partial: Partial<TrainStatsRow> = {}): TrainStatsRow {
         ...partial,
     }
 }
-
-describe('mostFrequent', () => {
-    const rows: Row[] = [
-        { code: 'MU' }, { code: 'CA' }, { code: 'MU' }, { code: 'MU' }, { code: 'CA' },
-    ]
-
-    it('returns the value with the highest count', () => {
-        expect(mostFrequent(rows, r => r.code)).toEqual({ value: 'MU', count: 3 })
-    })
-
-    it('skips null, undefined and empty values', () => {
-        const withBlanks: Row[] = [{ code: null }, { code: '' }, { code: 'CZ' }, { code: 'CZ' }]
-        expect(mostFrequent(withBlanks, r => r.code)).toEqual({ value: 'CZ', count: 2 })
-    })
-
-    it('keeps the first seen value when counts tie', () => {
-        const tied: Row[] = [{ code: 'MU' }, { code: 'CA' }]
-        expect(mostFrequent(tied, r => r.code)).toEqual({ value: 'MU', count: 1 })
-    })
-
-    it('returns null when nothing qualifies', () => {
-        expect(mostFrequent([], (r: Row) => r.code)).toBeNull()
-        expect(mostFrequent([{ code: '' }], r => r.code)).toBeNull()
-    })
-})
 
 describe('sumByCurrency', () => {
     it('groups amounts by currency and coerces string prices', () => {
@@ -227,6 +203,16 @@ describe('countByYear', () => {
         ])
     })
 
+    it('accepts train rows too (any dated row)', () => {
+        expect(countByYear([
+            trainRow({ departure_date: '2025-06-01' }),
+            trainRow({ departure_date: '2026-07-01' }),
+        ])).toEqual([
+            { year: 2025, count: 1 },
+            { year: 2026, count: 1 },
+        ])
+    })
+
     it('returns an empty array without dated flights', () => {
         expect(countByYear([])).toEqual([])
     })
@@ -245,10 +231,52 @@ describe('countByWeekday', () => {
         expect(result[1].count).toBe(0)
     })
 
+    it('accepts train rows too (any dated row)', () => {
+        // 2026-05-01 is a Friday (weekday 5).
+        const result = countByWeekday([trainRow({ departure_date: '2026-05-01' })])
+        expect(result[5]).toEqual({ weekday: 5, count: 1 })
+        expect(result.reduce((n, b) => n + b.count, 0)).toBe(1)
+    })
+
     it('returns all-zero buckets without flights', () => {
         expect(countByWeekday([])).toEqual(
             Array.from({ length: 7 }, (_, weekday) => ({ weekday, count: 0 })),
         )
+    })
+})
+
+describe('countByMonth', () => {
+    it('buckets by calendar month, oldest first, only for months present', () => {
+        const rows = [
+            flightRow({ departure_date: '2026-05-01' }),
+            flightRow({ departure_date: '2026-05-20' }),
+            flightRow({ departure_date: '2026-01-15' }),
+        ]
+        expect(countByMonth(rows)).toEqual([
+            { label: 'Jan 2026', year: 2026, month: 1, count: 1 },
+            { label: 'May 2026', year: 2026, month: 5, count: 2 },
+        ])
+    })
+
+    it('sorts across a year boundary', () => {
+        const rows = [
+            flightRow({ departure_date: '2026-02-01' }),
+            flightRow({ departure_date: '2025-12-01' }),
+        ]
+        expect(countByMonth(rows).map(m => m.label)).toEqual(['Dec 2025', 'Feb 2026'])
+    })
+
+    it('accepts pooled flight and train rows', () => {
+        expect(countByMonth([
+            flightRow({ departure_date: '2026-05-01' }),
+            trainRow({ departure_date: '2026-05-09' }),
+        ])).toEqual([
+            { label: 'May 2026', year: 2026, month: 5, count: 2 },
+        ])
+    })
+
+    it('returns an empty array without dated rows', () => {
+        expect(countByMonth([])).toEqual([])
     })
 })
 
@@ -293,6 +321,28 @@ describe('flightLegDistanceKm', () => {
 
     it('returns zero when an endpoint is unknown', () => {
         expect(flightLegDistanceKm(flightRow({ departure_airport: 'ZZZ' }))).toBe(0)
+    })
+})
+
+describe('trainLegMinutes', () => {
+    it('diffs departure and arrival timestamps', () => {
+        expect(trainLegMinutes(trainRow({
+            departure_time: '08:00', arrival_date: '2026-05-01', arrival_time: '10:30',
+        }))).toBe(150)
+    })
+
+    it('handles overnight arrivals across midnight', () => {
+        expect(trainLegMinutes(trainRow({
+            departure_date: '2026-05-01', departure_time: '22:00',
+            arrival_date: '2026-05-02', arrival_time: '06:30',
+        }))).toBe(510)
+    })
+
+    it('returns null without a complete arrival', () => {
+        expect(trainLegMinutes(trainRow({ departure_time: '08:00' }))).toBeNull()
+        expect(trainLegMinutes(trainRow({
+            departure_time: null, arrival_date: '2026-05-01', arrival_time: '10:30',
+        }))).toBeNull()
     })
 })
 

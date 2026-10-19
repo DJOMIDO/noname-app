@@ -3,30 +3,15 @@ import type { FlightStatsRow, TrainStatsRow } from '@/lib/journeyColumns'
 import { airportByIata, haversineKm } from '@/lib/geo'
 import { getFlightDuration } from '@/utils/getFlightDuration'
 
+// Anything with a departure date — both flight and train rows satisfy this, so
+// the date-bucketing helpers work per-mode or on a pooled "all journeys" array.
+export interface DatedRow {
+    departure_date?: string | null
+}
+
 export interface TopResult<T> {
     value: T
     count: number
-}
-
-// Returns the most frequent non-empty value produced by `keyFn`, or null when
-// nothing qualifies. Consolidates the ad-hoc "sort entries by count" logic that
-// was duplicated across the stats page and its views.
-export function mostFrequent<R, T>(
-    rows: R[],
-    keyFn: (row: R) => T | null | undefined,
-): TopResult<T> | null {
-    const counts = new Map<T, number>()
-    for (const row of rows) {
-        const value = keyFn(row)
-        if (value === null || value === undefined || value === '') continue
-        counts.set(value, (counts.get(value) ?? 0) + 1)
-    }
-
-    let top: TopResult<T> | null = null
-    for (const [value, count] of counts) {
-        if (!top || count > top.count) top = { value, count }
-    }
-    return top
 }
 
 // Sums a numeric field grouped by currency code, skipping rows missing either.
@@ -73,8 +58,7 @@ export function sortedCurrencyTotals(totals: CurrencyTotals): CurrencyTotalEntry
 
 // Full ranked list behind the Top-N cards: every non-empty value produced by
 // `keyFn`, ordered by descending count with alphabetical tie-breaks so the
-// ranking stays stable between loads. `mostFrequent` remains the single-winner
-// shortcut for the overview cards.
+// ranking stays stable between loads.
 export function topList<R, T>(
     rows: readonly R[],
     keyFn: (row: R) => T | null | undefined,
@@ -130,19 +114,25 @@ export function totalFlightMinutes(flights: readonly FlightStatsRow[]): number {
     return total
 }
 
-// Total minutes on rails: naive departure→arrival timestamp diff. Trains
-// carry no IATA codes to resolve timezones from, so cross-border services
-// are off by the border delta — accepted for the hero strip. Rows missing
-// an arrival date/time are skipped.
+// Naive departure→arrival duration of a single train in minutes, or null when
+// either timestamp is missing or unparseable. Trains carry no IATA codes to
+// resolve timezones from, so cross-border services are off by the border delta
+// — accepted for the hero strip and the longest-journey ranking.
+export function trainLegMinutes(train: TrainStatsRow): number | null {
+    if (!train.departure_date || !train.departure_time) return null
+    if (!train.arrival_date || !train.arrival_time) return null
+    const from = new Date(`${train.departure_date}T${train.departure_time}`)
+    const to = new Date(`${train.arrival_date}T${train.arrival_time}`)
+    if (Number.isNaN(from.getTime()) || Number.isNaN(to.getTime())) return null
+    return Math.round((to.getTime() - from.getTime()) / 60000)
+}
+
+// Total minutes on rails, skipping trains without a complete arrival.
 export function totalTrainMinutes(trains: readonly TrainStatsRow[]): number {
     let total = 0
     for (const train of trains) {
-        if (!train.departure_date || !train.departure_time) continue
-        if (!train.arrival_date || !train.arrival_time) continue
-        const from = new Date(`${train.departure_date}T${train.departure_time}`)
-        const to = new Date(`${train.arrival_date}T${train.arrival_time}`)
-        if (Number.isNaN(from.getTime()) || Number.isNaN(to.getTime())) continue
-        total += Math.round((to.getTime() - from.getTime()) / 60000)
+        const minutes = trainLegMinutes(train)
+        if (minutes != null) total += minutes
     }
     return total
 }
@@ -152,12 +142,13 @@ export interface YearCount {
     count: number
 }
 
-// Flights per departure year, filling every gap year with a zero count so the
+// Journeys per departure year, filling every gap year with a zero count so the
 // year-over-year line chart stays continuous instead of jumping across holes.
-export function countByYear(flights: readonly FlightStatsRow[]): YearCount[] {
+// Accepts any dated rows, so a pooled flight+train array works too.
+export function countByYear(rows: readonly DatedRow[]): YearCount[] {
     const counts = new Map<number, number>()
-    for (const flight of flights) {
-        const year = Number(flight.departure_date?.slice(0, 4))
+    for (const row of rows) {
+        const year = Number(row.departure_date?.slice(0, 4))
         if (!Number.isInteger(year) || year <= 0) continue
         counts.set(year, (counts.get(year) ?? 0) + 1)
     }
@@ -177,19 +168,50 @@ export interface WeekdayCount {
     count: number
 }
 
-// Flights per departure weekday. Always returns seven buckets (zeros included)
+// Journeys per departure weekday. Always returns seven buckets (zeros included)
 // so the distribution chart keeps a stable shape. The date is parsed as local
 // midnight — a bare `YYYY-MM-DD` would parse as UTC and shift the weekday for
 // negative-offset timezones.
-export function countByWeekday(flights: readonly FlightStatsRow[]): WeekdayCount[] {
+export function countByWeekday(rows: readonly DatedRow[]): WeekdayCount[] {
     const counts = new Array<number>(7).fill(0)
-    for (const flight of flights) {
-        if (!flight.departure_date) continue
-        const weekday = new Date(`${flight.departure_date}T00:00:00`).getDay()
+    for (const row of rows) {
+        if (!row.departure_date) continue
+        const weekday = new Date(`${row.departure_date}T00:00:00`).getDay()
         if (Number.isNaN(weekday)) continue
         counts[weekday] += 1
     }
     return counts.map((count, weekday) => ({ weekday, count }))
+}
+
+export interface MonthCount {
+    /** Chronological label, e.g. `May 2026`. */
+    label: string
+    year: number
+    /** 1 = January … 12 = December. */
+    month: number
+    count: number
+}
+
+const MONTH_LABELS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+
+// Journeys per departure month, oldest first. Only months that actually occur
+// are emitted (no gap filling — a month axis reads fine sparse), and dates are
+// parsed as local midnight so a bare `YYYY-MM-DD` cannot shift into the wrong
+// month for negative-offset timezones.
+export function countByMonth(rows: readonly DatedRow[]): MonthCount[] {
+    const counts = new Map<number, MonthCount>()
+    for (const row of rows) {
+        if (!row.departure_date) continue
+        const date = new Date(`${row.departure_date}T00:00:00`)
+        if (Number.isNaN(date.getTime())) continue
+        const year = date.getFullYear()
+        const month = date.getMonth() + 1
+        const key = year * 100 + month
+        const entry = counts.get(key) ?? { label: `${MONTH_LABELS[month - 1]} ${year}`, year, month, count: 0 }
+        entry.count += 1
+        counts.set(key, entry)
+    }
+    return [...counts.values()].sort((a, b) => a.year - b.year || a.month - b.month)
 }
 
 // Distinct arrival cities across flights and trains for the hero strip. Flight

@@ -38,10 +38,7 @@ const {
     totalSpentByCurrency,
     firstDeparture,
     lastDeparture,
-    topCity,
     mostUsedTransport,
-    mostUsedAirline,
-    mostUsedTrainCompany,
 } = useJourneyStats(filteredFlights, filteredTrains)
 
 const hasJourneys = computed(() => flights.value.length > 0 || trains.value.length > 0)
@@ -128,10 +125,9 @@ onMounted(async () => {
                     @year-change="yearFilter = $event" />
 
                 <TabsContent value="overview">
-                    <StatOverview :total-spent-by-currency="totalSpentByCurrency" :first-departure="firstDeparture"
-                        :last-departure="lastDeparture" :top-city="topCity"
-                        :most-used-transport="mostUsedTransport" :most-used-airline="mostUsedAirline"
-                        :most-used-train-company="mostUsedTrainCompany" />
+                    <StatOverview :flights="filteredFlights" :trains="filteredTrains"
+                        :total-spent-by-currency="totalSpentByCurrency" :first-departure="firstDeparture"
+                        :last-departure="lastDeparture" :most-used-transport="mostUsedTransport" />
                 </TabsContent>
 
                 <TabsContent value="flights">

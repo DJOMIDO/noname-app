@@ -5,9 +5,9 @@ import type { FlightStatsRow } from '@/lib/journeyColumns'
 import { airportByIata } from '@/lib/geo'
 import { topList } from '@/lib/stats'
 import airlines from '@/assets/data/airlines.json'
-import FlightBarChart from '@/views/FlightBarChart.vue'
-import FlightYearChart from '@/views/FlightYearChart.vue'
-import FlightWeekdayChart from '@/views/FlightWeekdayChart.vue'
+import JourneyMonthChart from '@/views/JourneyMonthChart.vue'
+import JourneyYearChart from '@/views/JourneyYearChart.vue'
+import JourneyWeekdayChart from '@/views/JourneyWeekdayChart.vue'
 import ChartPanel from '@/components/stats/ChartPanel.vue'
 import StatCard from '@/components/stats/StatCard.vue'
 import CurrencyTotalsList from '@/components/stats/CurrencyTotalsList.vue'
@@ -83,16 +83,16 @@ const topFlightNumbers = computed<TopListItem[]>(() =>
                 <CurrencyTotalsList :totals="totalSpentByCurrency" size="lg" />
             </StatCard>
             <ChartPanel title="Flights per Year" class="lg:col-span-2">
-                <FlightYearChart :flights="flights" />
+                <JourneyYearChart :rows="flights" label="Flights" />
             </ChartPanel>
         </div>
 
         <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
             <ChartPanel title="Flights per Month">
-                <FlightBarChart :flights="flights" />
+                <JourneyMonthChart :rows="flights" label="Flights" />
             </ChartPanel>
             <ChartPanel title="Flights per Weekday">
-                <FlightWeekdayChart :flights="flights" />
+                <JourneyWeekdayChart :rows="flights" label="Flights" />
             </ChartPanel>
         </div>
     </div>
