@@ -25,14 +25,14 @@ const props = defineProps<{
 // Every flight touches two airports; rank them by total touches.
 const topAirports = computed<TopListItem[]>(() =>
     topList(props.flights.flatMap(f => [f.departure_airport, f.arrival_airport]), iata => iata)
-        .map(({ value, count }) => ({ label: value, sub: airportByIata(value)?.city, count })))
+        .map(({ value: iata, count }) => ({ label: iata, sub: airportByIata(iata)?.city, value: count })))
 
 const topAirlines = computed<TopListItem[]>(() =>
     topList(props.flights, f => f.airline_code)
-        .map(({ value, count }) => ({
-            label: airlines.find(a => a.code === value)?.name ?? value,
-            sub: value,
-            count,
+        .map(({ value: code, count }) => ({
+            label: airlines.find(a => a.code === code)?.name ?? code,
+            sub: code,
+            value: count,
         })))
 
 // City-level unordered pairs, the same pooling the route map heat uses, so
@@ -43,7 +43,7 @@ const topRoutes = computed<TopListItem[]>(() =>
         const from = cityOf(f.departure_airport)
         const to = cityOf(f.arrival_airport)
         return from === to ? null : [from, to].sort().join(' ↔ ')
-    }).map(({ value, count }) => ({ label: value, count })))
+    }).map(({ value: route, count }) => ({ label: route, value: count })))
 </script>
 
 <template>
