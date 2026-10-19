@@ -49,7 +49,9 @@ const display = (item: TopListItem) => item.display ?? String(item.value)
         </div>
 
         <ul v-if="items.length" class="space-y-2.5">
-            <li v-for="item in visibleItems" :key="item.label" class="flex items-center gap-3">
+            <!-- Rows are display-only and never reordered, and labels may repeat
+                 (a route flown twice), so the index keeps keys unique. -->
+            <li v-for="(item, index) in visibleItems" :key="`${item.label}-${index}`" class="flex items-center gap-3">
                 <div class="w-24 shrink-0 sm:w-28">
                     <p class="truncate text-sm font-medium text-gray-800 dark:text-gray-100">{{ item.label }}</p>
                     <p v-if="item.sub" class="truncate text-xs text-gray-400 dark:text-gray-500">{{ item.sub }}</p>
@@ -82,7 +84,7 @@ const display = (item: TopListItem) => item.display ?? String(item.value)
                     border-white/70 bg-white/95 p-5 shadow-xl shadow-brand/10 backdrop-blur-xl
                     dark:border-white/15 dark:bg-gray-900/95">
                 <ul class="space-y-2.5">
-                    <li v-for="item in items" :key="item.label" class="flex items-center gap-3">
+                    <li v-for="(item, index) in items" :key="`${item.label}-${index}`" class="flex items-center gap-3">
                         <div class="w-24 shrink-0 sm:w-28">
                             <p class="truncate text-sm font-medium text-gray-800 dark:text-gray-100">{{ item.label }}</p>
                             <p v-if="item.sub" class="truncate text-xs text-gray-400 dark:text-gray-500">{{ item.sub }}</p>

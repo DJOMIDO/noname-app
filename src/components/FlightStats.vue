@@ -8,9 +8,10 @@ import airlines from '@/assets/data/airlines.json'
 import FlightBarChart from '@/views/FlightBarChart.vue'
 import FlightYearChart from '@/views/FlightYearChart.vue'
 import FlightWeekdayChart from '@/views/FlightWeekdayChart.vue'
-import FlightDurationStats from '@/views/FlightDurationStats.vue'
-import FlightStatsSummary from '@/views/FlightStatsSummary.vue'
 import ChartPanel from '@/components/stats/ChartPanel.vue'
+import StatCard from '@/components/stats/StatCard.vue'
+import CurrencyTotalsList from '@/components/stats/CurrencyTotalsList.vue'
+import LongestFlightsCard from '@/components/stats/LongestFlightsCard.vue'
 import TopListCard, { type TopListItem } from '@/components/stats/TopListCard.vue'
 
 // Routes are eagerly imported, so a static import here would pull maplibre-gl
@@ -44,6 +45,18 @@ const topRoutes = computed<TopListItem[]>(() =>
         const to = cityOf(f.arrival_airport)
         return from === to ? null : [from, to].sort().join(' ↔ ')
     }).map(({ value: route, count }) => ({ label: route, value: count })))
+
+const topAircraft = computed<TopListItem[]>(() =>
+    topList(props.flights, f => f.aircraft_type)
+        .map(({ value: type, count }) => ({ label: type, value: count })))
+
+const topFlightNumbers = computed<TopListItem[]>(() =>
+    topList(props.flights, f => (f.airline_code && f.flight_number ? `${f.airline_code}${f.flight_number}` : null))
+        .map(({ value: number, count }) => ({
+            label: number,
+            sub: airlines.find(a => a.code === number.slice(0, 2))?.name,
+            value: count,
+        })))
 </script>
 
 <template>
@@ -52,19 +65,26 @@ const topRoutes = computed<TopListItem[]>(() =>
             <FlightMapChart :flights="flights" />
         </ChartPanel>
 
-        <FlightStatsSummary :flights="flights" :total-spent-by-currency="totalSpentByCurrency" />
-
         <div class="grid grid-cols-1 gap-4 lg:grid-cols-3">
             <TopListCard title="Top Airports" :items="topAirports" />
             <TopListCard title="Top Airlines" :items="topAirlines" />
             <TopListCard title="Top Routes" :items="topRoutes" />
         </div>
 
-        <FlightDurationStats :flights="flights" />
+        <div class="grid grid-cols-1 gap-4 lg:grid-cols-3">
+            <TopListCard title="Top Aircraft" :items="topAircraft" />
+            <TopListCard title="Top Flight Numbers" :items="topFlightNumbers" />
+            <LongestFlightsCard :flights="flights" />
+        </div>
 
-        <ChartPanel title="Flights per Year">
-            <FlightYearChart :flights="flights" />
-        </ChartPanel>
+        <div class="grid grid-cols-1 gap-4 lg:grid-cols-3">
+            <StatCard label="Total Spent" featured>
+                <CurrencyTotalsList :totals="totalSpentByCurrency" size="lg" />
+            </StatCard>
+            <ChartPanel title="Flights per Year" class="lg:col-span-2">
+                <FlightYearChart :flights="flights" />
+            </ChartPanel>
+        </div>
 
         <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
             <ChartPanel title="Flights per Month">
