@@ -125,13 +125,23 @@ interface GazetteerIndex {
     tokenSet: Map<string, StationRow>
 }
 
+let rowsPromise: Promise<StationRow[]> | null = null
+
+/** Loads (once) the raw gazetteer rows, shared by the resolver and the pickers. */
+function loadRows(): Promise<StationRow[]> {
+    if (!rowsPromise) {
+        rowsPromise = import('@/assets/data/stations.json')
+            .then(mod => (mod.default ?? mod) as StationRow[])
+    }
+    return rowsPromise
+}
+
 let indexPromise: Promise<GazetteerIndex> | null = null
 
 /** Builds (once) the lookup index: several spellings per row, first row wins. */
 function loadIndex(): Promise<GazetteerIndex> {
     if (!indexPromise) {
-        indexPromise = import('@/assets/data/stations.json').then(mod => {
-            const rows = (mod.default ?? mod) as StationRow[]
+        indexPromise = loadRows().then(rows => {
             const exact = new Map<string, StationRow>()
             const tokenSet = new Map<string, StationRow>()
             const put = (key: string, row: StationRow) => {
@@ -243,4 +253,59 @@ export async function resolvePlaces(
         }),
     )
     return results
+}
+
+/** A pickable suggestion: `label` shown in the dropdown, `value` filled on pick. */
+export interface SelectorOption {
+    label: string
+    value: string
+}
+
+/**
+ * Search station names for the add/edit picker. Matches name, city and country
+ * (diacritic- and case-insensitive) and returns up to `limit` options whose
+ * `value` is the canonical dataset name — filling it guarantees an exact hit in
+ * the resolver's first tier. Free text remains allowed, so stations outside the
+ * bundled coverage still work through the fuzzy tiers.
+ */
+export async function searchStations(query: string, limit = 12): Promise<SelectorOption[]> {
+    const q = normalizePlace(query)
+    if (!q) return []
+    const rows = await loadRows()
+    const out: SelectorOption[] = []
+    for (const row of rows) {
+        const haystack = normalizePlace(
+            [row.name, row.city ?? '', row.country ?? ''].join(' '),
+        )
+        if (!haystack.includes(q)) continue
+        const parts = [row.name, row.city, row.country].filter((p): p is string => Boolean(p))
+        out.push({ label: parts.join(' · '), value: row.name })
+        if (out.length >= limit) break
+    }
+    return out
+}
+
+/**
+ * Search distinct city names for the add/edit picker. Cities are drawn from the
+ * gazetteer rows that carry one (curated seed rows); the `value` is the plain
+ * city name, which the resolver maps to that city's station coordinate.
+ */
+export async function searchCities(query: string, limit = 12): Promise<SelectorOption[]> {
+    const q = normalizePlace(query)
+    if (!q) return []
+    const rows = await loadRows()
+    const seen = new Set<string>()
+    const out: SelectorOption[] = []
+    for (const row of rows) {
+        if (!row.city) continue
+        const key = normalizePlace(row.city)
+        if (seen.has(key) || !key.includes(q)) continue
+        seen.add(key)
+        out.push({
+            label: row.country ? `${row.city} · ${row.country}` : row.city,
+            value: row.city,
+        })
+        if (out.length >= limit) break
+    }
+    return out
 }

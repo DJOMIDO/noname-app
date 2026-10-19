@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Input } from '@/components/ui/input'
 import FormField from '@/components/FormField.vue'
+import StationSelector from '@/components/StationSelector.vue'
 import { fieldClass } from '@/lib/formStyles'
 
 defineProps<{
@@ -37,14 +38,13 @@ const emit = defineEmits<{
 
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <FormField label="Departure Station" required>
-                <Input :model-value="departureStation"
-                    @update:model-value="emit('update:departureStation', String($event))" placeholder="e.g. Gare de Lyon"
-                    :class="fieldClass" />
+                <StationSelector :model-value="departureStation"
+                    @update:model-value="emit('update:departureStation', $event)" placeholder="e.g. Gare de Lyon" />
             </FormField>
 
             <FormField label="Arrival Station" required>
-                <Input :model-value="arrivalStation" @update:model-value="emit('update:arrivalStation', String($event))"
-                    placeholder="e.g. London St Pancras" :class="fieldClass" />
+                <StationSelector :model-value="arrivalStation"
+                    @update:model-value="emit('update:arrivalStation', $event)" placeholder="e.g. London St Pancras" />
             </FormField>
         </div>
 
