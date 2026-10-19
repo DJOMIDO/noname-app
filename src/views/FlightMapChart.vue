@@ -4,10 +4,12 @@ import {
     MapLibreMap,
     NavigationControl,
     Popup,
+    setWorkerUrl,
     type ExpressionSpecification,
     type GeoJSONSource,
 } from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
+import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?url'
 import { useTheme } from '@/composables/useTheme'
 import { flightRouteGeoJSON, type AirportProperties, type RouteProperties } from '@/lib/flightRoutes'
 import type { FlightStatsRow } from '@/lib/journeyColumns'
@@ -22,6 +24,17 @@ import type { FlightStatsRow } from '@/lib/journeyColumns'
  * OpenFreeMap is MIT-licensed with an unlimited free public instance, and can be
  * self-hosted from its weekly planet dumps if that ever changes.
  */
+
+// MapLibre locates its web worker relative to `import.meta.url`. In dev that
+// resolves correctly because vite.config.ts excludes maplibre-gl from
+// pre-bundling, but a production build bundles maplibre into this async chunk
+// and never emits `maplibre-gl-worker.mjs` next to it — MapLibre computes the
+// filename at runtime, so Rollup can't statically see it to copy it over. The
+// default lookup then 404s, the worker pool dies, and the map paints only its
+// background clear colour (blank). Importing the worker with `?url` makes Vite
+// emit it as a real hashed asset and hand back its URL; `setWorkerUrl` points
+// MapLibre at it before any map instance is created.
+setWorkerUrl(workerUrl)
 
 const STYLE_URL = {
     light: 'https://tiles.openfreemap.org/styles/positron',
