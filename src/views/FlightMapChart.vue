@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import {
     MapLibreMap,
     NavigationControl,
@@ -10,9 +10,13 @@ import {
 } from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?url'
+import { Maximize2, Minimize2, Type } from 'lucide-vue-next'
+import { useEventListener, useScrollLock } from '@vueuse/core'
 import { useTheme } from '@/composables/useTheme'
 import { flightRouteGeoJSON, type AirportProperties, type RouteProperties } from '@/lib/flightRoutes'
 import type { FlightStatsRow } from '@/lib/journeyColumns'
+import { basemapLabelLayerIds } from '@/lib/mapLabels'
+import { cn } from '@/lib/utils'
 
 /**
  * Route map — MapLibre GL over OpenFreeMap vector tiles, with brand-gradient
@@ -49,6 +53,31 @@ const props = defineProps<{ flights: FlightStatsRow[] }>()
 
 const { isDark } = useTheme()
 const container = ref<HTMLDivElement | null>(null)
+
+/** Place-name visibility, persisted so the map reopens as the user left it. */
+const LABELS_STORAGE_KEY = 'map-labels'
+const showLabels = ref(localStorage.getItem(LABELS_STORAGE_KEY) !== 'false')
+
+/** Theater-mode fullscreen: while expanded the shell teleports to <body>. */
+const expanded = ref(false)
+const bodyScrollLock = useScrollLock(document.body)
+
+/** Glass chip styling shared by the floating map control buttons. */
+const chipClass = 'flex size-8 items-center justify-center rounded-lg border border-white/60 bg-white/85 shadow-sm backdrop-blur-md transition-colors dark:border-white/10 dark:bg-gray-900/70'
+
+const shellClass = computed(() =>
+    expanded.value
+        ? 'fixed inset-0 z-[60] bg-white dark:bg-gray-950'
+        : 'relative h-full w-full',
+)
+
+// Fullscreen reaches the real viewport edges, so the controls must clear the
+// notch / home indicator; inside the panel the insets are irrelevant.
+const controlsClass = computed(() =>
+    expanded.value
+        ? 'absolute z-10 flex gap-1.5 left-[calc(0.75rem_+_env(safe-area-inset-left,0px))] top-[calc(0.75rem_+_env(safe-area-inset-top,0px))]'
+        : 'absolute left-3 top-3 z-10 flex gap-1.5',
+)
 
 // Imperative MapLibre handles — deliberately non-reactive, the map owns its state.
 let map: MapLibreMap | null = null
@@ -112,6 +141,30 @@ function hideBasemapBorders() {
             map.setLayoutProperty(layer.id, 'visibility', 'none')
         }
     }
+}
+
+/**
+ * Shows or hides every basemap text layer (place names, water names, POIs,
+ * transport shields) per the user's toggle. Our own IATA labels stay put —
+ * they annotate our data, not the basemap. Runs from `style.load` too, since
+ * a theme swap rebuilds every layer with visibility reset.
+ */
+function applyLabelVisibility() {
+    if (!map) return
+    const visibility = showLabels.value ? 'visible' : 'none'
+    for (const id of basemapLabelLayerIds(map.getStyle().layers)) {
+        map.setLayoutProperty(id, 'visibility', visibility)
+    }
+}
+
+function toggleLabels() {
+    showLabels.value = !showLabels.value
+    localStorage.setItem(LABELS_STORAGE_KEY, String(showLabels.value))
+    applyLabelVisibility()
+}
+
+function toggleExpanded() {
+    expanded.value = !expanded.value
 }
 
 /**
@@ -279,6 +332,7 @@ onMounted(() => {
     instance.addControl(new NavigationControl({ showCompass: false }), 'top-right')
     instance.on('style.load', () => {
         hideBasemapBorders()
+        applyLabelVisibility()
         addRouteLayers()
         if (!hasFitted) fitToData()
     })
@@ -299,8 +353,49 @@ watch(geo, () => syncData(true))
 watch(isDark, dark => {
     map?.setStyle(STYLE_URL[dark ? 'dark' : 'light'])
 })
+
+/**
+ * Theater-mode expand: the shell teleports to <body> and covers the viewport.
+ * It cannot stay in place — ChartPanel's `backdrop-blur-md` makes it the
+ * containing block for `position: fixed` descendants, so an in-place overlay
+ * would only ever cover the panel. Reparenting keeps the canvas (and its WebGL
+ * context) alive; MapLibre learns the new box size only from `resize()`.
+ * Expanding also re-frames the arcs: the same zoom spans a different extent on
+ * a fullscreen aspect ratio than in the 420px panel.
+ */
+watch(expanded, isExpanded => {
+    bodyScrollLock.value = isExpanded
+    nextTick(() => {
+        map?.resize()
+        if (isExpanded) fitToData()
+    })
+})
+
+useEventListener(window, 'keydown', (event: KeyboardEvent) => {
+    if (event.key === 'Escape' && expanded.value) expanded.value = false
+})
 </script>
 
 <template>
-    <div ref="container" class="h-full w-full" data-testid="route-map" />
+    <Teleport to="body" :disabled="!expanded">
+        <div :class="shellClass">
+            <div ref="container" class="h-full w-full" data-testid="route-map" />
+            <div :class="controlsClass">
+                <button type="button" :aria-pressed="showLabels"
+                    :aria-label="showLabels ? 'Hide place names' : 'Show place names'"
+                    :class="cn(chipClass, showLabels
+                        ? 'text-brand dark:text-violet-300'
+                        : 'text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300')"
+                    @click="toggleLabels">
+                    <Type class="size-4" />
+                </button>
+                <button type="button" :aria-label="expanded ? 'Exit full screen' : 'Expand map to full screen'"
+                    :class="cn(chipClass, 'text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white')"
+                    @click="toggleExpanded">
+                    <Minimize2 v-if="expanded" class="size-4" />
+                    <Maximize2 v-else class="size-4" />
+                </button>
+            </div>
+        </div>
+    </Teleport>
 </template>
