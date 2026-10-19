@@ -125,11 +125,11 @@ const triggerClass = cn(
     'dark:text-gray-400 dark:data-[state=active]:bg-gray-700 dark:data-[state=active]:text-white',
 )
 
-// Mobile: the info chips and the year filter each become their own horizontally
-// swipeable strip (two rows) instead of wrapping into a ragged multi-line block;
-// from `sm` up both wrappers go `contents` so every chip flows back into a
-// single centered row. Edge fades are the swipe affordance, mirroring
-// CurrencyTotalsList; a horizontal strip never fights the page's vertical scroll.
+// The info chips and the year filter each become their own horizontally
+// swipeable strip (two rows) at every breakpoint, instead of wrapping into a
+// ragged multi-line block once the year list grows long. Edge fades are the
+// swipe affordance, mirroring CurrencyTotalsList; a horizontal strip never
+// fights the page's vertical scroll.
 const infoEl = ref<HTMLElement | null>(null)
 const yearEl = ref<HTMLElement | null>(null)
 const infoPrev = ref(false)
@@ -227,16 +227,15 @@ useResizeObserver(heroGridEl, () => nextTick(fitValues))
             </div>
         </div>
 
-        <!-- Info chips + year filter: on mobile two independently swipeable
-             strips (one row each); from `sm` up both wrappers go `contents` so
-             every chip flows back into a single centered wrapping row. -->
-        <div class="flex flex-col gap-2 border-t border-gray-200/60 px-4 py-3
-            sm:flex-row sm:flex-wrap sm:items-center sm:justify-center sm:gap-2 dark:border-white/10">
+        <!-- Info chips + year filter: two independently swipeable strips (one
+             row each) at every breakpoint, so a long year list scrolls
+             horizontally instead of wrapping into a ragged multi-line block. -->
+        <div class="flex flex-col gap-2 border-t border-gray-200/60 px-4 py-3 dark:border-white/10">
 
             <!-- Row 1: secondary indicator chips -->
-            <div class="relative min-w-0 sm:contents">
+            <div class="relative min-w-0">
                 <div ref="infoEl" :class="cn(
-                    'flex snap-x gap-2 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:contents',
+                    'flex snap-x gap-2 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden',
                     !infoPrev && !infoNext && 'justify-center',
                 )">
                     <span v-for="chip in infoChips" :key="chip"
@@ -249,18 +248,15 @@ useResizeObserver(heroGridEl, () => nextTick(fitValues))
                     </span>
                 </div>
                 <span v-if="infoPrev" aria-hidden="true"
-                    class="pointer-events-none absolute inset-y-0 left-0 w-8 bg-gradient-to-r from-white to-transparent sm:hidden dark:from-gray-900" />
+                    class="pointer-events-none absolute inset-y-0 left-0 w-8 bg-gradient-to-r from-white to-transparent dark:from-gray-900" />
                 <span v-if="infoNext" aria-hidden="true"
-                    class="pointer-events-none absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-white to-transparent sm:hidden dark:from-gray-900" />
+                    class="pointer-events-none absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-white to-transparent dark:from-gray-900" />
             </div>
 
-            <span v-if="years.length" aria-hidden="true"
-                class="mx-1 hidden h-4 w-px bg-gray-200 sm:block dark:bg-white/15" />
-
             <!-- Row 2: year filter -->
-            <div v-if="years.length" class="relative min-w-0 sm:contents">
+            <div v-if="years.length" class="relative min-w-0">
                 <div ref="yearEl" role="group" aria-label="Filter by year" :class="cn(
-                    'flex snap-x gap-1.5 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:contents',
+                    'flex snap-x gap-1.5 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden',
                     !yearPrev && !yearNext && 'justify-center',
                 )">
                     <button type="button" :class="yearChipClass(activeYear === null)" @click="emit('year-change', null)">
@@ -272,9 +268,9 @@ useResizeObserver(heroGridEl, () => nextTick(fitValues))
                     </button>
                 </div>
                 <span v-if="yearPrev" aria-hidden="true"
-                    class="pointer-events-none absolute inset-y-0 left-0 w-8 bg-gradient-to-r from-white to-transparent sm:hidden dark:from-gray-900" />
+                    class="pointer-events-none absolute inset-y-0 left-0 w-8 bg-gradient-to-r from-white to-transparent dark:from-gray-900" />
                 <span v-if="yearNext" aria-hidden="true"
-                    class="pointer-events-none absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-white to-transparent sm:hidden dark:from-gray-900" />
+                    class="pointer-events-none absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-white to-transparent dark:from-gray-900" />
             </div>
         </div>
     </section>
