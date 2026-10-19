@@ -4,6 +4,7 @@ import { useAuthUser } from '@/composables/useAuthUser'
 import { useJourneys } from '@/composables/useJourneys'
 import { toast } from 'vue-sonner'
 import { useJourneyStats } from '@/composables/useJourneyStats'
+import StatsHero from '@/components/stats/StatsHero.vue'
 import StatOverview from '@/components/StatOverview.vue'
 import FlightStats from '@/components/FlightStats.vue'
 import TrainStats from '@/components/TrainStats.vue'
@@ -74,6 +75,9 @@ onMounted(async () => {
                 <p class="mt-3 text-gray-600 dark:text-gray-300">Your travels, turned into numbers and stories.</p>
             </header>
 
+            <!-- FR24-style headline strip: global across tabs, only once data exists -->
+            <StatsHero v-if="hasJourneys" :flights="flights" :trains="trains" class="mb-8" />
+
             <!-- Loading: pulse skeleton grid -->
             <div v-if="!ready || loading"
                 class="animate-in fade-in rounded-2xl border border-white/60 bg-white/60 p-4 shadow-xl shadow-brand/10 backdrop-blur-md sm:p-6 dark:border-white/10 dark:bg-white/5">
@@ -129,8 +133,7 @@ onMounted(async () => {
                 </TabsList>
 
                 <TabsContent value="overview">
-                    <StatOverview :flight-count="flights.length" :train-count="trains.length"
-                        :total-spent-by-currency="totalSpentByCurrency" :first-departure="firstDeparture"
+                    <StatOverview :total-spent-by-currency="totalSpentByCurrency" :first-departure="firstDeparture"
                         :last-departure="lastDeparture" :top-city="topCity"
                         :most-used-transport="mostUsedTransport" :most-used-airline="mostUsedAirline"
                         :most-used-train-company="mostUsedTrainCompany" />
