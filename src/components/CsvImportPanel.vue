@@ -2,15 +2,16 @@
 import { computed, onMounted, onBeforeUnmount, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { toast } from 'vue-sonner'
-import { Download, Upload, X } from 'lucide-vue-next'
+import { Download, Loader2, Upload, X } from 'lucide-vue-next'
 import { client } from '@/lib/neon'
 import { useAuthUser } from '@/composables/useAuthUser'
 import { invalidateJourneysCache } from '@/composables/useJourneys'
 import { Button } from '@/components/ui/button'
 import CsvImportPreview from '@/components/CsvImportPreview.vue'
 import {
-  csvTemplate, flightHeaders, parseImportCsv, toDatabaseRow, trainHeaders,
-  type ImportRow, type JourneyType,
+  csvTemplate, flightHeaders, importIdentityColumns, importMergeColumns,
+  journeyIdentity, mergeImportRow, parseImportCsv, toDatabaseRow, trainHeaders,
+  type ExistingJourneyRow, type ImportRow, type JourneyType,
 } from '@/lib/csvImport'
 
 const props = defineProps<{
@@ -31,9 +32,46 @@ const isReading = ref(false)
 const isImporting = ref(false)
 const isDragging = ref(false)
 const headers = computed(() => props.type === 'flight' ? flightHeaders : trainHeaders)
-const validRows = computed(() => rows.value.filter((row) => row.valid))
-const invalidRows = computed(() => rows.value.filter((row) => !row.valid))
 const label = computed(() => props.type === 'flight' ? 'flight' : 'train')
+const table = computed(() => props.type === 'flight' ? 'flights' : 'trains')
+
+type RowStatus = 'new' | 'update' | 'invalid' | 'duplicate'
+type RowAnalysis = { status: RowStatus; existingId: string | null }
+
+// Per-row duplicate verdict keyed by rowNumber. Stays empty until the check
+// runs, so guests (who are sent to log in on import) fall back to "new".
+const rowAnalysis = ref<Record<number, RowAnalysis>>({})
+const analysisState = ref<'idle' | 'checking' | 'ready' | 'error' | 'skipped'>('idle')
+
+// The status shown for a row: the analysed verdict, or a fallback when no
+// duplicate check has run (guest / not yet checked).
+const effectiveStatus = (row: ImportRow): RowStatus =>
+  rowAnalysis.value[row.rowNumber]?.status ?? (row.valid ? 'new' : 'invalid')
+
+const statusByRow = computed<Record<number, RowStatus>>(() => {
+  const map: Record<number, RowStatus> = {}
+  for (const row of rows.value) map[row.rowNumber] = effectiveStatus(row)
+  return map
+})
+
+const counts = computed(() => {
+  const tally = { added: 0, updated: 0, invalid: 0, duplicate: 0 }
+  for (const status of Object.values(statusByRow.value)) {
+    if (status === 'new') tally.added += 1
+    else if (status === 'update') tally.updated += 1
+    else if (status === 'invalid') tally.invalid += 1
+    else tally.duplicate += 1
+  }
+  return tally
+})
+
+const actionableCount = computed(() => counts.value.added + counts.value.updated)
+
+const importLabel = computed(() => {
+  if (isImporting.value) return 'Importing…'
+  if (counts.value.updated > 0) return `Import (add ${counts.value.added}, update ${counts.value.updated})`
+  return `Import ${counts.value.added} new`
+})
 
 const downloadTemplate = () => {
   const blob = new Blob([csvTemplate(props.type)], { type: 'text/csv;charset=utf-8' })
@@ -48,6 +86,8 @@ const downloadTemplate = () => {
 const reset = () => {
   rows.value = []
   fileName.value = ''
+  rowAnalysis.value = {}
+  analysisState.value = 'idle'
   if (fileInput.value) fileInput.value.value = ''
 }
 
@@ -62,16 +102,21 @@ const processFile = async (file: File) => {
     return
   }
   isReading.value = true
+  let parsed: ImportRow[]
   try {
     fileName.value = file.name
-    rows.value = parseImportCsv(await file.text(), props.type)
-    if (rows.value.length === 0) throw new Error('CSV does not contain any data rows.')
+    parsed = parseImportCsv(await file.text(), props.type)
+    if (parsed.length === 0) throw new Error('CSV does not contain any data rows.')
   } catch (error) {
     reset()
     toast.error(error instanceof Error ? error.message : 'Unable to read the CSV file.')
+    return
   } finally {
     isReading.value = false
   }
+  rows.value = parsed
+  rowAnalysis.value = {}
+  await analyzeDuplicates(parsed)
 }
 
 const handleFile = async (event: Event) => {
@@ -93,9 +138,64 @@ const onKeydown = (event: KeyboardEvent) => {
 onMounted(() => document.addEventListener('keydown', onKeydown))
 onBeforeUnmount(() => document.removeEventListener('keydown', onKeydown))
 
+// Classifies each valid row as new vs. an update of an existing record by
+// matching the natural key against what the user already has stored.
+const analyzeDuplicates = async (parsed: ImportRow[]) => {
+  await fetchUser()
+  if (!user.value) {
+    // Guests have no records to query; they're sent to log in on import, so
+    // skip the check and let their rows show as new.
+    analysisState.value = 'skipped'
+    return
+  }
+
+  analysisState.value = 'checking'
+  try {
+    const { data, error } = await client
+      .from(table.value)
+      .select(importIdentityColumns(props.type))
+      .eq('user_id', user.value.id)
+      .returns<ExistingJourneyRow[]>()
+    if (error) throw new Error(error.message)
+
+    const idByKey = new Map<string, string>()
+    for (const record of data ?? []) {
+      const key = journeyIdentity(props.type, record)
+      if (!idByKey.has(key)) idByKey.set(key, record.id)
+    }
+
+    const next: Record<number, RowAnalysis> = {}
+    const winnerByKey = new Map<string, number>()
+    for (const row of parsed) {
+      if (!row.valid) {
+        next[row.rowNumber] = { status: 'invalid', existingId: null }
+        continue
+      }
+      const key = journeyIdentity(props.type, row.values)
+      const existingId = idByKey.get(key) ?? null
+      // A later row with the same natural key supersedes an earlier one.
+      const prior = winnerByKey.get(key)
+      if (prior !== undefined) next[prior] = { status: 'duplicate', existingId: null }
+      winnerByKey.set(key, row.rowNumber)
+      next[row.rowNumber] = { status: existingId ? 'update' : 'new', existingId }
+    }
+
+    rowAnalysis.value = next
+    analysisState.value = 'ready'
+  } catch (error) {
+    analysisState.value = 'error'
+    toast.error(`Couldn't check for existing records: ${error instanceof Error ? error.message : 'unknown error'}`)
+  }
+}
+
 const importRows = async () => {
-  if (validRows.value.length === 0) {
+  if (actionableCount.value === 0) {
     toast.error('There are no valid rows to import.')
+    return
+  }
+  if (analysisState.value === 'checking') return
+  if (analysisState.value === 'error') {
+    toast.error('Re-run the duplicate check before importing.')
     return
   }
 
@@ -110,18 +210,57 @@ const importRows = async () => {
   const userId = user.value.id
   isImporting.value = true
   try {
-    const table = props.type === 'flight' ? 'flights' : 'trains'
-    const payload = validRows.value.map((row) => ({
-      user_id: userId,
-      ...toDatabaseRow(props.type, row.values),
-    }))
-    const { error } = await client.from(table).insert(payload)
+    // Read the full stored row for every record we're about to merge into.
+    const matchedIds = [...new Set(
+      Object.values(rowAnalysis.value)
+        .filter((analysis) => analysis.status === 'update' && analysis.existingId !== null)
+        .map((analysis) => analysis.existingId as string),
+    )]
+    const existingById = new Map<string, ExistingJourneyRow>()
+    if (matchedIds.length > 0) {
+      const { data, error } = await client
+        .from(table.value)
+        .select(importMergeColumns(props.type))
+        .in('id', matchedIds)
+        .returns<ExistingJourneyRow[]>()
+      if (error) {
+        toast.error(`Import failed: ${error.message}`)
+        return
+      }
+      for (const record of data ?? []) existingById.set(record.id, record)
+    }
+
+    // Every payload carries the same key set (id + user_id + all journey
+    // columns) so the bulk upsert stays homogeneous: matched rows keep their
+    // id and update, new rows get a fresh id and insert.
+    const payload: Record<string, unknown>[] = []
+    for (const row of rows.value) {
+      const analysis = rowAnalysis.value[row.rowNumber]
+      const status = analysis?.status ?? effectiveStatus(row)
+      if (status === 'invalid' || status === 'duplicate') continue
+
+      const existing = status === 'update' && analysis?.existingId
+        ? existingById.get(analysis.existingId)
+        : undefined
+      payload.push(existing && analysis?.existingId
+        ? { id: analysis.existingId, user_id: userId, ...mergeImportRow(props.type, existing, row.values) }
+        : { id: crypto.randomUUID(), user_id: userId, ...toDatabaseRow(props.type, row.values) })
+    }
+
+    // defaultToNull:false keeps created_at/updated_at (absent from the payload)
+    // intact on update and lets them fall back to their column default on insert.
+    const { error } = await client
+      .from(table.value)
+      .upsert(payload, { onConflict: 'id', defaultToNull: false })
     if (error) {
       toast.error(`Import failed: ${error.message}`)
       return
     }
 
-    toast.success(`${validRows.value.length} ${label.value} journeys imported successfully.`)
+    const { added, updated } = counts.value
+    toast.success(updated > 0
+      ? `${added} added, ${updated} updated.`
+      : `${added} ${label.value} journeys imported successfully.`)
     invalidateJourneysCache()
     reset()
     emit('close')
@@ -174,28 +313,53 @@ const importRows = async () => {
         </Button>
       </div>
 
-      <CsvImportPreview v-if="rows.length" :rows="rows" :headers="headers" class="mt-5" />
+      <CsvImportPreview v-if="rows.length" :rows="rows" :headers="headers" :statuses="statusByRow" class="mt-5" />
 
-      <div v-if="rows.length" class="mt-5 flex flex-wrap items-center justify-between gap-4 border-t border-gray-200 pt-4 dark:border-white/10">
-        <div class="flex flex-wrap items-center gap-2 text-sm">
-          <span class="rounded-full bg-emerald-50 px-3 py-1 font-medium text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-300">
-            {{ validRows.length }} valid — will be imported
-          </span>
-          <span v-if="invalidRows.length"
-            class="rounded-full bg-rose-50 px-3 py-1 font-medium text-rose-600 dark:bg-rose-500/10 dark:text-rose-300">
-            {{ invalidRows.length }} invalid — will be skipped
-          </span>
+      <div v-if="rows.length" class="mt-5 border-t border-gray-200 pt-4 dark:border-white/10">
+        <p v-if="analysisState === 'checking'" class="flex items-center gap-2 text-sm text-muted-foreground">
+          <Loader2 class="size-4 animate-spin" aria-hidden="true" />
+          Checking for existing {{ label }} journeys…
+        </p>
+
+        <div v-else-if="analysisState === 'error'"
+          class="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-rose-50 px-4 py-3 text-sm text-rose-600 dark:bg-rose-500/10 dark:text-rose-300">
+          <span>Couldn't check for duplicates, so importing is paused to avoid creating copies.</span>
+          <Button variant="outline" size="sm" :disabled="isImporting" @click="analyzeDuplicates(rows)">Retry check</Button>
         </div>
-        <div class="flex gap-2">
-          <Button variant="outline" :disabled="isImporting" @click="reset">Clear</Button>
-          <Button
-            class="border-0 bg-sunset font-semibold text-white
-              shadow-lg shadow-sunset/30 transition-all duration-300
-              hover:-translate-y-0.5 hover:bg-orange-500 hover:shadow-xl hover:shadow-sunset/40 disabled:pointer-events-none disabled:opacity-60"
-            :disabled="isImporting || validRows.length === 0" @click="importRows">
-            {{ isImporting ? 'Importing…' : 'Import valid rows' }}
-          </Button>
+
+        <div v-else class="flex flex-wrap items-center justify-between gap-4">
+          <div class="flex flex-wrap items-center gap-2 text-sm">
+            <span class="rounded-full bg-emerald-50 px-3 py-1 font-medium text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-300">
+              {{ counts.added }} new — will be added
+            </span>
+            <span v-if="counts.updated"
+              class="rounded-full bg-amber-50 px-3 py-1 font-medium text-amber-600 dark:bg-amber-500/10 dark:text-amber-300">
+              {{ counts.updated }} existing — will be updated
+            </span>
+            <span v-if="counts.duplicate"
+              class="rounded-full bg-slate-100 px-3 py-1 font-medium text-slate-500 dark:bg-white/5 dark:text-gray-400">
+              {{ counts.duplicate }} duplicate in file — merged
+            </span>
+            <span v-if="counts.invalid"
+              class="rounded-full bg-rose-50 px-3 py-1 font-medium text-rose-600 dark:bg-rose-500/10 dark:text-rose-300">
+              {{ counts.invalid }} invalid — will be skipped
+            </span>
+          </div>
+          <div class="flex gap-2">
+            <Button variant="outline" :disabled="isImporting" @click="reset">Clear</Button>
+            <Button
+              class="border-0 bg-sunset font-semibold text-white
+                shadow-lg shadow-sunset/30 transition-all duration-300
+                hover:-translate-y-0.5 hover:bg-orange-500 hover:shadow-xl hover:shadow-sunset/40 disabled:pointer-events-none disabled:opacity-60"
+              :disabled="isImporting || actionableCount === 0" @click="importRows">
+              {{ importLabel }}
+            </Button>
+          </div>
         </div>
+
+        <p v-if="counts.updated && analysisState !== 'error'" class="mt-3 text-xs text-muted-foreground">
+          Updated records keep any details you leave blank in this file — only filled columns overwrite what's stored.
+        </p>
       </div>
     </div>
   </div>
