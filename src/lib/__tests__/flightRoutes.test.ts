@@ -1,4 +1,6 @@
 import { describe, expect, it } from 'vitest'
+import * as turf from '@turf/turf'
+import type { Position } from 'geojson'
 import { flightRouteGeoJSON, routeHeatKey } from '../flightRoutes'
 import type { FlightStatsRow } from '../journeyColumns'
 
@@ -25,6 +27,16 @@ const COORDS = {
     SHA: { lat: 31.1979, lng: 121.3363 },
     LHR: { lat: 51.47, lng: -0.4543 },
 } as const
+
+/** The unbowed reference path between two known airports. */
+function greatCircleCoords(from: keyof typeof COORDS, to: keyof typeof COORDS): Position[] {
+    const arc = turf.greatCircle(
+        [COORDS[from].lng, COORDS[from].lat],
+        [COORDS[to].lng, COORDS[to].lat],
+        { npoints: 100 },
+    )
+    return arc.geometry.type === 'LineString' ? arc.geometry.coordinates : arc.geometry.coordinates.flat()
+}
 
 describe('flightRouteGeoJSON', () => {
     it('returns empty collections and no bounds without flights', () => {
@@ -204,6 +216,71 @@ describe('routeHeatKey', () => {
 
     it('tolerates missing codes', () => {
         expect(routeHeatKey(null, 'PEK')).toBe(routeHeatKey('PEK', null))
+    })
+})
+
+describe('flightRouteGeoJSON forward/reverse bows', () => {
+    it('keeps a one-direction leg on the true great circle', () => {
+        const { routes } = flightRouteGeoJSON([flight('SHA', 'PEK')])
+        expect(routes.features[0].geometry.coordinates).toEqual(greatCircleCoords('SHA', 'PEK'))
+    })
+
+    it('bows outbound and return to opposite sides instead of overlapping', () => {
+        const { routes } = flightRouteGeoJSON([flight('SHA', 'PEK'), flight('PEK', 'SHA')])
+        expect(routes.features).toHaveLength(2)
+        const [outbound, homeward] = routes.features
+
+        const straight = greatCircleCoords('SHA', 'PEK')
+        // The return path traverses the same circle in reverse, so its middle
+        // vertex is the mirror index of the outbound one.
+        const outMid = outbound.geometry.coordinates[50]
+        const homeMid = homeward.geometry.coordinates[50]
+        const bowOut = [outMid[0] - straight[50][0], outMid[1] - straight[50][1]]
+        const bowHome = [homeMid[0] - straight[49][0], homeMid[1] - straight[49][1]]
+
+        // Both bulge away from the great circle…
+        expect(Math.hypot(...bowOut)).toBeGreaterThan(0.5)
+        expect(Math.hypot(...bowHome)).toBeGreaterThan(0.5)
+        // …to opposite sides: the bow vectors point against each other.
+        expect(bowOut[0] * bowHome[0] + bowOut[1] * bowHome[1]).toBeLessThan(0)
+    })
+
+    it('pins the endpoints of a bowed arc to the unbowed path ends', () => {
+        const { routes } = flightRouteGeoJSON([flight('SHA', 'PEK'), flight('PEK', 'SHA')])
+        const [outbound, homeward] = routes.features
+        const last = outbound.geometry.coordinates.length - 1
+        // turf's own interpolation ends, not the raw airport coords: the bow
+        // offset is zero at t=0 and t=1, so the pins survive untouched.
+        const straightOut = greatCircleCoords('SHA', 'PEK')
+        const straightHome = greatCircleCoords('PEK', 'SHA')
+
+        expect(outbound.geometry.coordinates[0]).toEqual(straightOut[0])
+        expect(outbound.geometry.coordinates[last]).toEqual(straightOut[straightOut.length - 1])
+        expect(homeward.geometry.coordinates[0]).toEqual(straightHome[0])
+        expect(homeward.geometry.coordinates[last]).toEqual(straightHome[straightHome.length - 1])
+    })
+
+    it('bows only the legs with traffic in both directions', () => {
+        // PEK↔SHA runs both ways and bows; the one-way SHA→LHR leg stays straight.
+        const { routes } = flightRouteGeoJSON([flight('PEK', 'SHA'), flight('SHA', 'PEK'), flight('SHA', 'LHR')])
+        expect(routes.features).toHaveLength(3)
+        const [outbound, homeward, plain] = routes.features
+
+        expect(outbound.geometry.coordinates).not.toEqual(greatCircleCoords('PEK', 'SHA'))
+        expect(homeward.geometry.coordinates).not.toEqual(greatCircleCoords('SHA', 'PEK'))
+        expect(plain.geometry.coordinates).toEqual(greatCircleCoords('SHA', 'LHR'))
+    })
+
+    it('keeps a bowed transpacific pair continuous across the antimeridian', () => {
+        const { routes } = flightRouteGeoJSON([flight('LAX', 'PEK'), flight('PEK', 'LAX')])
+        expect(routes.features.length).toBeGreaterThan(2)
+        for (const arc of routes.features) {
+            const points = arc.geometry.coordinates
+            for (let index = 1; index < points.length; index += 1) {
+                // A dateline streak would jump ~360° between two vertices.
+                expect(Math.abs(points[index][0] - points[index - 1][0])).toBeLessThan(180)
+            }
+        }
     })
 })
 

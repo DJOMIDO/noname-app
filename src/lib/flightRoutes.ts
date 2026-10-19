@@ -46,6 +46,10 @@ export interface FlightRouteGeoJSON {
 
 /** Vertex count per arc — enough for a smooth curve, cheap at world zoom. */
 const ARC_POINTS = 100
+/** Bow strength for a forward/reverse arc pair, as a fraction of leg length. */
+const CURVE_RATIO = 0.12
+/** Bulge cap, matched to BOUNDS_PADDING_DEG so a bowed arc stays in frame. */
+const MAX_BOW_DEG = 3
 /** Slack around the airport extent so arcs never touch the panel edge. */
 const BOUNDS_PADDING_DEG = 3
 /** Half-width of the frame used when a single airport is on the map. */
@@ -53,17 +57,82 @@ const SINGLE_POINT_SPAN_DEG = 6
 /** Web Mercator cannot represent the poles. */
 const MAX_LAT = 85
 
+/** Cosine-corrected segment length in degrees, so bulges look isotropic. */
+function segLen(a: Position, b: Position): number {
+    const midLat = ((a[1] + b[1]) / 2) * (Math.PI / 180)
+    return Math.hypot((b[0] - a[0]) * Math.cos(midLat), b[1] - a[1])
+}
+
+/**
+ * Bows great-circle pieces perpendicular to themselves so an outbound and a
+ * return leg render as two distinct arcs (forward/reverse arc, as in UMETrip)
+ * instead of overlapping exactly.
+ *
+ * The offset follows sin(π t) over the whole path — pieces included, so a
+ * dateline split does not pinch — which pins the endpoints to their airports.
+ * It is measured in a cosine-corrected space so the bulge looks the same at
+ * any latitude, and longitudes are unwrapped point-to-point so a bowed arc
+ * crossing the antimeridian stays one continuous stroke. The sign is always
+ * the same rotation of the local heading, and that is what separates the two
+ * directions: the return leg traverses the circle in reverse, so its
+ * perpendicular flips and it bulges to the other side.
+ */
+function bowPieces(pieces: Position[][]): Position[][] {
+    const total = pieces.reduce((count, piece) => count + piece.length, 0)
+    if (total < 3) return pieces
+
+    const length = pieces.reduce(
+        (sum, piece) => piece.slice(1).reduce((inner, point, index) => inner + segLen(piece[index], point), sum),
+        0,
+    )
+    const peak = Math.min(length * CURVE_RATIO, MAX_BOW_DEG)
+
+    const bowed: Position[][] = []
+    let running = 0
+    let prevLng: number | null = null
+
+    for (const piece of pieces) {
+        const out: Position[] = []
+        for (let index = 0; index < piece.length; index += 1) {
+            const [lng, lat] = piece[index]
+            const t = running / (total - 1)
+            running += 1
+            const offset = peak * Math.sin(Math.PI * t)
+
+            const [pLng, pLat] = piece[Math.max(0, index - 1)]
+            const [nLng, nLat] = piece[Math.min(piece.length - 1, index + 1)]
+            const cosLat = Math.max(Math.cos((lat * Math.PI) / 180), 0.08)
+            const dx = (nLng - pLng) * cosLat
+            const dy = nLat - pLat
+            const norm = Math.hypot(dx, dy) || 1
+
+            let outLng = lng + (-dy / norm * offset) / cosLat
+            const outLat = lat + (dx / norm) * offset
+            if (prevLng !== null) {
+                while (outLng - prevLng > 180) outLng -= 360
+                while (outLng - prevLng < -180) outLng += 360
+            }
+            prevLng = outLng
+            out.push([outLng, outLat])
+        }
+        bowed.push(out)
+    }
+
+    return bowed
+}
+
 /**
  * Great-circle segments between two airports as GeoJSON positions ([lng, lat]).
  * turf returns a MultiLineString when the path crosses the antimeridian; each
  * piece becomes its own LineString so the arc renders on both sides instead of
- * streaking across the whole map.
+ * streaking across the whole map. With `bowed`, the pieces are bent into a
+ * forward/reverse arc pair so opposite directions do not overlap.
  */
-function arcSegments(dep: Airport, arr: Airport): Position[][] {
+function arcSegments(dep: Airport, arr: Airport, bowed: boolean): Position[][] {
     const arc = turf.greatCircle([dep.lng, dep.lat], [arr.lng, arr.lat], { npoints: ARC_POINTS })
     const geometry = arc.geometry
-    if (geometry.type === 'MultiLineString') return geometry.coordinates
-    return [geometry.coordinates]
+    const pieces = geometry.type === 'MultiLineString' ? geometry.coordinates : [geometry.coordinates]
+    return bowed ? bowPieces(pieces) : pieces
 }
 
 const clampLat = (lat: number) => Math.max(-MAX_LAT, Math.min(MAX_LAT, lat))
@@ -164,6 +233,18 @@ export function flightRouteGeoJSON(flights: readonly FlightStatsRow[]): FlightRo
         pairCounts.set(key, (pairCounts.get(key) ?? 0) + 1)
     }
 
+    // Ordered leg traffic: a leg only bows into a forward/reverse pair when
+    // the opposite direction also exists — one-way legs stay true great circles.
+    const legCounts = new Map<string, number>()
+    for (const { legs } of resolved) {
+        for (let index = 0; index < legs.length - 1; index += 1) {
+            const key = `${legs[index].iata}>${legs[index + 1].iata}`
+            legCounts.set(key, (legCounts.get(key) ?? 0) + 1)
+        }
+    }
+    const bothDirections = (a: Airport, b: Airport) =>
+        (legCounts.get(`${a.iata}>${b.iata}`) ?? 0) > 0 && (legCounts.get(`${b.iata}>${a.iata}`) ?? 0) > 0
+
     for (const { flight, legs } of resolved) {
         for (const airport of legs) uniqueAirports.set(airport.iata, airport)
 
@@ -177,7 +258,8 @@ export function flightRouteGeoJSON(flights: readonly FlightStatsRow[]): FlightRo
         }
 
         for (let index = 0; index < legs.length - 1; index += 1) {
-            for (const coordinates of arcSegments(legs[index], legs[index + 1])) {
+            const bowed = bothDirections(legs[index], legs[index + 1])
+            for (const coordinates of arcSegments(legs[index], legs[index + 1], bowed)) {
                 routeFeatures.push({
                     type: 'Feature',
                     properties,
