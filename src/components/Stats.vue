@@ -4,19 +4,31 @@ import { useAuthUser } from '@/composables/useAuthUser'
 import { useJourneys } from '@/composables/useJourneys'
 import { toast } from 'vue-sonner'
 import { useJourneyStats } from '@/composables/useJourneyStats'
+import { yearsOf } from '@/lib/stats'
+import StatsHeader, { type StatsView } from '@/components/stats/StatsHeader.vue'
 import StatOverview from '@/components/StatOverview.vue'
 import FlightStats from '@/components/FlightStats.vue'
 import TrainStats from '@/components/TrainStats.vue'
 import EmptyTab from '@/components/stats/EmptyTab.vue'
 import GuestState from '@/components/GuestState.vue'
 import BackButton from '@/components/BackButton.vue'
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
+import { Tabs, TabsContent } from '@/components/ui/tabs'
 import iconJourney from '@/assets/images/journey.png'
 import iconFlight from '@/assets/images/flight.png'
 import iconTrain from '@/assets/images/train.png'
 
 const { flights, trains, loading, error, load } = useJourneys()
 const activeTab = ref('overview')
+const view = computed(() => activeTab.value as StatsView)
+
+// Year filter: chips derive from the full dataset, the filtered rows feed
+// every card, chart and the route map below.
+const yearFilter = ref<number | null>(null)
+const years = computed(() => yearsOf(flights.value, trains.value))
+const inYear = (date: string | null | undefined) =>
+    yearFilter.value === null || Boolean(date?.startsWith(String(yearFilter.value)))
+const filteredFlights = computed(() => flights.value.filter(f => inYear(f.departure_date)))
+const filteredTrains = computed(() => trains.value.filter(t => inYear(t.departure_date)))
 
 const { user, isLoggedIn, ready, fetchUser } = useAuthUser()
 
@@ -30,7 +42,7 @@ const {
     mostUsedTransport,
     mostUsedAirline,
     mostUsedTrainCompany,
-} = useJourneyStats(flights, trains)
+} = useJourneyStats(filteredFlights, filteredTrains)
 
 const hasJourneys = computed(() => flights.value.length > 0 || trains.value.length > 0)
 
@@ -108,42 +120,28 @@ onMounted(async () => {
                 </div>
             </div>
 
-            <!-- Tabs: segmented control sits directly on the page background,
-                 content uses its own glass cards (no card-in-card nesting) -->
+            <!-- Header card carries the view switcher, so no page-level TabsList;
+                 content keeps its own glass cards (no card-in-card nesting) -->
             <Tabs v-else v-model="activeTab" class="animate-in fade-in slide-in-from-bottom-8 w-full">
-                <TabsList class="mx-auto mb-8 flex w-full max-w-md rounded-xl bg-gray-100 p-1 shadow-inner dark:bg-white/10">
-                    <TabsTrigger value="overview"
-                        class="flex-1 rounded-lg border-0 px-4 py-1.5 text-sm font-medium text-gray-500 data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow dark:text-gray-400 dark:data-[state=active]:bg-gray-700 dark:data-[state=active]:text-white">
-                        Overview
-                    </TabsTrigger>
-                    <TabsTrigger value="flights"
-                        class="flex flex-1 items-center justify-center gap-2 rounded-lg border-0 px-4 py-1.5 text-sm font-medium text-gray-500 data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow dark:text-gray-400 dark:data-[state=active]:bg-gray-700 dark:data-[state=active]:text-white">
-                        <img :src="iconFlight" alt="" class="h-4 w-4 object-contain" />
-                        <span>Flights</span>
-                    </TabsTrigger>
-                    <TabsTrigger value="trains"
-                        class="flex flex-1 items-center justify-center gap-2 rounded-lg border-0 px-4 py-1.5 text-sm font-medium text-gray-500 data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow dark:text-gray-400 dark:data-[state=active]:bg-gray-700 dark:data-[state=active]:text-white">
-                        <img :src="iconTrain" alt="" class="h-4 w-4 object-contain" />
-                        <span>Trains</span>
-                    </TabsTrigger>
-                </TabsList>
+                <StatsHeader :view="view" :flights="filteredFlights" :trains="filteredTrains"
+                    :years="years" :active-year="yearFilter" class="mb-8"
+                    @year-change="yearFilter = $event" />
 
                 <TabsContent value="overview">
-                    <StatOverview :flight-count="flights.length" :train-count="trains.length"
-                        :total-spent-by-currency="totalSpentByCurrency" :first-departure="firstDeparture"
+                    <StatOverview :total-spent-by-currency="totalSpentByCurrency" :first-departure="firstDeparture"
                         :last-departure="lastDeparture" :top-city="topCity"
                         :most-used-transport="mostUsedTransport" :most-used-airline="mostUsedAirline"
                         :most-used-train-company="mostUsedTrainCompany" />
                 </TabsContent>
 
                 <TabsContent value="flights">
-                    <FlightStats v-if="flights.length" :flights="flights" :total-spent-by-currency="totalFlightSpentByCurrency" />
+                    <FlightStats v-if="filteredFlights.length" :flights="filteredFlights" :total-spent-by-currency="totalFlightSpentByCurrency" />
                     <EmptyTab v-else :icon="iconFlight" text="No flights logged yet — they'll show up here once you add some."
                         to="/add-flight" cta="Add a flight" />
                 </TabsContent>
 
                 <TabsContent value="trains">
-                    <TrainStats v-if="trains.length" :trains="trains" :total-spent-by-currency="totalTrainSpentByCurrency" />
+                    <TrainStats v-if="filteredTrains.length" :trains="filteredTrains" :total-spent-by-currency="totalTrainSpentByCurrency" />
                     <EmptyTab v-else :icon="iconTrain" text="No train journeys logged yet — they'll show up here once you add some."
                         to="/add-train" cta="Add a train" />
                 </TabsContent>
