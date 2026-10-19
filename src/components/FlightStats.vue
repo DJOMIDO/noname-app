@@ -65,13 +65,14 @@ const topFlightNumbers = computed<TopListItem[]>(() =>
             <FlightMapChart :flights="flights" />
         </ChartPanel>
 
-        <div class="grid grid-cols-1 gap-4 lg:grid-cols-3">
+        <!-- relative: the row is the positioning context TopListCard expands against -->
+        <div class="relative grid grid-cols-1 gap-4 lg:grid-cols-3">
             <TopListCard title="Top Airports" :items="topAirports" />
             <TopListCard title="Top Airlines" :items="topAirlines" />
             <TopListCard title="Top Routes" :items="topRoutes" />
         </div>
 
-        <div class="grid grid-cols-1 gap-4 lg:grid-cols-3">
+        <div class="relative grid grid-cols-1 gap-4 lg:grid-cols-3">
             <TopListCard title="Top Aircraft" :items="topAircraft" />
             <TopListCard title="Top Flight Numbers" :items="topFlightNumbers" />
             <LongestFlightsCard :flights="flights" />

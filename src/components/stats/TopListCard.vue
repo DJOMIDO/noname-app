@@ -18,10 +18,10 @@ import { Maximize2, X } from 'lucide-vue-next'
  * TopListCard — glass ranking card with hand-rolled CSS bars (no Chart.js:
  * the glass styling and the bar transitions are easier to control in the
  * DOM). Collapsed it shows the first `visibleN` rows as horizontal bars;
- * expanding (flightradar24-style) stretches the card across its whole grid
- * row in place — no overlay, no floating panel — and swaps the list for a
- * vertical column chart with every item side by side, scrolling sideways
- * when the ranking outgrows the row.
+ * expanding (flightradar24-style) lifts the card out of flow in place —
+ * `absolute inset-x-0` against its grid row, which must be `relative` — so
+ * it stretches across the whole row and overlays its siblings, who keep
+ * their tracks instead of reflowing. Collapsing puts it back in flow.
  */
 const props = withDefaults(defineProps<{
     title: string
@@ -44,9 +44,11 @@ const percent = (item: TopListItem) =>
 </script>
 
 <template>
-    <!-- Expanding claims the full grid row in place; sibling cards reflow below -->
+    <!-- Expanded: absolute against the (relative) grid row, so the card spans
+         the row at its own flow position and overlays siblings in place -->
     <div class="rounded-2xl border border-white/60 bg-white/70 p-5 shadow-sm backdrop-blur-md
-        dark:border-white/10 dark:bg-white/5" :class="expanded && 'lg:col-span-3'">
+        dark:border-white/10 dark:bg-white/5"
+        :class="expanded && 'absolute inset-x-0 z-10 shadow-xl shadow-brand/10 lg:min-h-full'">
         <div class="mb-4 flex items-center justify-between gap-2">
             <h3 class="text-sm font-semibold text-gray-600 dark:text-gray-300">{{ title }}</h3>
             <div class="flex items-center gap-2">
