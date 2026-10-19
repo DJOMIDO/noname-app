@@ -2,6 +2,8 @@
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import FormField from '@/components/FormField.vue'
+import StationSelector from '@/components/StationSelector.vue'
+import CitySelector from '@/components/CitySelector.vue'
 import CurrencySelector from '@/components/CurrencySelector.vue'
 import { fieldClass } from '@/lib/formStyles'
 
@@ -70,25 +72,25 @@ const emit = defineEmits<{
 
             <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <FormField label="Departure Station" required>
-                    <Input :model-value="departureStation"
-                        @update:model-value="emit('update:departureStation', String($event))"
-                        placeholder="e.g. Gare de Lyon" :class="fieldClass" />
+                    <StationSelector :model-value="departureStation"
+                        @update:model-value="emit('update:departureStation', $event)"
+                        placeholder="e.g. Gare de Lyon" />
                 </FormField>
                 <FormField label="Arrival Station" required>
-                    <Input :model-value="arrivalStation"
-                        @update:model-value="emit('update:arrivalStation', String($event))"
-                        placeholder="e.g. London St Pancras" :class="fieldClass" />
+                    <StationSelector :model-value="arrivalStation"
+                        @update:model-value="emit('update:arrivalStation', $event)"
+                        placeholder="e.g. London St Pancras" />
                 </FormField>
             </div>
 
             <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <FormField label="Departure City">
-                    <Input :model-value="departureCity" @update:model-value="emit('update:departureCity', String($event))"
-                        placeholder="Optional" :class="fieldClass" />
+                    <CitySelector :model-value="departureCity"
+                        @update:model-value="emit('update:departureCity', $event)" placeholder="Optional" />
                 </FormField>
                 <FormField label="Arrival City">
-                    <Input :model-value="arrivalCity" @update:model-value="emit('update:arrivalCity', String($event))"
-                        placeholder="Optional" :class="fieldClass" />
+                    <CitySelector :model-value="arrivalCity"
+                        @update:model-value="emit('update:arrivalCity', $event)" placeholder="Optional" />
                 </FormField>
             </div>
         </fieldset>
