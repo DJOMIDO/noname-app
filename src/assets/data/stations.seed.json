@@ -1,115 +1,115 @@
 [
   {
-    "name": "Gare de Toulouse-Matabiau",
+    "name": "Toulouse Matabiau",
     "city": "Toulouse",
     "country": "France",
-    "lat": 43.611,
-    "lng": 1.4528
+    "lat": 43.611206,
+    "lng": 1.453616
   },
   {
-    "name": "Gare de Carcassonne",
+    "name": "Carcassonne",
     "city": "Carcassonne",
     "country": "France",
-    "lat": 43.2098,
-    "lng": 2.3463
+    "lat": 43.218029,
+    "lng": 2.351824
   },
   {
-    "name": "Gare de Narbonne",
+    "name": "Narbonne",
     "city": "Narbonne",
     "country": "France",
-    "lat": 43.176,
-    "lng": 3.003
+    "lat": 43.190387,
+    "lng": 3.00591
   },
   {
-    "name": "Gare de Caen",
+    "name": "Caen",
     "city": "Caen",
     "country": "France",
-    "lat": 49.1946,
-    "lng": -0.3606
+    "lat": 49.176354,
+    "lng": -0.347613
   },
   {
-    "name": "Gare d'Annecy",
+    "name": "Annecy",
     "city": "Annecy",
     "country": "France",
-    "lat": 45.9,
-    "lng": 6.127
+    "lat": 45.901965,
+    "lng": 6.121835
   },
   {
-    "name": "Gare de Dijon-Ville",
+    "name": "Dijon",
     "city": "Dijon",
     "country": "France",
-    "lat": 47.317,
-    "lng": 5.039
+    "lat": 47.32337,
+    "lng": 5.027208
   },
   {
-    "name": "Gare de Paris-Gare-de-Lyon",
+    "name": "Paris Gare de Lyon",
     "city": "Paris",
     "country": "France",
-    "lat": 48.8444,
-    "lng": 2.3736
+    "lat": 48.844888,
+    "lng": 2.37352
   },
   {
-    "name": "Gare de Paris-Nord",
+    "name": "Paris Gare du Nord",
     "city": "Paris",
     "country": "France",
-    "lat": 48.8809,
-    "lng": 2.3553
+    "lat": 48.880185,
+    "lng": 2.355151
   },
   {
-    "name": "Gare de Lyon-Perrache",
+    "name": "Lyon Perrache",
     "city": "Lyon",
     "country": "France",
-    "lat": 45.749,
-    "lng": 4.826
+    "lat": 45.748476,
+    "lng": 4.825733
   },
   {
-    "name": "Gare de Marseille-Saint-Charles",
+    "name": "Marseille Saint-Charles",
     "city": "Marseille",
     "country": "France",
-    "lat": 43.3025,
-    "lng": 5.381
+    "lat": 43.302666,
+    "lng": 5.380407
   },
   {
-    "name": "Gare de Bordeaux-Saint-Jean",
+    "name": "Bordeaux Saint-Jean",
     "city": "Bordeaux",
     "country": "France",
-    "lat": 44.826,
-    "lng": -0.556
+    "lat": 44.825873,
+    "lng": -0.556697
   },
   {
-    "name": "Gare de Lille-Flandres",
+    "name": "Lille Flandres",
     "city": "Lille",
     "country": "France",
-    "lat": 50.636,
-    "lng": 3.071
+    "lat": 50.636577,
+    "lng": 3.06987
   },
   {
-    "name": "Gare de Strasbourg-Ville",
+    "name": "Strasbourg",
     "city": "Strasbourg",
     "country": "France",
-    "lat": 48.585,
-    "lng": 7.734
+    "lat": 48.584967,
+    "lng": 7.734584
   },
   {
-    "name": "Gare de Nantes",
+    "name": "Nantes",
     "city": "Nantes",
     "country": "France",
-    "lat": 47.217,
-    "lng": -1.542
+    "lat": 47.216148,
+    "lng": -1.542356
   },
   {
-    "name": "Gare de Montpellier-Saint-Roch",
+    "name": "Montpellier Saint-Roch",
     "city": "Montpellier",
     "country": "France",
-    "lat": 43.604,
-    "lng": 3.88
+    "lat": 43.604738,
+    "lng": 3.880674
   },
   {
-    "name": "Gare de Rennes",
+    "name": "Rennes",
     "city": "Rennes",
     "country": "France",
-    "lat": 48.103,
-    "lng": -1.672
+    "lat": 48.103517,
+    "lng": -1.672744
   },
   {
     "name": "London St Pancras",

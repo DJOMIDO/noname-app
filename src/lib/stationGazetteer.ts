@@ -6,9 +6,11 @@
 // against it with zero network access.
 //
 // The dataset is station-granular: an endpoint resolves to the actual station
-// point when its name matches, and to that station's city otherwise. The file is
-// a small curated seed; `scripts/build-stations.mjs` regenerates it from a
-// GeoNames extract for full coverage.
+// point when its name matches, and to that station's city otherwise. Names are
+// the canonical French commercial spellings — SNCF « Gares de voyageurs » for the
+// national network and Île-de-France Mobilités for every RER stop;
+// `scripts/build-stations.mjs` regenerates the file from those open datasets plus
+// a small curated seed that adds city labels for the major stations.
 //
 // Loaded lazily (dynamic import) so the gazetteer stays out of the main bundle
 // and the PWA precache, mirroring the map chunk.
@@ -39,9 +41,9 @@ const NAME_PREFIXES = [
 
 /**
  * Trailing tokens that add no discriminating power ("X Railway Station" == "X").
- * Longest first so " railway station" strips before " station". GeoNames names
- * many RSTN rows in this English form; stripping it lets a bare city query
- * ("Valence") resolve to its station instead of the locality centroid.
+ * Longest first so " railway station" strips before " station". Legacy records
+ * (and the old GeoNames-sourced gazetteer) stored many stations in this English
+ * form; stripping it lets such a query still resolve to today's canonical row.
  */
 const NAME_SUFFIXES = [' railway station', ' rail station', ' station', ' bahnhof', ' gare', ' terminus']
 
@@ -63,8 +65,8 @@ function compact(value: string): string {
 /**
  * Expand common French station-name abbreviations to their full form so an
  * abbreviated query matches the dataset ("Paris St Lazare" == the stored
- * "Gare de Paris-Saint-Lazare"). Applied within compact/token-set keys, where
- * word boundaries survive, and never to normalizePlace itself.
+ * "Paris Saint-Lazare"). Applied within compact/token-set keys, where word
+ * boundaries survive, and never to normalizePlace itself.
  */
 function expandAbbreviations(value: string): string {
     return value.replace(/\b(st|ste)\b/g, m => (m === 'ste' ? 'sainte' : 'saint'))
@@ -204,11 +206,11 @@ export async function resolvePlace(query: string): Promise<PlaceCoord | null> {
 
 /**
  * Tiered index lookup. (1) Exact / affix-stripped / compact spellings of the
- * full name. (2) An order-insensitive significant-token set, so a full station
- * name ("Paris Gare du Nord") matches its row ("Gare de Paris-Nord") instead of
- * degrading to the bare city. (3) Graceful degradation: longest token prefix
- * first, so an unmatched multi-token name falls back to its leading city
- * ("Valence TGV Rhône-Alpes Sud" -> "valence tgv" -> "valence").
+ * full name. (2) An order-insensitive significant-token set, so a variant
+ * spelling ("Gare de Paris-Nord") matches its canonical row ("Paris Gare du
+ * Nord") instead of degrading to the bare city. (3) Graceful degradation:
+ * longest token prefix first, so an unmatched multi-token name falls back to its
+ * leading city ("Valence TGV Rhône-Alpes Sud" -> "valence tgv" -> "valence").
  */
 function lookup(index: GazetteerIndex, name: string): StationRow | undefined {
     const { exact, tokenSet } = index

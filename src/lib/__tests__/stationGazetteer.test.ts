@@ -19,8 +19,8 @@ describe('resolvePlace', () => {
         const place = await resolvePlace('Toulouse')
         expect(place).not.toBeNull()
         // The bundled row is the Matabiau station, so we get station coords.
-        expect(place!.lat).toBeCloseTo(43.611, 3)
-        expect(place!.lng).toBeCloseTo(1.4528, 3)
+        expect(place!.lat).toBeCloseTo(43.6112, 3)
+        expect(place!.lng).toBeCloseTo(1.4536, 3)
         expect(place!.city).toBe('Toulouse')
         expect(place!.country).toBe('France')
     })
@@ -28,7 +28,7 @@ describe('resolvePlace', () => {
     it('ignores a leading "Gare de" prefix', async () => {
         const place = await resolvePlace('Gare de Carcassonne')
         expect(place!.city).toBe('Carcassonne')
-        expect(place!.lat).toBeCloseTo(43.2098, 3)
+        expect(place!.lat).toBeCloseTo(43.218, 3)
     })
 
     it('tolerates hyphen/space differences via the compact key', async () => {
@@ -42,18 +42,18 @@ describe('resolvePlace', () => {
     })
 
     it('matches a full station name by significant tokens, not the bare city', async () => {
-        // Stop-words and word order differ from the stored "Gare de Paris-Nord";
-        // the token-set tier must pick the Nord station, not degrade to "paris"
-        // (which the curated Gare de Lyon owns) and collapse every Paris stop.
-        const place = await resolvePlace('Paris Gare du Nord')
+        // A legacy/variant spelling ("Gare de Paris-Nord") differs in stop-words
+        // and word order from the stored SNCF name "Paris Gare du Nord"; the
+        // token-set tier must pick the Nord station, not degrade to "paris".
+        const place = await resolvePlace('Gare de Paris-Nord')
         expect(place).not.toBeNull()
         expect(place!.city).toBe('Paris')
         expect(place!.name).toMatch(/Nord/)
     })
 
     it('expands "St" to "Saint" so abbreviated station names match', async () => {
-        // "Paris St Lazare" must reach the stored "Gare de Paris-Saint-Lazare",
-        // not degrade to the bare city (which the curated Gare de Lyon owns).
+        // "Paris St Lazare" must reach the stored "Paris Saint-Lazare",
+        // not degrade to the bare city.
         const place = await resolvePlace('Paris St Lazare')
         expect(place).not.toBeNull()
         expect(place!.name).toMatch(/Saint-Lazare/)
@@ -86,7 +86,7 @@ describe('resolvePlaces', () => {
 describe('searchStations', () => {
     it('suggests canonical station names, filling the exact dataset name', async () => {
         const options = await searchStations('toulouse')
-        const matabiau = options.find(o => o.value === 'Gare de Toulouse-Matabiau')
+        const matabiau = options.find(o => o.value === 'Toulouse Matabiau')
         expect(matabiau).toBeDefined()
         // Label carries city + country so same-name stations are distinguishable.
         expect(matabiau!.label).toContain('Toulouse')
