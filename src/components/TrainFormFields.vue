@@ -1,13 +1,22 @@
 <script setup lang="ts">
+import { ref } from 'vue'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import FormField from '@/components/FormField.vue'
+import FormDisclosure from '@/components/FormDisclosure.vue'
 import StationSelector from '@/components/StationSelector.vue'
 import CitySelector from '@/components/CitySelector.vue'
 import CurrencySelector from '@/components/CurrencySelector.vue'
 import { fieldClass } from '@/lib/formStyles'
 
-defineProps<{
+/**
+ * TrainFormFields — the whole train form in one view: the essentials (company,
+ * number, route, schedule, coach/seat) stay visible, and the finer details
+ * collapse behind a "More details" disclosure. Shared by the Add Train page and
+ * the train edit view. `expandMore` seeds that disclosure open, so the edit page
+ * can reveal fields a record already has values for.
+ */
+const props = withDefaults(defineProps<{
     trainCompany: string
     trainNumber: string
     trainType: string
@@ -25,7 +34,8 @@ defineProps<{
     currency: string
     bookingRef: string
     notes: string
-}>()
+    expandMore?: boolean
+}>(), { expandMore: false })
 
 const emit = defineEmits<{
     (e: 'update:trainCompany', value: string): void
@@ -46,6 +56,8 @@ const emit = defineEmits<{
     (e: 'update:bookingRef', value: string): void
     (e: 'update:notes', value: string): void
 }>()
+
+const moreOpen = ref(props.expandMore)
 </script>
 
 <template>
@@ -65,11 +77,6 @@ const emit = defineEmits<{
                 </FormField>
             </div>
 
-            <FormField label="Train Type">
-                <Input :model-value="trainType" @update:model-value="emit('update:trainType', String($event))"
-                    placeholder="e.g. TGV, ICE" :class="fieldClass" />
-            </FormField>
-
             <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <FormField label="Departure Station" required>
                     <StationSelector :model-value="departureStation"
@@ -80,17 +87,6 @@ const emit = defineEmits<{
                     <StationSelector :model-value="arrivalStation"
                         @update:model-value="emit('update:arrivalStation', $event)"
                         placeholder="e.g. London St Pancras" />
-                </FormField>
-            </div>
-
-            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <FormField label="Departure City">
-                    <CitySelector :model-value="departureCity"
-                        @update:model-value="emit('update:departureCity', $event)" placeholder="Optional" />
-                </FormField>
-                <FormField label="Arrival City">
-                    <CitySelector :model-value="arrivalCity"
-                        @update:model-value="emit('update:arrivalCity', $event)" placeholder="Optional" />
                 </FormField>
             </div>
         </fieldset>
@@ -140,29 +136,47 @@ const emit = defineEmits<{
             </div>
         </fieldset>
 
-        <!-- Booking -->
-        <fieldset class="space-y-4">
-            <legend class="mb-1 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Booking</legend>
-            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <FormField label="Price">
-                    <Input :model-value="price" @update:model-value="emit('update:price', String($event))" type="number"
-                        placeholder="e.g. 120.00" :class="fieldClass" />
-                </FormField>
-                <FormField label="Currency">
-                    <CurrencySelector :model-value="currency"
-                        @update:model-value="emit('update:currency', $event)" />
+        <!-- Everything else, collapsed by default -->
+        <FormDisclosure v-model:open="moreOpen" label="More details" hint="Type, cities, fare, notes">
+            <div class="space-y-4">
+                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <FormField label="Train Type">
+                        <Input :model-value="trainType" @update:model-value="emit('update:trainType', String($event))"
+                            placeholder="e.g. TGV, ICE" :class="fieldClass" />
+                    </FormField>
+                    <FormField label="Booking Reference">
+                        <Input :model-value="bookingRef" @update:model-value="emit('update:bookingRef', String($event))"
+                            placeholder="e.g. XYZ123" :class="fieldClass" />
+                    </FormField>
+                </div>
+
+                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <FormField label="Departure City">
+                        <CitySelector :model-value="departureCity"
+                            @update:model-value="emit('update:departureCity', $event)" placeholder="Optional" />
+                    </FormField>
+                    <FormField label="Arrival City">
+                        <CitySelector :model-value="arrivalCity"
+                            @update:model-value="emit('update:arrivalCity', $event)" placeholder="Optional" />
+                    </FormField>
+                </div>
+
+                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <FormField label="Price">
+                        <Input :model-value="price" @update:model-value="emit('update:price', String($event))" type="number"
+                            placeholder="e.g. 120.00" :class="fieldClass" />
+                    </FormField>
+                    <FormField label="Currency">
+                        <CurrencySelector :model-value="currency"
+                            @update:model-value="emit('update:currency', $event)" />
+                    </FormField>
+                </div>
+
+                <FormField label="Notes">
+                    <Textarea :model-value="notes" @update:model-value="emit('update:notes', String($event))"
+                        placeholder="Additional notes..." rows="3" :class="fieldClass" />
                 </FormField>
             </div>
-
-            <FormField label="Booking Reference">
-                <Input :model-value="bookingRef" @update:model-value="emit('update:bookingRef', String($event))"
-                    placeholder="e.g. XYZ123" :class="fieldClass" />
-            </FormField>
-
-            <FormField label="Notes">
-                <Textarea :model-value="notes" @update:model-value="emit('update:notes', String($event))"
-                    placeholder="Additional notes..." rows="3" :class="fieldClass" />
-            </FormField>
-        </fieldset>
+        </FormDisclosure>
     </div>
 </template>

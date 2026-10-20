@@ -7,8 +7,9 @@ import { client } from '@/lib/neon'
 import { buildUpdatePayload } from '@/lib/journeyPayload'
 import { invalidateJourneysCache } from '@/composables/useJourneys'
 import { toast } from 'vue-sonner'
+import { TRAIN_MORE_FIELDS, hasAnyValue } from '@/lib/journeyFormFields'
 import JourneyDetailShell from '@/components/JourneyDetailShell.vue'
-import AddTrainDetailed from '@/components/AddTrainDetailed.vue'
+import TrainFormFields from '@/components/TrainFormFields.vue'
 // Aliased: `Train` is already taken by the lucide icon above.
 import type { Train as TrainRow } from '@/types/journeys'
 
@@ -86,6 +87,11 @@ const chips = computed(() => {
 // normalise every field on the way in.
 type TrainForm = typeof form
 
+// The edit view reuses the merged add form; auto-expand its "More details"
+// disclosure when the record already has values tucked away in there, so
+// existing data is never hidden behind a collapsed section.
+const hasMoreData = computed(() => hasAnyValue(form, TRAIN_MORE_FIELDS))
+
 const assign = (src: TrainRow) => {
     ;(Object.keys(form) as (keyof TrainForm)[]).forEach((key) => {
         const value = src[key]
@@ -156,7 +162,7 @@ onMounted(fetchTrain)
         </template>
 
         <!-- Edit mode: reuse the shared journey form -->
-        <AddTrainDetailed v-if="isEditing" v-model:trainCompany="form.train_company"
+        <TrainFormFields v-if="isEditing" :expand-more="hasMoreData" v-model:trainCompany="form.train_company"
             v-model:trainNumber="form.train_number" v-model:trainType="form.train_type"
             v-model:departureStation="form.departure_station" v-model:arrivalStation="form.arrival_station"
             v-model:departureCity="form.departure_city" v-model:arrivalCity="form.arrival_city"

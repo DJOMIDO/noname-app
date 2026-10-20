@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { Upload, Info } from 'lucide-vue-next'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import BackButton from '@/components/BackButton.vue'
 import CsvImportPanel from '@/components/CsvImportPanel.vue'
@@ -10,7 +9,8 @@ import type { JourneyType } from '@/lib/csvImport'
 /**
  * JourneyFormShell — shared page layout for Add Flight / Add Train.
  * Follows the welcome/auth page style (A+C): gradient background, blobs,
- * glass card, gradient CTA. Domain-specific fields are provided via slots.
+ * glass card, gradient CTA. The merged form fields (essentials + a collapsible
+ * "More details" section) are provided via the default slot.
  */
 const props = withDefaults(
   defineProps<{
@@ -32,7 +32,6 @@ const emit = defineEmits<{
   (e: 'submit'): void
 }>()
 
-const currentTab = ref('basic')
 const showImport = ref(false)
 </script>
 
@@ -78,46 +77,22 @@ const showImport = ref(false)
         <span>You're in guest mode — fill it in freely, we'll ask you to log in when you save.</span>
       </div>
 
-      <Tabs v-model="currentTab">
-        <!-- Mode switch lives inside the card, right above what it controls -->
-        <div class="animate-in fade-in slide-in-from-bottom-8 rounded-2xl border border-white/60 bg-white/60 p-6
-          shadow-xl shadow-brand/10 backdrop-blur-md sm:p-8
-          dark:border-white/10 dark:bg-white/5 dark:shadow-brand/5">
-          <TabsList
-            class="mb-8 flex w-full max-w-xs rounded-xl bg-gray-100 p-1 shadow-inner dark:bg-white/10">
-            <TabsTrigger value="basic"
-              class="flex-1 rounded-lg border-0 px-4 py-1.5 text-sm font-medium text-gray-500
-                data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow
-                dark:text-gray-400 dark:data-[state=active]:bg-gray-700 dark:data-[state=active]:text-white">
-              Basic
-            </TabsTrigger>
-            <TabsTrigger value="detailed"
-              class="flex-1 rounded-lg border-0 px-4 py-1.5 text-sm font-medium text-gray-500
-                data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow
-                dark:text-gray-400 dark:data-[state=active]:bg-gray-700 dark:data-[state=active]:text-white">
-              Detailed
-            </TabsTrigger>
-          </TabsList>
+      <div class="animate-in fade-in slide-in-from-bottom-8 rounded-2xl border border-white/60 bg-white/60 p-6
+        shadow-xl shadow-brand/10 backdrop-blur-md sm:p-8
+        dark:border-white/10 dark:bg-white/5 dark:shadow-brand/5">
+        <slot />
 
-          <TabsContent value="basic" class="mt-0">
-            <slot name="basic" />
-          </TabsContent>
-          <TabsContent value="detailed" class="mt-0">
-            <slot name="detailed" />
-          </TabsContent>
-
-          <Button
-            class="mt-6 w-full border-0 bg-sunset font-semibold
-              text-white shadow-lg shadow-sunset/30 transition-all duration-300
-              hover:-translate-y-0.5 hover:bg-orange-500 hover:shadow-xl hover:shadow-sunset/40 disabled:pointer-events-none disabled:opacity-60"
-            :disabled="saving" @click="emit('submit')">
-            {{ saving ? 'Saving…' : submitLabel }}
-          </Button>
-          <p class="mt-3 text-center text-xs text-gray-500 dark:text-gray-400">
-            <span class="text-sunset" aria-hidden="true">*</span> Required fields
-          </p>
-        </div>
-      </Tabs>
+        <Button
+          class="mt-6 w-full border-0 bg-sunset font-semibold
+            text-white shadow-lg shadow-sunset/30 transition-all duration-300
+            hover:-translate-y-0.5 hover:bg-orange-500 hover:shadow-xl hover:shadow-sunset/40 disabled:pointer-events-none disabled:opacity-60"
+          :disabled="saving" @click="emit('submit')">
+          {{ saving ? 'Saving…' : submitLabel }}
+        </Button>
+        <p class="mt-3 text-center text-xs text-gray-500 dark:text-gray-400">
+          <span class="text-sunset" aria-hidden="true">*</span> Required fields
+        </p>
+      </div>
     </div>
 
     <CsvImportPanel v-if="showImport" :type="journeyType" @close="showImport = false" />

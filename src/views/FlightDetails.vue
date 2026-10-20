@@ -10,8 +10,9 @@ import airlines from '@/assets/data/airlines.json'
 import { airportByIata, haversineKm, timezoneOffsetDiffHours } from '@/lib/geo'
 import { buildUpdatePayload } from '@/lib/journeyPayload'
 import { getFlightDuration } from '@/utils/getFlightDuration'
+import { FLIGHT_MORE_FIELDS, hasAnyValue } from '@/lib/journeyFormFields'
 import JourneyDetailShell from '@/components/JourneyDetailShell.vue'
-import AddFlightDetailed from '@/components/AddFlightDetailed.vue'
+import FlightFormFields from '@/components/FlightFormFields.vue'
 import type { Flight } from '@/types/journeys'
 
 const route = useRoute()
@@ -98,6 +99,11 @@ const chips = computed(() => {
 // normalise every field on the way in.
 type FlightForm = typeof form
 
+// The edit view reuses the merged add form; auto-expand its "More details"
+// disclosure when the record already has values tucked away in there, so
+// existing data is never hidden behind a collapsed section.
+const hasMoreData = computed(() => hasAnyValue(form, FLIGHT_MORE_FIELDS))
+
 const assign = (src: Flight) => {
     ;(Object.keys(form) as (keyof FlightForm)[]).forEach((key) => {
         const value = src[key]
@@ -168,7 +174,7 @@ onMounted(fetchFlight)
         </template>
 
         <!-- Edit mode: reuse the shared journey form -->
-        <AddFlightDetailed v-if="isEditing" v-model:airlineCode="form.airline_code"
+        <FlightFormFields v-if="isEditing" :expand-more="hasMoreData" v-model:airlineCode="form.airline_code"
             v-model:flightNumber="form.flight_number" v-model:departureAirport="form.departure_airport"
             v-model:stopoverAirport="form.stopover_airport" v-model:arrivalAirport="form.arrival_airport"
             v-model:departureDate="form.departure_date" v-model:departureTime="form.departure_time"
