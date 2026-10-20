@@ -1,24 +1,33 @@
 // scripts/build-stations.mjs
-// One-time importer that regenerates src/assets/data/stations.json from GeoNames
-// country extracts, so the offline train gazetteer can cover every station
-// instead of only the curated seed.
+// Regenerates src/assets/data/stations.json — the offline train gazetteer — from
+// authoritative French open data. It replaces the old GeoNames country extract,
+// whose RSTN rows carried English "X Railway Station" names that leaked into the
+// station picker and the map.
 //
-// Usage — the feature dump (19 columns, railway stations + cities) is the best
-// source; fetch whichever countries you need, then pass the unzipped .txt files:
-//   curl -o /tmp/FR-dump.zip https://download.geonames.org/export/dump/FR.zip
-//   unzip -o /tmp/FR-dump.zip -d /tmp/geonames-dump
-//   node scripts/build-stations.mjs /tmp/geonames-dump/FR.txt [more.txt ...]
+// Sources (both Opendatasoft catalogs, fetched at build time — no manual download):
+//   1. SNCF « Gares de voyageurs » — every French passenger station with its
+//      canonical commercial name (`nom`, e.g. "Bordeaux Saint-Jean", "Paris Gare
+//      du Nord"), coordinates (`position_geographique`) and INSEE / UIC codes.
+//      https://ressources.data.sncf.com  (Licence Ouverte / Open Licence 2.0)
+//   2. Île-de-France Mobilités « Emplacement des gares IDF » — all RER stops
+//      (`mode === "RER"`), including the RATP-operated RER A/B core that SNCF's
+//      referential omits. https://data.iledefrance-mobilites.fr  (Licence Ouverte)
 //
-// The curated hand-checked stations live in stations.seed.json and are always
-// kept first (they win the gazetteer's first-row-wins lookup). This script
-// regenerates stations.json = seed + GeoNames rows, pruned to stay small:
-//   - ALL railway stations (feature code RSTN) at their exact station
-//     coordinates, city left null so a station-name query pins to the station;
-//   - populated places (feature class P) with population >= MIN_CITY_POPULATION
-//     as city fallbacks, so a bare city query still resolves and pools by city.
-// Postal-code extracts (/export/zip/, 12 columns) carry no population and no
-// stations, so under the prune threshold they contribute nothing — use the
-// feature dump (/export/dump/) for real coverage.
+// The curated seed (stations.seed.json) is applied as an OVERLAY, not as
+// first-row-wins rows: for a seed name that matches a fetched station we copy the
+// seed's `city` / `country` label onto that station (so a bare city query like
+// "Bordeaux" resolves to "Bordeaux Saint-Jean" and the city picker can list it),
+// while the coordinates always come from the open data. Seed names with no match
+// (London, Bruxelles, Beijing …) are emitted verbatim. A dedicated follow-up will
+// derive the full "cities that actually have a station" set from SNCF `codeinsee`,
+// replacing these hand-written labels.
+//
+// City fallbacks: the old build also emitted ~2000 GeoNames populated places as
+// bare-city centroids. Those are intentionally dropped — this is a *train*
+// gazetteer, so a city only belongs here if it has a station. Rows for cities
+// without rail service were dead weight and diluted the picker.
+//
+// Usage:  node scripts/build-stations.mjs
 import { readFileSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -26,90 +35,94 @@ import { fileURLToPath } from 'node:url'
 const DIR = path.dirname(fileURLToPath(import.meta.url))
 const OUT = path.resolve(DIR, '../src/assets/data/stations.json')
 const SEED = path.resolve(DIR, '../src/assets/data/stations.seed.json')
-const MIN_CITY_POPULATION = 5000
 
-const rows = []
-const seenStation = new Set()
-// City-level rows collide across same-named communes (e.g. two "Valence" —
-// Drôme in the southeast and Charente in the west). Keep the most populated one
-// so a bare city name resolves to the dominant place, not an arbitrary row.
-const cityPos = new Map() // normalized city name -> index in rows
-const cityPop = new Map() // normalized city name -> population used to pick
+const SNCF_URL =
+    'https://ressources.data.sncf.com/api/explore/v2.1/catalog/datasets/gares-de-voyageurs/exports/json'
+const IDFM_URL =
+    'https://data.iledefrance-mobilites.fr/api/explore/v2.1/catalog/datasets/emplacement-des-gares-idf/exports/json'
 
-const cityKey = (name) =>
-    name.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim()
+const COUNTRY = 'France'
 
-function pushStation(name, city, country, lat, lng) {
-    const key = `${name}|${lat}|${lng}`
-    if (!name || seenStation.has(key)) return
-    seenStation.add(key)
-    rows.push({ name, city, country, lat, lng })
+/** lower-case + strip diacritics + collapse whitespace (mirrors stationGazetteer.normalizePlace). */
+const norm = (value) =>
+    value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/\s+/g, ' ').trim()
+
+/**
+ * Dedup key: `norm` plus removal of spaces/hyphens/apostrophes (mirrors the
+ * resolver's `compact`). SNCF and IDFM name the same IDF station differently
+ * ("Achères Grand Cormier" vs "Achères-Grand-Cormier"); keying on the compact
+ * form collapses those variants, and since SNCF is ingested first its commercial
+ * spelling wins as the canonical name.
+ */
+const keyOf = (value) => norm(value).replace(/[\s\-']/g, '')
+
+async function fetchJson(url) {
+    const res = await fetch(url)
+    if (!res.ok) throw new Error(`Fetch failed ${res.status} ${res.statusText} — ${url}`)
+    return res.json()
 }
 
-function pushCity(name, country, lat, lng, population) {
-    // Prune: only keep city fallbacks at or above the population threshold. This
-    // drops postal rows (population 0) and tiny localities, keeping the bundle
-    // small; train endpoints are stations (RSTN), which are always kept.
-    if (!name || population < MIN_CITY_POPULATION) return
-    const key = cityKey(name)
-    const existing = cityPos.get(key)
-    if (existing === undefined) {
-        cityPos.set(key, rows.length)
-        cityPop.set(key, population)
-        rows.push({ name, city: name, country, lat, lng })
-        return
-    }
-    if (population > (cityPop.get(key) ?? 0)) {
-        cityPop.set(key, population)
-        rows[existing] = { name, city: name, country, lat, lng }
-    }
+// One row per distinct station; first writer wins (SNCF before RER).
+const byName = new Map()
+const order = []
+
+function addStation(name, lat, lng) {
+    const clean = (name || '').trim()
+    if (!clean || !Number.isFinite(lat) || !Number.isFinite(lng)) return null
+    const key = keyOf(clean)
+    const existing = byName.get(key)
+    if (existing) return existing
+    const row = { name: clean, city: null, country: COUNTRY, lat, lng }
+    byName.set(key, row)
+    order.push(row)
+    return row
 }
 
-// Keep the curated seed first so its hand-checked coordinates and city labels win
-// the first-row-wins lookup; GeoNames rows only fill the gaps. The seed is read
-// from its own file (not the generated output) so regeneration stays idempotent.
+const sncf = await fetchJson(SNCF_URL)
+for (const gare of sncf) {
+    const pos = gare.position_geographique
+    addStation(gare.nom, pos?.lat, pos?.lon)
+}
+
+const idfm = await fetchJson(IDFM_URL)
+const rerRecords = idfm.filter((stop) => (stop.mode || '').toUpperCase() === 'RER')
+for (const stop of rerRecords) {
+    const pos = stop.geo_point_2d
+    addStation(stop.nom_gares, pos?.lat, pos?.lon)
+}
+
+// Seed overlay: label matching stations with a city/country, emit the rest as-is.
+// Labeled stations are emitted first so the major-city suggestions lead the picker.
+const seedRows = []
+const claimed = new Set()
 try {
-    for (const row of JSON.parse(readFileSync(SEED, 'utf8'))) {
-        pushStation(row.name, row.city ?? null, row.country ?? null, row.lat, row.lng)
+    for (const entry of JSON.parse(readFileSync(SEED, 'utf8'))) {
+        const key = keyOf(entry.name)
+        const match = byName.get(key)
+        if (match) {
+            match.city = entry.city ?? match.city
+            if (entry.country) match.country = entry.country
+            seedRows.push(match)
+            claimed.add(match)
+        } else {
+            const row = {
+                name: entry.name,
+                city: entry.city ?? null,
+                country: entry.country ?? null,
+                lat: entry.lat,
+                lng: entry.lng,
+            }
+            byName.set(key, row)
+            seedRows.push(row)
+        }
     }
 } catch {
-    // No seed file yet — start empty.
+    // No seed file — stations only.
 }
 
-for (const file of process.argv.slice(2)) {
-    const text = readFileSync(file, 'utf8')
-    for (const line of text.split('\n')) {
-        if (!line.trim()) continue
-        const c = line.split('\t')
-        // GeoNames ships two layouts. The 12-column postal file (from
-        // /export/zip/) has placeName + coords but no feature codes; use it as a
-        // city-level fallback. The 19-column feature dump (from /export/dump/)
-        // carries RSTN stations and PPL cities.
-        if (c.length === 12) {
-            const place = (c[2] || '').trim()
-            const pLat = Number(c[9])
-            const pLng = Number(c[10])
-            if (place && Number.isFinite(pLat) && Number.isFinite(pLng)) {
-                pushCity(place, (c[0] || '').trim(), pLat, pLng, 0)
-            }
-            continue
-        }
-        const name = (c[1] || '').trim()
-        const lat = Number(c[4])
-        const lng = Number(c[5])
-        const featureCode = (c[7] || '').trim()
-        const featureClass = (c[6] || '').trim()
-        const country = (c[8] || '').trim()
-        const population = Number(c[14] || 0)
-        if (!name || !Number.isFinite(lat) || !Number.isFinite(lng)) continue
-
-        if (featureCode === 'RSTN') {
-            pushStation(name, null, country, lat, lng)
-        } else if (featureClass === 'P' && population >= MIN_CITY_POPULATION) {
-            pushCity(name, country, lat, lng, population)
-        }
-    }
-}
-
+const rows = [...seedRows, ...order.filter((row) => !claimed.has(row))]
 writeFileSync(OUT, `${JSON.stringify(rows)}\n`)
-console.log(`Wrote ${rows.length} rows to ${OUT}`)
+console.log(
+    `Wrote ${rows.length} rows to ${OUT} ` +
+    `(SNCF ${sncf.length}, IDFM RER ${rerRecords.length}, seed-labeled ${seedRows.length})`,
+)
