@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import { ref, onMounted, watch, computed } from 'vue'
+import { Download, Loader2 } from 'lucide-vue-next'
+import { onClickOutside } from '@vueuse/core'
 import { client } from '@/lib/neon'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
+import { Button } from '@/components/ui/button'
 import BackButton from '@/components/BackButton.vue'
 import Pagination from '@/components/Pagination.vue'
 import GuestState from '@/components/GuestState.vue'
@@ -17,6 +20,8 @@ import {
     FLIGHT_CARD_COLUMNS, TRAIN_CARD_COLUMNS, DEPARTURE_DATE_COLUMNS,
     type FlightCardRow, type TrainCardRow, type DepartureDateRow,
 } from '@/lib/journeyColumns'
+import { exportColumns, toExportCsv, type ExportRow } from '@/lib/csvExport'
+import type { JourneyType } from '@/lib/csvImport'
 
 const activeTab = ref('flights')
 
@@ -222,6 +227,64 @@ const fetchYears = async () => {
     )].sort((a, b) => b - a)
 }
 
+// --- CSV export (all records of one type, independent of filters/paging) ---
+const exporting = ref<JourneyType | null>(null)
+
+// The Export button lives on the top row (mirroring the add pages' Import
+// button); clicking it opens a small flights/trains chooser anchored below.
+const showExportMenu = ref(false)
+const exportRoot = ref<HTMLElement | null>(null)
+onClickOutside(exportRoot, () => { showExportMenu.value = false })
+
+// Client-side blob download — same pattern as the import-template download.
+const downloadCsv = (csv: string, filename: string) => {
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = filename
+    link.click()
+    URL.revokeObjectURL(url)
+}
+
+// Pulls the full editable column set for every record of the given type (no
+// search/year filter, no paging), serialises it against the import headers and
+// hands the browser a CSV that re-imports cleanly.
+const exportCsv = async (type: JourneyType) => {
+    const uid = user.value?.id
+    if (!uid) return
+    const plural = type === 'flight' ? 'flights' : 'train journeys'
+    exporting.value = type
+    try {
+        const { data, error } = await client
+            .from(type === 'flight' ? 'flights' : 'trains')
+            .select(exportColumns(type))
+            .eq('user_id', uid)
+            .order('departure_date', { ascending: false })
+            .returns<ExportRow[]>()
+        if (error) throw new Error(error.message)
+
+        const rows = data ?? []
+        if (rows.length === 0) {
+            toast.info(`No ${plural} to export yet.`)
+            return
+        }
+        downloadCsv(toExportCsv(type, rows), `vivavia-${type === 'flight' ? 'flights' : 'trains'}.csv`)
+        toast.success(`Exported ${rows.length} ${plural}.`)
+    } catch (err) {
+        toast.error(`Export failed: ${err instanceof Error ? err.message : 'unknown error'}`)
+    } finally {
+        exporting.value = null
+    }
+}
+
+// Chooser handler: run the export, then dismiss the menu (kept open during the
+// fetch so the spinner stays visible on the picked row).
+const onExport = async (type: JourneyType) => {
+    await exportCsv(type)
+    showExportMenu.value = false
+}
+
 onMounted(async () => {
     await fetchUser()
     if (isLoggedIn.value) {
@@ -254,9 +317,43 @@ watch([currentTrainPage, searchQuery, yearFilter], fetchTrains)
         </div>
 
         <div class="relative z-10 mx-auto max-w-4xl">
-            <!-- Escape hatch top-left, consistent with the form pages -->
-            <div class="mb-2">
+            <!-- Escape hatch (left) vs. secondary action (right), same as the add pages -->
+            <div class="mb-2 flex items-center justify-between">
                 <BackButton />
+
+                <!-- Export lives here to mirror the add pages' Import button;
+                     guests have nothing to export so it stays hidden for them. -->
+                <div v-if="isLoggedIn" ref="exportRoot" class="relative">
+                    <Button variant="outline" size="sm" aria-haspopup="menu" :aria-expanded="showExportMenu"
+                        :disabled="exporting !== null" @click="showExportMenu = !showExportMenu">
+                        <Loader2 v-if="exporting !== null" class="mr-2 size-4 animate-spin" aria-hidden="true" />
+                        <Download v-else class="mr-2 size-4" aria-hidden="true" />
+                        {{ exporting !== null ? 'Exporting…' : 'Export CSV' }}
+                    </Button>
+
+                    <div v-if="showExportMenu" role="menu" aria-label="Export as CSV"
+                        class="absolute right-0 top-full z-20 mt-2 w-48 animate-in fade-in-0 zoom-in-95 overflow-hidden
+                            rounded-xl border border-white/60 bg-white/90 p-1.5 shadow-xl shadow-brand/15 backdrop-blur-xl
+                            dark:border-white/10 dark:bg-gray-900/90">
+                        <p class="px-2.5 py-1.5 text-xs font-medium text-muted-foreground">Download as CSV</p>
+                        <button type="button" role="menuitem" :disabled="exporting !== null" @click="onExport('flight')"
+                            class="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm font-medium text-gray-700
+                                transition-colors hover:bg-lilac/60 disabled:pointer-events-none disabled:opacity-50
+                                dark:text-gray-200 dark:hover:bg-white/5">
+                            <img :src="iconFlight" alt="" class="h-4 w-4 object-contain" />
+                            <span>Flights</span>
+                            <Loader2 v-if="exporting === 'flight'" class="ml-auto size-4 animate-spin text-brand" aria-hidden="true" />
+                        </button>
+                        <button type="button" role="menuitem" :disabled="exporting !== null" @click="onExport('train')"
+                            class="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm font-medium text-gray-700
+                                transition-colors hover:bg-lilac/60 disabled:pointer-events-none disabled:opacity-50
+                                dark:text-gray-200 dark:hover:bg-white/5">
+                            <img :src="iconTrain" alt="" class="h-4 w-4 object-contain" />
+                            <span>Trains</span>
+                            <Loader2 v-if="exporting === 'train'" class="ml-auto size-4 animate-spin text-brand" aria-hidden="true" />
+                        </button>
+                    </div>
+                </div>
             </div>
 
             <header class="animate-in fade-in slide-in-from-bottom-4 mb-8 text-center">
