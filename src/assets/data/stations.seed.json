@@ -1,116 +1,20 @@
 [
-  {
-    "name": "Toulouse Matabiau",
-    "city": "Toulouse",
-    "country": "France",
-    "lat": 43.611206,
-    "lng": 1.453616
-  },
-  {
-    "name": "Carcassonne",
-    "city": "Carcassonne",
-    "country": "France",
-    "lat": 43.218029,
-    "lng": 2.351824
-  },
-  {
-    "name": "Narbonne",
-    "city": "Narbonne",
-    "country": "France",
-    "lat": 43.190387,
-    "lng": 3.00591
-  },
-  {
-    "name": "Caen",
-    "city": "Caen",
-    "country": "France",
-    "lat": 49.176354,
-    "lng": -0.347613
-  },
-  {
-    "name": "Annecy",
-    "city": "Annecy",
-    "country": "France",
-    "lat": 45.901965,
-    "lng": 6.121835
-  },
-  {
-    "name": "Dijon",
-    "city": "Dijon",
-    "country": "France",
-    "lat": 47.32337,
-    "lng": 5.027208
-  },
-  {
-    "name": "Paris Gare de Lyon",
-    "city": "Paris",
-    "country": "France",
-    "lat": 48.844888,
-    "lng": 2.37352
-  },
-  {
-    "name": "Paris Gare du Nord",
-    "city": "Paris",
-    "country": "France",
-    "lat": 48.880185,
-    "lng": 2.355151
-  },
-  {
-    "name": "Lyon Perrache",
-    "city": "Lyon",
-    "country": "France",
-    "lat": 45.748476,
-    "lng": 4.825733
-  },
-  {
-    "name": "Marseille Saint-Charles",
-    "city": "Marseille",
-    "country": "France",
-    "lat": 43.302666,
-    "lng": 5.380407
-  },
-  {
-    "name": "Bordeaux Saint-Jean",
-    "city": "Bordeaux",
-    "country": "France",
-    "lat": 44.825873,
-    "lng": -0.556697
-  },
-  {
-    "name": "Lille Flandres",
-    "city": "Lille",
-    "country": "France",
-    "lat": 50.636577,
-    "lng": 3.06987
-  },
-  {
-    "name": "Strasbourg",
-    "city": "Strasbourg",
-    "country": "France",
-    "lat": 48.584967,
-    "lng": 7.734584
-  },
-  {
-    "name": "Nantes",
-    "city": "Nantes",
-    "country": "France",
-    "lat": 47.216148,
-    "lng": -1.542356
-  },
-  {
-    "name": "Montpellier Saint-Roch",
-    "city": "Montpellier",
-    "country": "France",
-    "lat": 43.604738,
-    "lng": 3.880674
-  },
-  {
-    "name": "Rennes",
-    "city": "Rennes",
-    "country": "France",
-    "lat": 48.103517,
-    "lng": -1.672744
-  },
+  { "name": "Toulouse Matabiau" },
+  { "name": "Carcassonne" },
+  { "name": "Narbonne" },
+  { "name": "Caen" },
+  { "name": "Annecy" },
+  { "name": "Dijon" },
+  { "name": "Paris Gare de Lyon" },
+  { "name": "Paris Gare du Nord" },
+  { "name": "Lyon Perrache" },
+  { "name": "Marseille Saint-Charles" },
+  { "name": "Bordeaux Saint-Jean" },
+  { "name": "Lille Flandres" },
+  { "name": "Strasbourg" },
+  { "name": "Nantes" },
+  { "name": "Montpellier Saint-Roch" },
+  { "name": "Rennes" },
   {
     "name": "London St Pancras",
     "city": "London",
