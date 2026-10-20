@@ -7,8 +7,7 @@ import { useAuthUser } from '@/composables/useAuthUser'
 import { invalidateJourneysCache } from '@/composables/useJourneys'
 import { saveDraft, loadDraft, clearDraft } from '@/lib/drafts'
 import JourneyFormShell from '@/components/JourneyFormShell.vue'
-import AddFlightBasic from '@/components/AddFlightBasic.vue'
-import AddFlightDetailed from '@/components/AddFlightDetailed.vue'
+import FlightFormFields from '@/components/FlightFormFields.vue'
 
 const DRAFT_KEY = 'flight'
 
@@ -104,20 +103,12 @@ const handleSubmit = async () => {
     <JourneyFormShell journey-type="flight" title="Log a" highlight="Flight"
         subtitle="Capture the essentials — add finer details anytime." submit-label="Save Flight" :saving="saving"
         :guest="!isLoggedIn" @submit="handleSubmit">
-        <template #basic>
-            <AddFlightBasic v-model:airlineCode="form.airlineCode" v-model:flightNumber="form.flightNumber"
-                v-model:departureAirport="form.departureAirport" v-model:arrivalAirport="form.arrivalAirport"
-                v-model:departureDate="form.departureDate" />
-        </template>
-
-        <template #detailed>
-            <AddFlightDetailed v-model:airlineCode="form.airlineCode" v-model:flightNumber="form.flightNumber"
-                v-model:departureAirport="form.departureAirport" v-model:stopoverAirport="form.stopoverAirport"
-                v-model:arrivalAirport="form.arrivalAirport" v-model:departureDate="form.departureDate"
-                v-model:departureTime="form.departureTime" v-model:arrivalDate="form.arrivalDate"
-                v-model:arrivalTime="form.arrivalTime" v-model:gate="form.gate" v-model:seatNumber="form.seatNumber"
-                v-model:aircraftType="form.aircraftType" v-model:aircraftReg="form.aircraftReg" v-model:price="form.price"
-                v-model:currency="form.currency" v-model:bookingRef="form.bookingRef" v-model:notes="form.notes" />
-        </template>
+        <FlightFormFields v-model:airlineCode="form.airlineCode" v-model:flightNumber="form.flightNumber"
+            v-model:departureAirport="form.departureAirport" v-model:stopoverAirport="form.stopoverAirport"
+            v-model:arrivalAirport="form.arrivalAirport" v-model:departureDate="form.departureDate"
+            v-model:departureTime="form.departureTime" v-model:arrivalDate="form.arrivalDate"
+            v-model:arrivalTime="form.arrivalTime" v-model:gate="form.gate" v-model:seatNumber="form.seatNumber"
+            v-model:aircraftType="form.aircraftType" v-model:aircraftReg="form.aircraftReg" v-model:price="form.price"
+            v-model:currency="form.currency" v-model:bookingRef="form.bookingRef" v-model:notes="form.notes" />
     </JourneyFormShell>
 </template>

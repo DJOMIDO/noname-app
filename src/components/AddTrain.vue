@@ -7,8 +7,7 @@ import { useAuthUser } from '@/composables/useAuthUser'
 import { invalidateJourneysCache } from '@/composables/useJourneys'
 import { saveDraft, loadDraft, clearDraft } from '@/lib/drafts'
 import JourneyFormShell from '@/components/JourneyFormShell.vue'
-import AddTrainBasic from '@/components/AddTrainBasic.vue'
-import AddTrainDetailed from '@/components/AddTrainDetailed.vue'
+import TrainFormFields from '@/components/TrainFormFields.vue'
 
 const DRAFT_KEY = 'train'
 
@@ -112,21 +111,13 @@ const handleSubmit = async () => {
     <JourneyFormShell journey-type="train" title="Log a" highlight="Train Journey"
         subtitle="Record every ride — from regional hops to night trains." submit-label="Save Train Journey"
         :saving="saving" :guest="!isLoggedIn" @submit="handleSubmit">
-        <template #basic>
-            <AddTrainBasic v-model:trainCompany="form.trainCompany" v-model:trainNumber="form.trainNumber"
-                v-model:departureStation="form.departureStation" v-model:arrivalStation="form.arrivalStation"
-                v-model:departureDate="form.departureDate" />
-        </template>
-
-        <template #detailed>
-            <AddTrainDetailed v-model:trainCompany="form.trainCompany" v-model:trainNumber="form.trainNumber"
-                v-model:trainType="form.trainType" v-model:departureStation="form.departureStation"
-                v-model:arrivalStation="form.arrivalStation" v-model:departureCity="form.departureCity"
-                v-model:arrivalCity="form.arrivalCity" v-model:departureDate="form.departureDate"
-                v-model:departureTime="form.departureTime" v-model:arrivalDate="form.arrivalDate"
-                v-model:arrivalTime="form.arrivalTime" v-model:coach="form.coach" v-model:seatNumber="form.seatNumber"
-                v-model:price="form.price" v-model:currency="form.currency" v-model:bookingRef="form.bookingRef"
-                v-model:notes="form.notes" />
-        </template>
+        <TrainFormFields v-model:trainCompany="form.trainCompany" v-model:trainNumber="form.trainNumber"
+            v-model:trainType="form.trainType" v-model:departureStation="form.departureStation"
+            v-model:arrivalStation="form.arrivalStation" v-model:departureCity="form.departureCity"
+            v-model:arrivalCity="form.arrivalCity" v-model:departureDate="form.departureDate"
+            v-model:departureTime="form.departureTime" v-model:arrivalDate="form.arrivalDate"
+            v-model:arrivalTime="form.arrivalTime" v-model:coach="form.coach" v-model:seatNumber="form.seatNumber"
+            v-model:price="form.price" v-model:currency="form.currency" v-model:bookingRef="form.bookingRef"
+            v-model:notes="form.notes" />
     </JourneyFormShell>
 </template>
