@@ -59,6 +59,35 @@ describe('resolvePlace', () => {
         expect(place!.name).toMatch(/Saint-Lazare/)
     })
 
+    it('derives a city for a French station beyond the hand-written seed', async () => {
+        // Grenoble has no seed anchor; its city now comes from the SNCF codeinsee
+        // -> commune join, so a bare city query resolves where it previously could
+        // not (the seed only ever labelled ~16 cities).
+        const place = await resolvePlace('Grenoble')
+        expect(place).not.toBeNull()
+        expect(place!.city).toBe('Grenoble')
+        expect(place!.country).toBe('France')
+    })
+
+    it('resolves a bare city name to its central station, not a named sibling', async () => {
+        // Regression guard: siblings sharing a derived city — "Dijon Porte Neuve",
+        // "Pringy" (merged into Annecy), "Valence d'Agen" — must NOT steal the bare
+        // city key. The eponymous central station (name === city) wins it, so a plain
+        // city query lands on the city's own station rather than an arbitrary sibling.
+        expect((await resolvePlace('Dijon'))!.name).toBe('Dijon')
+        expect((await resolvePlace('Annecy'))!.name).toBe('Annecy')
+        expect((await resolvePlace('Valence'))!.name).toBe('Valence')
+    })
+
+    it('labels a RATP-only RER stop via the reverse-geocode fallback', async () => {
+        // Châtelet-Les Halles is RATP-operated and absent from SNCF, so IDFM ships
+        // no INSEE code for it; the build reverse-geocodes its coordinates, so the
+        // city is filled rather than left null.
+        const place = await resolvePlace('Châtelet-Les Halles')
+        expect(place).not.toBeNull()
+        expect(place!.city).toBe('Paris')
+    })
+
     it('returns null for an unknown name', async () => {
         expect(await resolvePlace('Nowhere-at-all')).toBeNull()
     })
@@ -119,6 +148,13 @@ describe('searchCities', () => {
         const toulouse = options.find(o => o.value === 'Toulouse')
         expect(toulouse).toBeDefined()
         expect(toulouse!.label).toBe('Toulouse · France')
+    })
+
+    it('lists a city present only via the derived commune set', async () => {
+        // Grenoble is not a hand-written seed city; it is suggested now that every
+        // French station carries its derived commune (~2500 cities, not ~16).
+        const options = await searchCities('grenoble')
+        expect(options.some(o => o.value === 'Grenoble')).toBe(true)
     })
 
     it('never repeats a city and returns nothing for a blank query', async () => {

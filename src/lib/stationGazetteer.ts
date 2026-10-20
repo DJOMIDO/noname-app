@@ -8,9 +8,12 @@
 // The dataset is station-granular: an endpoint resolves to the actual station
 // point when its name matches, and to that station's city otherwise. Names are
 // the canonical French commercial spellings — SNCF « Gares de voyageurs » for the
-// national network and Île-de-France Mobilités for every RER stop;
-// `scripts/build-stations.mjs` regenerates the file from those open datasets plus
-// a small curated seed that adds city labels for the major stations.
+// national network and Île-de-France Mobilités for every RER stop — and every
+// French station carries its city, derived at build time from its INSEE commune
+// code (SNCF `codeinsee` -> official commune name, with a reverse-geocode fallback
+// for RER stops and merged communes). `scripts/build-stations.mjs` regenerates the
+// file; a small curated seed only orders the major stations first and supplies the
+// non-French rows.
 //
 // Loaded lazily (dynamic import) so the gazetteer stays out of the main bundle
 // and the PWA precache, mirroring the map chunk.
@@ -149,18 +152,24 @@ function loadIndex(): Promise<GazetteerIndex> {
             const put = (key: string, row: StationRow) => {
                 if (key && !exact.has(key)) exact.set(key, row)
             }
-            // Index in priority order so the first-row-wins rule prefers the most
-            // precise point for a shared key (e.g. "Grenoble"): hand-curated
-            // stations (city set, city !== name) beat GeoNames railway stations
-            // (city === null), which beat city centroids (city === name). Without
-            // this a bare city name resolves to the locality centroid instead of
-            // its station, offsetting the dot by ~1km.
+            // Index in priority order so the first-row-wins rule picks the best
+            // representative for a shared key. Many stations index the same city key
+            // (every Dijon station claims "dijon"), so the tier order decides who a
+            // BARE CITY name resolves to. A station whose name equals its city
+            // ("Dijon", "Annecy", "Valence") IS that city's central station, so it
+            // leads and wins the bare-city key; a named sibling ("Dijon Porte Neuve",
+            // "Pringy" merged into Annecy, "Valence d'Agen") represents the city only
+            // when no eponymous station exists (Paris -> "Paris Gare de Lyon",
+            // Toulouse -> "Toulouse Matabiau"), then any city-less row (none today —
+            // every French station carries a derived city). Within a tier array order
+            // holds, so the seed's major stations stay first among their peers.
+            const isEponymous = (r: StationRow) => r.city != null && r.city === r.name
             const isCurated = (r: StationRow) => r.city != null && r.city !== r.name
             const isStation = (r: StationRow) => r.city == null
             const ordered = [
+                ...rows.filter(isEponymous),
                 ...rows.filter(isCurated),
                 ...rows.filter(isStation),
-                ...rows.filter(r => !isCurated(r) && !isStation(r)),
             ]
             for (const row of ordered) {
                 for (const key of [
@@ -288,9 +297,10 @@ export async function searchStations(query: string, limit = 12): Promise<Selecto
 }
 
 /**
- * Search distinct city names for the add/edit picker. Cities are drawn from the
- * gazetteer rows that carry one (curated seed rows); the `value` is the plain
- * city name, which the resolver maps to that city's station coordinate.
+ * Search distinct city names for the add/edit picker. Every French station carries
+ * its derived commune, so this lists the full set of cities that have a station
+ * (~2500 of them) rather than a hand-picked few; the `value` is the plain city
+ * name, which the resolver maps to that city's principal station coordinate.
  */
 export async function searchCities(query: string, limit = 12): Promise<SelectorOption[]> {
     const q = normalizePlace(query)
