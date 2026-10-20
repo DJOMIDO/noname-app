@@ -372,15 +372,24 @@ onMounted(() => {
         attributionControl: { compact: true },
         // The map lives inside a scrolling page, so the wheel must not hijack it.
         scrollZoom: false,
-        dragRotate: false,
+        // Rotation is on so the globe can be spun (mouse: right/ctrl-drag,
+        // touch: two-finger twist — neither hijacks page scroll). Pitch stays
+        // locked so there is no tilt, per the globe interaction choice.
+        dragRotate: true,
         touchZoomRotate: { around: 'center' },
         pitchWithRotate: false,
         touchPitch: false,
     })
     map = instance
 
-    instance.addControl(new NavigationControl({ showCompass: false }), 'top-right')
+    // Compass doubles as the "reset to north" control once rotation is enabled.
+    instance.addControl(new NavigationControl({ showCompass: true }), 'top-right')
     instance.on('style.load', () => {
+        // Globe at low zoom, auto-transitioning to flat Mercator as you zoom in
+        // (MapLibre's default transition point). Re-applied on every style.load
+        // because setStyle() — the theme swap below — resets the projection to
+        // the incoming style's default, dropping us back to flat Mercator.
+        instance.setProjection({ type: 'globe' })
         hideBasemapBorders()
         applyLabelVisibility()
         addRouteLayers()
